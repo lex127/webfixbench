@@ -1,0 +1,35 @@
+{
+  "id": "wp-authz-001",
+  "title": "New AJAX export handler without capability or nonce checks",
+  "language": "php",
+  "ecosystem": "wordpress",
+  "category": "authorization",
+  "difficulty": "medium",
+  "source_type": "synthetic",
+  "source_url": null,
+  "description": "A plugin adds an AJAX endpoint that exports subscriber e-mail addresses. The SQL is prepared, but the handler performs no capability check and no nonce check.",
+  "context": "add_action('wp_ajax_...') registers the handler for any logged-in user, including subscribers. There is no shared permission wrapper in this plugin; each handler performs its own checks.",
+  "diff": "diff --git a/wp-content/plugins/wfb-demo/includes/ajax.php b/wp-content/plugins/wfb-demo/includes/ajax.php\n--- a/wp-content/plugins/wfb-demo/includes/ajax.php\n+++ b/wp-content/plugins/wfb-demo/includes/ajax.php\n@@ -58,3 +58,21 @@ function wfb_ajax_rename_list() {\n\n     wp_send_json_success( array( 'name' => esc_html( $name ) ) );\n }\n+\n+add_action( 'wp_ajax_wfb_export_subscribers', 'wfb_ajax_export_subscribers' );\n+\n+function wfb_ajax_export_subscribers() {\n+    global $wpdb;\n+\n+    $list_id = isset( $_POST['list_id'] ) ? absint( $_POST['list_id'] ) : 0;\n+\n+    $rows = $wpdb->get_results(\n+        $wpdb->prepare(\n+            \"SELECT email FROM {$wpdb->prefix}wfb_subscribers WHERE list_id = %d\",\n+            $list_id\n+        )\n+    );\n+\n+    wp_send_json_success( wp_list_pluck( $rows, 'email' ) );\n+}\n",
+  "expected_findings": [
+    {
+      "id": "wp-authz-001-f1",
+      "category": "authorization",
+      "severity": "high",
+      "file": "wp-content/plugins/wfb-demo/includes/ajax.php",
+      "description": "The new wp_ajax_wfb_export_subscribers handler exports subscriber e-mail addresses without current_user_can() or nonce verification, so any logged-in user can call it."
+    }
+  ],
+  "is_clean": false,
+  "label_source": "agent_drafted",
+  "label_status": "pending_review",
+  "reviewed_by": [],
+  "academic_review": false,
+  "tags": [
+    "ajax",
+    "capability-check",
+    "nonce",
+    "data-exposure"
+  ],
+  "notes": "The query itself is correctly prepared; the defect is authorisation only. Reporting SQL injection here is a false positive.",
+  "references": []
+}

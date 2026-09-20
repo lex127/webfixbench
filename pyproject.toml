@@ -1,0 +1,46 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "webfixbench"
+version = "0.1.0"
+description = "A reproducible benchmark for evaluating the reliability of LLM-assisted code review on web-application changes."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "Apache-2.0" }
+authors = [
+  { name = "Oleksii Siniaiev" },
+]
+keywords = ["benchmark", "code-review", "llm", "evaluation", "php", "laravel", "wordpress"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Science/Research",
+  "License :: OSI Approved :: Apache Software License",
+  "Programming Language :: Python :: 3",
+  "Topic :: Software Development :: Quality Assurance",
+]
+
+# The benchmark core intentionally has no runtime dependencies: the engine, the
+# providers and the metrics are implemented against the Python standard library
+# so that a run can be reproduced without resolving a dependency tree.
+dependencies = []
+
+[project.optional-dependencies]
+dev = ["pytest>=7"]
+
+[project.urls]
+Homepage = "https://github.com/alexsinyaev/webfixbench"
+Source = "https://github.com/alexsinyaev/webfixbench"
+
+[project.scripts]
+webfixbench = "webfixbench.cli:main"
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

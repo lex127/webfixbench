@@ -1,0 +1,21 @@
+{
+  "id": "php-web-v0.1",
+  "version": "0.1.0",
+  "title": "PHP web ecosystem (PHP, Laravel, WordPress)",
+  "description": "Twelve labelled synthetic diffs from the PHP web ecosystem: nine carrying exactly one objectively labelled defect, three clean controls that must produce no findings.",
+  "language": "php",
+  "ecosystems": ["php", "laravel", "wordpress"],
+  "categories": [
+    "authorization",
+    "injection",
+    "xss",
+    "secrets",
+    "unsafe_deserialization",
+    "clean_control"
+  ],
+  "case_count": 12,
+  "source_types": ["synthetic"],
+  "license": "Apache-2.0",
+  "prompt": "review_v1",
+  "notes": "All cases are synthetic, written for this benchmark and inspired by defect patterns that are common in PHP web applications. No client, private or third-party source code is included. See docs/DATASET.md."
+}
