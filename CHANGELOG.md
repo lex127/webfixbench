@@ -20,6 +20,10 @@ Pre-release research skeleton. A working harness and a small labelled dataset.
 - One precise configuration-injection type, `environment_override_from_web_argv`,
   and immutable `review_v3`; prior prompts and matching logic are unchanged.
 - Root AGENTS.md and per-case human review checklists; refreshed offline baseline.
+- Reproducible multi-provider experiments with request guards, incremental
+  artifacts and manual-only GitHub Actions execution.
+- First-party OpenAI, Anthropic, Google Gemini, DeepSeek and xAI adapters with
+  vendor-specific structured-output and reasoning controls.
 
 - Benchmark engine: case loading, suite execution, deterministic matching,
   metrics, evaluation and Markdown reporting. No runtime dependencies.
@@ -31,20 +35,20 @@ Pre-release research skeleton. A working harness and a small labelled dataset.
   an agent may draft a fixture, but a case cannot be marked `frozen` without a
   human label source and a named reviewer. Runs against unfrozen labels are
   marked provisional in the CLI, the evaluation document and the report.
-- Suite `php-web-v0.1`: 12 synthetic cases (9 with a labelled defect, 3 clean
-  controls) across PHP, Laravel and WordPress.
-- Providers: `BaseProvider`, deterministic offline `MockProvider`, and OpenAI
-  and Anthropic providers speaking the vendors' HTTP APIs. Model ids are never
+- Suite `php-web-v0.1`: 15 synthetic-code cases (11 with a labelled defect, 4
+  clean controls), including three advisory-derived reconstructions.
+- Providers: `BaseProvider`, deterministic offline `MockProvider`, OpenAI,
+  Anthropic, Google Gemini, DeepSeek and xAI. Model ids are never
   defaulted; credentials come from the environment only.
 - Metrics: precision, recall, F1, finding-level false positives, clean-control
   false-alarm rate, case-level detection, malformed-response counts, latency,
   token usage, optional cost, and confidence summaries including the gap
   between mean confidence on true and false positives.
-- Frozen prompt `prompts/review_v1.txt`, recorded in every run by id and
+- Current prompt `prompts/review_v3.txt`, recorded in every run by id and
   SHA-256.
 - Documentation: methodology, annotation guide, ethics, related work, dataset,
   real-world source research plan, roadmap and a contributor guide.
-- Test suite (136 tests) that never contacts a paid API, plus GitHub Actions CI.
+- Offline test suite that never contacts a paid API, plus GitHub Actions CI.
 - Mock baseline artifacts in `results/`.
 
 ### Known gaps
@@ -52,9 +56,9 @@ Pre-release research skeleton. A working harness and a small labelled dataset.
 - Related-work entries have been checked against linked primary sources. The
   project makes no first/only/unique claim.
 - Confidence calibration (Brier, ECE) is **not yet measured**.
-- All twelve cases are `pending_review`: drafted, and awaiting the maintainer's
+- All fifteen cases are `pending_review`: drafted, and awaiting the maintainer's
   review pass before their labels are frozen.
 - Labels come from a single labeller; inter-rater agreement is **not yet
   measured**.
-- No advisory-derived cases yet; [docs/REAL_WORLD_SOURCES.md](docs/REAL_WORLD_SOURCES.md)
-  is a research plan whose sources have **not yet been inspected**.
+- The three advisory-derived cases are synthetic reconstructions, not vendored
+  patches or three independent real-world incidents; two share one mechanism.

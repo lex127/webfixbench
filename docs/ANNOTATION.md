@@ -184,6 +184,11 @@ disagreement between the two as a result in its own right.
 
 ## Checklist before freezing a case
 
+For the v0.1 maintainer pass, use
+[HUMAN_REVIEW_PACKET.md](HUMAN_REVIEW_PACKET.md). It includes the exact supplied
+input, proposed label, provenance and challenge notes for every case. The packet
+is review material; its agent recommendations are not approval.
+
 The per-case working copy is in
 [HUMAN_REVIEW_CHECKLIST.md](HUMAN_REVIEW_CHECKLIST.md). It must be completed by
 Oleksii manually; test success does not approve or freeze a label.

@@ -228,21 +228,26 @@ Anything beyond that is malformed.
 
 ## 11. Provider settings
 
-- Temperature defaults to 0.0 and is recorded per run.
+- Temperature is omitted by default. When explicitly configured, it is sent
+  and recorded only for a supported provider/model combination. Temperature
+  zero does not guarantee determinism.
 - `max_output_tokens` defaults to 2048 and is recorded.
 - The model id is never defaulted for paid providers; `--model` is required and
   the id the API reports back is stored.
-- OpenAI uses `POST /v1/responses` by default. Chat Completions remains an
+- OpenAI and xAI use their Responses APIs; OpenAI Chat Completions remains an
   explicit `--api-type chat.completions` option; the provider never guesses an
   endpoint from a model name. Anthropic uses `POST /v1/messages`.
-- Both providers can apply the same model-response JSON Schema: OpenAI through
-  Responses `text.format` (or Chat Completions `response_format`) and Anthropic
-  through `output_config.format`. Each run records `api_type`, endpoint, model
+- Native schema constraints are used where documented: Responses `text.format`,
+  Anthropic `output_config.format`, and Gemini `responseJsonSchema`. DeepSeek's
+  documented constraint is JSON-object mode. Each run records `api_type`, endpoint, model
   and `output_constraint` (`json_schema`, `json_object`, or `prompt_only`).
 - Structured-output support depends on the selected model. The harness does not
   silently weaken a rejected constraint. Malformed-output rates are not
   directly comparable when runs used different output constraints.
 - Fable models are excluded by project policy.
+- No adapter enables tools, search, grounding, repository retrieval or an agent
+  loop. Reasoning controls are provider-specific and recorded as sent; the
+  baseline never equates different vendors' reasoning levels.
 - Latency is wall-clock around the provider call, in milliseconds.
 - Token usage is taken from the provider response when available and flagged
   `estimated: false`; the mock provider reports a character-based estimate and
@@ -273,7 +278,8 @@ an error of the same kind as missing one.
 
 Every result file records: WebFixBench version, result-format version, run id,
 UTC timestamp, suite id and version, cases run, prompt id and SHA-256, provider
-settings (provider, model, temperature, max output tokens), and per case the
+settings actually sent (provider, model, optional sampling/reasoning controls,
+output constraint and max output tokens), and per case the
 raw response text, the parsed response, validation errors, latency, usage and
 cost.
 
@@ -335,7 +341,8 @@ design that asks for a well-specified probability.
 7. **No statistical claims.** Provider differences on this small, purposively
    selected suite are descriptive. Statistical significance has not been
    assessed, and these differences do not establish a general provider ranking.
-8. **Single run.** Run-to-run variance at temperature 0 is not yet measured.
+8. **Single run.** Run-to-run variance is not yet measured. Omitted sampling
+   controls and temperature zero alike provide no determinism guarantee.
 
 ## 17. Data contamination risk
 

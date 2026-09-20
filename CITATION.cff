@@ -9,8 +9,9 @@ abstract: >-
   WebFixBench is a reproducible benchmark for evaluating the reliability of
   LLM-assisted code review on web-application changes. Version 0.1.0.dev0 is a
   pre-release research skeleton: an evaluation harness plus one suite, php-web-v0.1, of
-  twelve labelled synthetic diffs covering PHP, Laravel and WordPress, including
-  three clean controls that must produce no findings. It measures detection,
+  fifteen synthetic diffs covering PHP, Laravel and WordPress: twelve original
+  fixtures and three advisory-derived reconstructions, including four clean
+  controls that must produce no findings. It measures detection,
   false positives, malformed output and reported confidence. No model results
   are published in this version.
 keywords:
