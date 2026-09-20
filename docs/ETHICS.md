@@ -87,6 +87,6 @@ limitations and their `null`s visible.
 
 ## Contact
 
-Issues and questions: <https://github.com/alexsinyaev/webfixbench/issues>.
+Issues and questions: <https://github.com/lex127/webfixbench/issues>.
 For anything that should not be public, contact the maintainer via
 <https://alexsinyaev.com/>.

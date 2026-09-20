@@ -5,10 +5,10 @@ All notable changes to this project are recorded here. The format follows
 [semantic versioning](https://semver.org/) with the understanding that
 pre-1.0 releases may change the case schema and the result-file format.
 
-## [0.1.0] — 2026-09-20
+## [Unreleased]
 
-First public research skeleton. A working harness and a small labelled dataset.
-**No model results are published in this release.**
+Pre-release research skeleton. A working harness and a small labelled dataset.
+**No formal v0.1.0 release or model results have been published.**
 
 ### Added
 
