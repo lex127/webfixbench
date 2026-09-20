@@ -9,5 +9,6 @@ dist/
 *.egg-info/
 tasks/
 SOURCE_PROMPT.md
+COURSE_CORRECTION.md
 .DS_Store
 results/*.local.json

@@ -1,0 +1,34 @@
+{
+  "id": "php-injection-001",
+  "title": "Prepared statement replaced with interpolated mysqli query",
+  "language": "php",
+  "ecosystem": "php",
+  "category": "injection",
+  "difficulty": "easy",
+  "source_type": "synthetic",
+  "source_url": null,
+  "description": "A legacy search endpoint drops its prepared statement in favour of mysqli_query() with the search term concatenated into the SQL.",
+  "context": "$_GET['term'] is unfiltered user input. The connection uses the default character set and no input filter runs before this file.",
+  "diff": "diff --git a/src/Legacy/search.php b/src/Legacy/search.php\n--- a/src/Legacy/search.php\n+++ b/src/Legacy/search.php\n@@ -10,13 +10,12 @@ require __DIR__ . '/bootstrap.php';\n\n-$like = '%' . $_GET['term'] . '%';\n-\n-$stmt = $mysqli->prepare('SELECT id, title FROM articles WHERE title LIKE ?');\n-$stmt->bind_param('s', $like);\n-$stmt->execute();\n-$result = $stmt->get_result();\n+$term = $_GET['term'];\n+\n+$result = mysqli_query(\n+    $mysqli,\n+    \"SELECT id, title FROM articles WHERE title LIKE '%\" . $term . \"%'\"\n+);\n\n while ($row = $result->fetch_assoc()) {\n     echo '<li>' . htmlspecialchars($row['title'], ENT_QUOTES) . '</li>';\n }\n",
+  "expected_findings": [
+    {
+      "id": "php-injection-001-f1",
+      "category": "injection",
+      "severity": "critical",
+      "file": "src/Legacy/search.php",
+      "description": "The search term from $_GET is concatenated into the SQL string passed to mysqli_query(), replacing a prepared statement and allowing SQL injection."
+    }
+  ],
+  "is_clean": false,
+  "label_source": "agent_drafted",
+  "label_status": "pending_review",
+  "reviewed_by": [],
+  "academic_review": false,
+  "tags": [
+    "sql",
+    "mysqli",
+    "regression"
+  ],
+  "notes": "Output is still escaped with htmlspecialchars(), so an XSS finding on this diff is a false positive.",
+  "references": []
+}

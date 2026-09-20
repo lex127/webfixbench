@@ -1,0 +1,42 @@
+name: tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+          # Optional: lets the JSON Schema documents be checked against the cases.
+          pip install jsonschema
+
+      - name: Tests
+        # No API keys are configured for CI; the suite must pass without them.
+        run: pytest -q
+
+      - name: CLI smoke test
+        run: |
+          webfixbench list
+          webfixbench validate
+          webfixbench run --provider mock --out /tmp/ci-run.json --quiet --evaluate
+          webfixbench report /tmp/ci-run.json --out /tmp/ci-report.md
+
+      - name: Committed mock baseline is reproducible
+        # Compares scored output, ignoring run_id and created_at.
+        run: python scripts/check_baseline.py

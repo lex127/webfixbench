@@ -1,0 +1,34 @@
+{
+  "id": "laravel-injection-001",
+  "title": "Query builder replaced with interpolated raw SQL",
+  "language": "php",
+  "ecosystem": "laravel",
+  "category": "injection",
+  "difficulty": "easy",
+  "source_type": "synthetic",
+  "source_url": null,
+  "description": "A report search is rewritten from the query builder to a raw SQL string that concatenates a request parameter.",
+  "context": "$request->input('email') is unvalidated user input taken from the query string. No database-level allow-list or escaping is applied elsewhere in the request cycle.",
+  "diff": "diff --git a/app/Http/Controllers/ReportController.php b/app/Http/Controllers/ReportController.php\n--- a/app/Http/Controllers/ReportController.php\n+++ b/app/Http/Controllers/ReportController.php\n@@ -21,12 +21,14 @@ class ReportController extends Controller\n\n     public function search(Request $request): View\n     {\n-        $rows = DB::table('orders')\n-            ->where('customer_email', $request->input('email'))\n-            ->orderByDesc('created_at')\n-            ->get();\n+        $email = $request->input('email');\n+\n+        $rows = DB::select(\n+            \"SELECT id, total, created_at FROM orders \"\n+            . \"WHERE customer_email = '\" . $email . \"' ORDER BY created_at DESC\"\n+        );\n\n         return view('reports.search', ['rows' => $rows]);\n     }\n",
+  "expected_findings": [
+    {
+      "id": "laravel-injection-001-f1",
+      "category": "injection",
+      "severity": "critical",
+      "file": "app/Http/Controllers/ReportController.php",
+      "description": "Request input is concatenated into a raw SQL string passed to DB::select(), allowing SQL injection. Bindings or the query builder should be used."
+    }
+  ],
+  "is_clean": false,
+  "label_source": "agent_drafted",
+  "label_status": "pending_review",
+  "reviewed_by": [],
+  "academic_review": false,
+  "tags": [
+    "sql",
+    "raw-query",
+    "user-input"
+  ],
+  "notes": null,
+  "references": []
+}
