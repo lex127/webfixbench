@@ -102,7 +102,7 @@ claim of it is made. Advisory-derived cases are the next expansion — see
 Python 3.9+ and no dependencies:
 
 ```bash
-git clone https://github.com/alexsinyaev/webfixbench.git
+git clone https://github.com/lex127/webfixbench.git
 cd webfixbench
 pip install -e .
 
@@ -147,6 +147,12 @@ Notes:
 
 - `--model` is required. WebFixBench pins no vendor model ids, so a run always
   records exactly which model produced it.
+- OpenAI defaults to the Responses API; `--api-type chat.completions` selects
+  Chat Completions explicitly. Both vendors default to `--output-constraint
+  json_schema`. Use `prompt_only` only when the selected model lacks structured
+  output support, and do not compare malformed-output rates across different
+  constraint modes.
+- Fable models are excluded by project policy.
 - Keys are read from the environment only, and are never written to result
   files. `.env` is git-ignored.
 - Start with `--limit`. A full 12-case run is 12 requests.
@@ -182,7 +188,7 @@ Two things v0.1 deliberately does **not** do:
 
 ## Reproducibility
 
-- Prompts are frozen files (`prompts/review_v1.txt`); every run records the
+- Prompts are versioned files (current: `prompts/review_v2.txt`); every run records the
   prompt id and the SHA-256 of the exact text used.
 - Runs record suite version, provider, model, temperature and token usage.
 - Running and scoring are separate steps, so one (paid) run can be re-scored

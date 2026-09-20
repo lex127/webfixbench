@@ -45,10 +45,10 @@ By category:
 | `laravel-injection-001` | laravel | injection | easy | Replaces a query-builder call with `DB::select()` on a concatenated string |
 | `laravel-xss-001` | laravel | xss | easy | Switches a Blade partial from `{{ }}` to `{!! !!}` for user-submitted comment bodies |
 | `laravel-clean-001` | laravel | clean_control | easy | Collapses three assignments into `fill()`/`save()`; `authorize()` untouched |
-| `wp-authz-001` | wordpress | authorization | medium | Adds a `wp_ajax_` subscriber-export handler with no capability check and no nonce |
+| `wp-authz-001` | wordpress | authorization | medium | Adds a nonce-protected `wp_ajax_` subscriber-export handler with no capability check |
 | `wp-xss-001` | wordpress | xss | easy | Echoes `$_GET['wfb_q']` into a template instead of `esc_html( $query )` |
 | `wp-deser-001` | wordpress | unsafe_deserialization | medium | Decodes an unsigned cookie with `unserialize()` instead of `json_decode()` |
-| `wp-clean-001` | wordpress | clean_control | medium | Adds `sanitize_text_field()` and `esc_html()` to an existing guarded AJAX handler |
+| `wp-clean-001` | wordpress | clean_control | medium | Adds `sanitize_text_field()` to an existing guarded AJAX handler and returns the value as JSON |
 | `php-secrets-001` | php | secrets | easy | Replaces `getenv()` with a hardcoded mailer API key literal |
 | `php-injection-001` | php | injection | easy | Replaces a prepared statement with `mysqli_query()` on a concatenated string |
 | `php-clean-001` | php | clean_control | medium | Reformats a PDO lookup and adds `LIMIT 1`; stays parameterised |
@@ -95,6 +95,7 @@ validator in `src/webfixbench/schemas.py`.
     {
       "id": "laravel-authz-001-f1",
       "category": "authorization",
+      "defect_type": "authorization_policy_removed",
       "severity": "high",
       "file": "app/Http/Controllers/PostController.php",
       "description": "Ground truth, for humans. Not shown to the reviewer."
@@ -144,11 +145,11 @@ matching unambiguous and keeps per-case scores readable. The cost is that
 interacting defects, and a reviewer's ability to prioritise among several real
 findings, are untested. Multi-finding cases are a v0.2 item.
 
-`wp-authz-001` is the visible seam: it is missing both a capability check and a
-nonce, which a reviewer might reasonably report as two findings. It is labelled
-as one authorization finding, and a second authorization finding on that case
-would be scored as a false positive. That is a known rough edge of the
-one-finding rule, recorded rather than hidden.
+`wp-authz-001` verifies its nonce and uses a prepared query, leaving only the
+missing capability check as its intended defect. The other eight defective
+cases were also reviewed for a second reasonable finding; none was identified.
+This is an implementation review, not the required human ground-truth approval,
+so every label remains `pending_review`.
 
 ## Difficulty
 

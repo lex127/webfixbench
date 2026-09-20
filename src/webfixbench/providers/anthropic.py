@@ -13,7 +13,7 @@ from typing import Any, Dict, Optional
 
 from ..config import ENV_ANTHROPIC_KEY
 from ._http import HttpError, post_json
-from .base import BaseProvider, ProviderError, ProviderResult
+from .base import RESPONSE_JSON_SCHEMA, BaseProvider, ProviderError, ProviderResult
 
 API_URL = "https://api.anthropic.com/v1/messages"
 API_VERSION = "2023-06-01"
@@ -23,18 +23,34 @@ SYSTEM_PROMPT = (
 )
 
 
+OUTPUT_CONSTRAINTS = ("json_schema", "prompt_only")
+
+
 class AnthropicProvider(BaseProvider):
     """Review a diff with an Anthropic model."""
 
     name = "anthropic"
 
-    def __init__(self, model: Optional[str] = None, **kwargs: Any) -> None:
+    def __init__(
+        self,
+        model: Optional[str] = None,
+        *,
+        output_constraint: str = "json_schema",
+        **kwargs: Any,
+    ) -> None:
         if not model:
             raise ProviderError(
                 "the anthropic provider requires an explicit --model "
                 "(WebFixBench does not pin vendor model ids)"
             )
+        if output_constraint not in OUTPUT_CONSTRAINTS:
+            raise ProviderError(
+                f"unknown output constraint {output_constraint!r}; expected {list(OUTPUT_CONSTRAINTS)}"
+            )
+        if "fable" in model.lower():
+            raise ProviderError("Fable models are excluded by WebFixBench owner policy")
         super().__init__(model, **kwargs)
+        self.output_constraint = output_constraint
         self.api_key = os.environ.get(ENV_ANTHROPIC_KEY)
         if not self.api_key:
             raise ProviderError(
@@ -43,7 +59,18 @@ class AnthropicProvider(BaseProvider):
         self.api_url = self.extra.get("api_url", API_URL)
         self.api_version = self.extra.get("api_version", API_VERSION)
 
-    def _review(self, prompt: str, *, case_id: str) -> ProviderResult:
+    def describe(self) -> Dict[str, Any]:
+        description = super().describe()
+        description.update(
+            {
+                "api_type": "messages",
+                "endpoint": self.api_url,
+                "output_constraint": self.output_constraint,
+            }
+        )
+        return description
+
+    def _payload(self, prompt: str) -> Dict[str, Any]:
         payload: Dict[str, Any] = {
             "model": self.model,
             "max_tokens": self.max_output_tokens,
@@ -51,6 +78,14 @@ class AnthropicProvider(BaseProvider):
             "system": SYSTEM_PROMPT,
             "messages": [{"role": "user", "content": prompt}],
         }
+        if self.output_constraint == "json_schema":
+            payload["output_config"] = {
+                "format": {"type": "json_schema", "schema": RESPONSE_JSON_SCHEMA}
+            }
+        return payload
+
+    def _review(self, prompt: str, *, case_id: str) -> ProviderResult:
+        payload = self._payload(prompt)
         headers = {
             "x-api-key": self.api_key,
             "anthropic-version": self.api_version,
@@ -92,5 +127,9 @@ class AnthropicProvider(BaseProvider):
             latency_ms=0.0,
             model=body.get("model", self.model),
             usage=usage,
-            metadata={"stop_reason": body.get("stop_reason")},
+            metadata={
+                "stop_reason": body.get("stop_reason"),
+                "api_type": "messages",
+                "output_constraint": self.output_constraint,
+            },
         )

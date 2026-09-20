@@ -1,26 +1,22 @@
 {
   "id": "wp-clean-001",
-  "title": "AJAX list rename hardened with sanitisation and escaping",
+  "title": "AJAX list rename hardened with input sanitisation",
   "language": "php",
   "ecosystem": "wordpress",
   "category": "clean_control",
   "difficulty": "medium",
   "source_type": "synthetic",
   "source_url": null,
-  "description": "An existing AJAX handler is improved: the submitted name is sanitised on input and escaped on output. The nonce and capability checks are unchanged.",
+  "description": "An existing AJAX handler is improved by sanitising the submitted name. The nonce, capability check, safe database API and JSON response semantics are unchanged.",
   "context": "check_ajax_referer() and current_user_can('manage_options') remain in place and are visible as context lines. $wpdb->update() uses format specifiers.",
-  "diff": "diff --git a/wp-content/plugins/wfb-demo/includes/ajax.php b/wp-content/plugins/wfb-demo/includes/ajax.php\n--- a/wp-content/plugins/wfb-demo/includes/ajax.php\n+++ b/wp-content/plugins/wfb-demo/includes/ajax.php\n@@ -38,21 +38,21 @@ add_action( 'wp_ajax_wfb_rename_list', 'wfb_ajax_rename_list' );\n\n function wfb_ajax_rename_list() {\n     check_ajax_referer( 'wfb_rename_list' );\n\n     if ( ! current_user_can( 'manage_options' ) ) {\n         wp_send_json_error( array( 'message' => 'Not allowed.' ), 403 );\n     }\n\n     global $wpdb;\n\n     $list_id = isset( $_POST['list_id'] ) ? absint( $_POST['list_id'] ) : 0;\n-    $name    = wp_unslash( $_POST['name'] );\n+    $name    = sanitize_text_field( wp_unslash( $_POST['name'] ) );\n\n     $wpdb->update(\n         $wpdb->prefix . 'wfb_lists',\n         array( 'name' => $name ),\n         array( 'id' => $list_id ),\n         array( '%s' ),\n         array( '%d' )\n     );\n\n-    wp_send_json_success( array( 'name' => $name ) );\n+    wp_send_json_success( array( 'name' => esc_html( $name ) ) );\n }\n",
+  "diff": "diff --git a/wp-content/plugins/wfb-demo/includes/ajax.php b/wp-content/plugins/wfb-demo/includes/ajax.php\n--- a/wp-content/plugins/wfb-demo/includes/ajax.php\n+++ b/wp-content/plugins/wfb-demo/includes/ajax.php\n@@ -38,21 +38,21 @@ add_action( 'wp_ajax_wfb_rename_list', 'wfb_ajax_rename_list' );\n\n function wfb_ajax_rename_list() {\n     check_ajax_referer( 'wfb_rename_list' );\n\n     if ( ! current_user_can( 'manage_options' ) ) {\n         wp_send_json_error( array( 'message' => 'Not allowed.' ), 403 );\n     }\n\n     global $wpdb;\n\n     $list_id = isset( $_POST['list_id'] ) ? absint( $_POST['list_id'] ) : 0;\n-    $name    = wp_unslash( $_POST['name'] );\n+    $name    = sanitize_text_field( wp_unslash( $_POST['name'] ) );\n\n     $wpdb->update(\n         $wpdb->prefix . 'wfb_lists',\n         array( 'name' => $name ),\n         array( 'id' => $list_id ),\n         array( '%s' ),\n         array( '%d' )\n     );\n\n     wp_send_json_success( array( 'name' => $name ) );\n }\n",
   "expected_findings": [],
   "is_clean": true,
   "label_source": "agent_drafted",
   "label_status": "pending_review",
   "reviewed_by": [],
   "academic_review": false,
-  "tags": [
-    "control",
-    "hardening",
-    "ajax"
-  ],
-  "notes": "Clean control, and deliberately the harder kind: the diff touches security-relevant code and mentions $_POST, but every change strictly improves the handler.",
+  "tags": ["control", "hardening", "ajax"],
+  "notes": "Clean control, and deliberately the harder kind: the diff touches security-relevant code and mentions $_POST, but the change only sanitises input. wp_send_json_success() serialises JSON rather than rendering HTML, so the sanitised value is returned without HTML escaping.",
   "references": []
 }

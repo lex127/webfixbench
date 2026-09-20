@@ -8,8 +8,15 @@ from webfixbench.schemas import Case, ExpectedFinding, PredictedFinding
 
 
 def make_case(case_id: str, *, is_clean: bool, categories=()) -> Case:
+    types = {
+        "authorization": "authorization_policy_removed",
+        "injection": "sql_injection",
+        "xss": "xss_unescaped_output",
+    }
     findings = [
-        ExpectedFinding(category=c, severity="high", description="gt", file="app/X.php")
+        ExpectedFinding(
+            category=c, defect_type=types[c], severity="high", description="gt", file="app/X.php"
+        )
         for c in categories
     ]
     return Case(
@@ -29,8 +36,18 @@ def make_case(case_id: str, *, is_clean: bool, categories=()) -> Case:
 
 
 def predicted(category: str, confidence=None) -> PredictedFinding:
+    types = {
+        "authorization": "authorization_policy_removed",
+        "injection": "sql_injection",
+        "xss": "xss_unescaped_output",
+    }
     return PredictedFinding(
-        category=category, severity="high", description="p", file="app/X.php", confidence=confidence
+        category=category,
+        defect_type=types[category],
+        severity="high",
+        description="p",
+        file="app/X.php",
+        confidence=confidence,
     )
 
 

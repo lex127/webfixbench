@@ -6,13 +6,33 @@ from webfixbench.matching import _same_file, match_case, match_findings
 from webfixbench.schemas import Case, ExpectedFinding, PredictedFinding
 
 
-def expected(category: str, file: str = "app/X.php") -> ExpectedFinding:
-    return ExpectedFinding(category=category, severity="high", description="gt", file=file)
+TYPE_FOR = {
+    "authorization": "authorization_policy_removed",
+    "injection": "sql_injection",
+    "xss": "xss_unescaped_output",
+    "secrets": "hardcoded_secret",
+    "unsafe_deserialization": "unsafe_deserialization",
+}
 
 
-def predicted(category: str, file=None, confidence=None) -> PredictedFinding:
+def expected(category: str, file: str = "app/X.php", defect_type=None) -> ExpectedFinding:
+    return ExpectedFinding(
+        category=category,
+        defect_type=defect_type or TYPE_FOR[category],
+        severity="high",
+        description="gt",
+        file=file,
+    )
+
+
+def predicted(category: str, file=None, confidence=None, defect_type=None) -> PredictedFinding:
     return PredictedFinding(
-        category=category, severity="high", description="pred", file=file, confidence=confidence
+        category=category,
+        defect_type=defect_type or TYPE_FOR.get(category, "unknown_type"),
+        severity="high",
+        description="pred",
+        file=file,
+        confidence=confidence,
     )
 
 
@@ -34,13 +54,16 @@ def make_case(*, is_clean: bool, findings) -> Case:
 
 
 class MatchFindingsTests(unittest.TestCase):
-    def test_exact_category_match(self) -> None:
+    def test_exact_defect_type_match(self) -> None:
         matched, fps, fns = match_findings([expected("xss")], [predicted("xss")])
         self.assertEqual(len(matched), 1)
         self.assertEqual((fps, fns), ([], []))
 
-    def test_alias_category_match(self) -> None:
-        matched, _, _ = match_findings([expected("injection")], [predicted("SQL Injection")])
+    def test_category_alias_does_not_affect_defect_type_match(self) -> None:
+        matched, _, _ = match_findings(
+            [expected("injection")],
+            [predicted("SQL Injection", defect_type="sql_injection")],
+        )
         self.assertEqual(len(matched), 1)
 
     def test_wrong_category_is_a_false_positive_and_a_false_negative(self) -> None:
@@ -48,6 +71,19 @@ class MatchFindingsTests(unittest.TestCase):
         self.assertEqual(matched, [])
         self.assertEqual(fps, [0])
         self.assertEqual(fns, [0])
+
+    def test_same_category_wrong_mechanism_does_not_match(self) -> None:
+        matched, fps, fns = match_findings(
+            [expected("authorization", defect_type="authorization_policy_removed")],
+            [predicted("authorization", defect_type="authorization_capability_missing")],
+        )
+        self.assertEqual((matched, fps, fns), ([], [0], [0]))
+
+    def test_unknown_defect_type_is_a_false_positive(self) -> None:
+        matched, fps, fns = match_findings(
+            [expected("xss")], [predicted("xss", defect_type="made_up_type")]
+        )
+        self.assertEqual((matched, fps, fns), ([], [0], [0]))
 
     def test_each_prediction_matches_at_most_one_expected_finding(self) -> None:
         matched, fps, fns = match_findings(
@@ -71,20 +107,20 @@ class MatchFindingsTests(unittest.TestCase):
         self.assertTrue(matched[0].file_matched)
         self.assertEqual(fps, [0])
 
-    def test_category_file_mode_requires_the_right_file(self) -> None:
+    def test_defect_type_file_mode_requires_the_right_file(self) -> None:
         matched, fps, fns = match_findings(
             [expected("xss", file="app/View.php")],
             [predicted("xss", file="other/File.php")],
-            mode="category_file",
+            mode="defect_type_file",
         )
         self.assertEqual(matched, [])
         self.assertEqual((fps, fns), ([0], [0]))
 
-    def test_category_file_mode_accepts_diff_prefixed_paths(self) -> None:
+    def test_defect_type_file_mode_accepts_diff_prefixed_paths(self) -> None:
         matched, _, _ = match_findings(
             [expected("xss", file="app/View.php")],
             [predicted("xss", file="b/app/View.php")],
-            mode="category_file",
+            mode="defect_type_file",
         )
         self.assertEqual(len(matched), 1)
 

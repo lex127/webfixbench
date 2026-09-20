@@ -23,7 +23,7 @@ ROOT = Path(__file__).resolve().parents[1]
 class MockProviderTests(unittest.TestCase):
     def setUp(self) -> None:
         self.suite = load_suite("php-web-v0.1", root=ROOT)
-        self.prompt = load_prompt("review_v1", root=ROOT)
+        self.prompt = load_prompt("review_v2", root=ROOT)
 
     def _prompt_for(self, case_id: str) -> str:
         return build_prompt_text(self.prompt, self.suite.get(case_id))
@@ -77,6 +77,8 @@ class MockProviderTests(unittest.TestCase):
     def test_describe_records_run_settings(self) -> None:
         description = MockProvider(temperature=0.0).describe()
         self.assertEqual(description["provider"], "mock")
+        self.assertEqual(description["api_type"], "offline")
+        self.assertEqual(description["output_constraint"], "native_json")
         self.assertEqual(description["mock_mode"], "heuristic")
         self.assertIn("Not a language model", description["note"])
 
@@ -148,19 +150,39 @@ class VendorProviderOfflineTests(unittest.TestCase):
             provider = OpenAIProvider(model="some-model", max_output_tokens=256)
         payload = provider._payload("review this")
         self.assertEqual(payload["model"], "some-model")
-        self.assertEqual(payload["max_completion_tokens"], 256)
-        self.assertEqual(payload["messages"][-1]["content"], "review this")
+        self.assertEqual(payload["max_output_tokens"], 256)
+        self.assertEqual(payload["input"][-1]["content"], "review this")
+        self.assertEqual(payload["text"]["format"]["type"], "json_schema")
+        self.assertEqual(provider.describe()["api_type"], "responses")
 
-    def test_openai_retry_helper_relaxes_unsupported_parameters(self) -> None:
-        from webfixbench.providers._http import HttpError
-        from webfixbench.providers.openai import _drop_unsupported_params
+    def test_openai_chat_completions_is_explicit(self) -> None:
+        from webfixbench.providers.openai import OpenAIProvider
 
-        payload = {"temperature": 0.0, "max_completion_tokens": 10}
-        error = HttpError(400, "Unsupported value: 'temperature' is not supported", "400")
-        retry = _drop_unsupported_params(payload, error)
-        self.assertNotIn("temperature", retry)
+        with mock.patch.dict(os.environ, {"OPENAI_API_KEY": "test-not-used"}, clear=True):
+            provider = OpenAIProvider(
+                model="some-model", api_type="chat.completions", output_constraint="json_object"
+            )
+        payload = provider._payload("review this")
+        self.assertIn("messages", payload)
+        self.assertEqual(payload["response_format"], {"type": "json_object"})
+        self.assertEqual(provider.describe()["api_type"], "chat.completions")
 
-        self.assertIsNone(_drop_unsupported_params(payload, HttpError(500, "server error", "500")))
+    def test_anthropic_json_schema_payload_and_metadata(self) -> None:
+        from webfixbench.providers.anthropic import AnthropicProvider
+
+        with mock.patch.dict(os.environ, {"ANTHROPIC_API_KEY": "test-not-used"}, clear=True):
+            provider = AnthropicProvider(model="claude-sonnet-example")
+        payload = provider._payload("review this")
+        self.assertEqual(payload["output_config"]["format"]["type"], "json_schema")
+        self.assertEqual(provider.describe()["api_type"], "messages")
+        self.assertEqual(provider.describe()["output_constraint"], "json_schema")
+
+    def test_anthropic_rejects_fable_models(self) -> None:
+        from webfixbench.providers.anthropic import AnthropicProvider
+
+        with mock.patch.dict(os.environ, {"ANTHROPIC_API_KEY": "test-not-used"}, clear=True):
+            with self.assertRaises(ProviderError):
+                AnthropicProvider(model="claude-fable-5")
 
     def test_api_keys_never_appear_in_provider_metadata(self) -> None:
         from webfixbench.providers.anthropic import AnthropicProvider

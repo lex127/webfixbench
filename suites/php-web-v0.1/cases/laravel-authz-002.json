@@ -14,6 +14,7 @@
     {
       "id": "laravel-authz-002-f1",
       "category": "authorization",
+      "defect_type": "authorization_middleware_removed",
       "severity": "critical",
       "file": "routes/web.php",
       "description": "The admin routes no longer run the 'auth' and 'can:admin' middleware, exposing user administration endpoints to unauthenticated requests."

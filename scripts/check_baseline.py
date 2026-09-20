@@ -55,7 +55,8 @@ def main() -> int:
 
     committed = json.loads(BASELINE.read_text(encoding="utf-8"))
     suite = load_suite(committed["run"]["suite"]["id"], root=ROOT)
-    fresh = run_suite(suite, MockProvider(), load_prompt("review_v1", root=ROOT))
+    prompt_id = committed["run"]["prompt"]["id"]
+    fresh = run_suite(suite, MockProvider(), load_prompt(prompt_id, root=ROOT))
 
     if comparable(committed) == comparable(fresh):
         print(f"ok: {BASELINE.relative_to(ROOT)} matches a fresh mock run "
