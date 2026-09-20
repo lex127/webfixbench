@@ -173,8 +173,10 @@ are normalised to `other` and counted as false positives — never discarded.
 The primary unit is the **finding**: each expected finding is matched against
 at most one predicted finding, one-to-one.
 
-A secondary, case-level view is also reported (`detection`), because "did the
-reviewer flag this change at all?" is the question a maintainer actually asks.
+A secondary, case-level view is also reported (`detection`): did the reviewer
+report at least one finding that matches an expected defect? An unrelated
+finding does not count as detection. The rate uses defective cases with valid
+responses; malformed responses are reported separately (sections 10 and 14).
 
 ## 9. Matching strategy
 
@@ -326,8 +328,9 @@ design that asks for a well-specified probability.
 5. **Diff-only context.** Real reviewers can open the repository.
 6. **Category-level matching.** Right category for the wrong reason scores as a
    hit.
-7. **No statistical claims.** With this n, differences between providers would
-   not be significant, and the repository will not present them as if they were.
+7. **No statistical claims.** Provider differences on this small, purposively
+   selected suite are descriptive. Statistical significance has not been
+   assessed, and these differences do not establish a general provider ranking.
 8. **Single run.** Run-to-run variance at temperature 0 is not yet measured.
 
 ## 17. Data contamination risk

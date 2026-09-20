@@ -82,10 +82,11 @@ consequence. A missing capability check that lets a user read other people's
 data is `authorization`, not a data-exposure category — the reason the data
 leaked is that nothing checked permission.
 
-When two categories genuinely apply (a missing nonce *and* a missing capability
-check), they collapse into the single category that describes the primary
-mechanism, and the description names both aspects. When a case has two
-genuinely distinct defects, label both explicitly or simplify the case.
+A missing nonce check and a missing capability check are distinct mechanisms;
+do not collapse them into one authorization finding. CSRF and missing nonce
+verification are outside the v0.1 taxonomy. If both defects occur in a draft,
+simplify the case to isolate one supported defect before accepting it into
+v0.1, following the single-finding rule below.
 
 New categories are a deliberate decision, not an ad-hoc one. v0.1's five
 categories were chosen because their ground truth is objective; adding
