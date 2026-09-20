@@ -1,0 +1,14 @@
+WebFixBench
+Copyright 2026 Oleksii Siniaiev and the WebFixBench contributors
+
+This product includes software developed by the WebFixBench contributors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+The benchmark cases in suites/ are original synthetic material written for this
+project and are covered by the same license. They contain no client, private or
+third-party source code. See docs/DATASET.md for dataset provenance rules.

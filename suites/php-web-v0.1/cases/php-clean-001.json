@@ -1,0 +1,26 @@
+{
+  "id": "php-clean-001",
+  "title": "Repository lookup refactored, prepared statement kept",
+  "language": "php",
+  "ecosystem": "php",
+  "category": "clean_control",
+  "difficulty": "medium",
+  "source_type": "synthetic",
+  "source_url": null,
+  "description": "A PDO lookup is reformatted and gains a LIMIT 1. The statement stays parameterised and the behaviour is unchanged for the caller.",
+  "context": "$email arrives already validated by the caller and is bound as a named parameter both before and after the change.",
+  "diff": "diff --git a/src/Repository/UserRepository.php b/src/Repository/UserRepository.php\n--- a/src/Repository/UserRepository.php\n+++ b/src/Repository/UserRepository.php\n@@ -14,12 +14,16 @@ final class UserRepository\n\n     public function findByEmail(string $email): ?array\n     {\n-        $stmt = $this->pdo->prepare('SELECT id, email, name FROM users WHERE email = :email');\n-        $stmt->execute(['email' => $email]);\n-        $row = $stmt->fetch(PDO::FETCH_ASSOC);\n+        $statement = $this->pdo->prepare(\n+            'SELECT id, email, name FROM users WHERE email = :email LIMIT 1'\n+        );\n+\n+        $statement->execute(['email' => $email]);\n+\n+        $row = $statement->fetch(PDO::FETCH_ASSOC);\n\n         return $row === false ? null : $row;\n     }\n",
+  "expected_findings": [],
+  "is_clean": true,
+  "label_source": "agent_drafted",
+  "label_status": "pending_review",
+  "reviewed_by": [],
+  "academic_review": false,
+  "tags": [
+    "refactor",
+    "control",
+    "pdo"
+  ],
+  "notes": "Clean control. The SQL string is a literal with a bound parameter; no user input is concatenated.",
+  "references": []
+}

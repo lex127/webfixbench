@@ -1,0 +1,34 @@
+{
+  "id": "laravel-xss-001",
+  "title": "Comment body rendered with unescaped Blade output",
+  "language": "php",
+  "ecosystem": "laravel",
+  "category": "xss",
+  "difficulty": "easy",
+  "source_type": "synthetic",
+  "source_url": null,
+  "description": "A Blade partial switches from escaped output to {!! !!} so that stored comment markup renders as HTML.",
+  "context": "comment.body is free text submitted by any registered user. The application does not sanitise comment bodies on write and has no output-filtering middleware.",
+  "diff": "diff --git a/resources/views/comments/_comment.blade.php b/resources/views/comments/_comment.blade.php\n--- a/resources/views/comments/_comment.blade.php\n+++ b/resources/views/comments/_comment.blade.php\n@@ -1,8 +1,8 @@\n <article class=\"comment\" id=\"comment-{{ $comment->id }}\">\n     <h4 class=\"comment-author\">{{ $comment->author_name }}</h4>\n\n-    <div class=\"comment-body\">{{ $comment->body }}</div>\n+    <div class=\"comment-body\">{!! $comment->body !!}</div>\n\n     <time datetime=\"{{ $comment->created_at->toIso8601String() }}\">\n         {{ $comment->created_at->diffForHumans() }}\n     </time>\n </article>\n",
+  "expected_findings": [
+    {
+      "id": "laravel-xss-001-f1",
+      "category": "xss",
+      "severity": "high",
+      "file": "resources/views/comments/_comment.blade.php",
+      "description": "User-submitted comment bodies are rendered unescaped with {!! !!}, allowing stored cross-site scripting."
+    }
+  ],
+  "is_clean": false,
+  "label_source": "agent_drafted",
+  "label_status": "pending_review",
+  "reviewed_by": [],
+  "academic_review": false,
+  "tags": [
+    "blade",
+    "stored-xss",
+    "output-escaping"
+  ],
+  "notes": null,
+  "references": []
+}
