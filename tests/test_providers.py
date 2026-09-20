@@ -23,7 +23,7 @@ ROOT = Path(__file__).resolve().parents[1]
 class MockProviderTests(unittest.TestCase):
     def setUp(self) -> None:
         self.suite = load_suite("php-web-v0.1", root=ROOT)
-        self.prompt = load_prompt("review_v1", root=ROOT)
+        self.prompt = load_prompt("review_v2", root=ROOT)
 
     def _prompt_for(self, case_id: str) -> str:
         return build_prompt_text(self.prompt, self.suite.get(case_id))

@@ -155,15 +155,13 @@ remains a v0.2 item.
 
 Deterministic, conservative, and documented — no LLM judge.
 
-1. **Normalise** the predicted category onto the v0.1 taxonomy through the
-   explicit alias table in `src/webfixbench/schemas.py`. The mapping is a
-   deliberate, versioned list, not fuzzy string similarity: "missing
-   authorization", "broken access control" and "missing capability check" are
-   equivalent **because the table says so**, and an alias only becomes
-   equivalent when someone adds it deliberately. Categories that do not map
-   become `other` and are counted as false positives, never discarded.
-2. **Match** on normalised category (default mode `category`), optionally also
-   on file (`category_file`). Assignment is greedy and one-to-one, preferring a
+1. **Normalise** the predicted `defect_type` against the explicit seven-value
+   v0.1 list in `src/webfixbench/schemas.py`. Unknown types become `other` and
+   are counted as false positives, never discarded. Broad category aliases are
+   retained for aggregate reporting, but CSRF and missing nonce verification
+   are not authorization aliases.
+2. **Match** on normalised defect type (default mode `defect_type`), optionally also
+   on file (`defect_type_file`). Assignment is greedy and one-to-one, preferring a
    candidate that also points at the right file.
 3. **Do not** require the prediction's natural-language wording to resemble the
    label's wording. Wording similarity is not evidence of understanding, and
@@ -173,7 +171,7 @@ Deterministic, conservative, and documented — no LLM judge.
 5. **Malformed output** is never scored as correct — not as a true positive,
    and not as a clean "no findings" answer.
 
-Known limitation: a prediction with the right category and the wrong
+Known limitation: a prediction with the right defect type and the wrong
 explanation counts as a true positive. Any fuzzy or semantic LLM-as-judge
 scoring is future work, and if it is ever added it will be reported alongside
 deterministic matching, never as a replacement for it — including the

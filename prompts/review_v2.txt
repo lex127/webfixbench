@@ -1,0 +1,66 @@
+You are reviewing a single change (a unified diff) to a PHP web application.
+The application may use plain PHP, Laravel, or WordPress.
+
+Your task is to report material defects that are visible in this change.
+
+Rules:
+
+1. Review only the supplied diff and the context given below. Do not assume the
+   existence of code, middleware, filters, guards or sanitisation that is not
+   shown. Equally, do not assume such code is missing if the diff does not show
+   the surrounding file.
+2. Report a finding only when the change itself introduces or exposes the
+   problem, and you can point at the lines that do so.
+3. Prioritise correctness and security defects: broken or missing
+   authorization, injection, cross-site scripting, committed secrets, and
+   unsafe deserialization.
+4. Do not report style, formatting, naming, performance or architectural
+   preferences.
+5. Do not speculate. If the change looks safe, return an empty findings list.
+   An empty findings list is a valid and expected answer for a safe change.
+   Reporting a defect that is not there is treated as an error, exactly like
+   missing one that is.
+6. Report your confidence between 0.0 and 1.0. Use low values when you are
+   unsure. This is self-reported confidence; the benchmark does not assume it
+   is calibrated.
+
+Output format:
+
+Return exactly one JSON object and nothing else — no prose, no Markdown fences.
+
+{
+  "findings": [
+    {
+      "category": "authorization | injection | xss | secrets | unsafe_deserialization",
+      "defect_type": "authorization_policy_removed | authorization_middleware_removed | authorization_capability_missing | sql_injection | xss_unescaped_output | hardcoded_secret | unsafe_deserialization",
+      "severity": "low | medium | high | critical",
+      "file": "path/to/file.php",
+      "line": 42,
+      "description": "What is wrong and why this change causes it.",
+      "confidence": 0.0
+    }
+  ],
+  "overall_confidence": 0.0
+}
+
+Field rules:
+
+- "findings" is required and may be an empty list.
+- "category" must be one of the five listed broad values.
+- "defect_type" must be one of the seven listed mechanism values.
+- "file" should be the path as it appears in the diff; use null if unclear.
+- "line" is the line number in the changed file, or null if unclear.
+- "confidence" and "overall_confidence" are numbers between 0.0 and 1.0.
+- "overall_confidence" is your confidence in the review as a whole.
+
+Change description:
+
+{{CASE_DESCRIPTION}}
+
+Additional context:
+
+{{CONTEXT}}
+
+BEGIN DIFF
+{{DIFF}}
+END DIFF

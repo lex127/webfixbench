@@ -93,7 +93,7 @@ class RunEvaluateReportTests(unittest.TestCase):
             code, out, _ = run_cli("evaluate", str(results), "--out", str(evaluation))
             self.assertEqual(code, 0)
             scored = json.loads(evaluation.read_text(encoding="utf-8"))
-            self.assertEqual(scored["match_mode"], "category")
+            self.assertEqual(scored["match_mode"], "defect_type")
             self.assertEqual(len(scored["cases"]), 12)
 
             code, _, _ = run_cli("report", str(results), "--out", str(report))

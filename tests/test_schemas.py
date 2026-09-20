@@ -29,6 +29,7 @@ VALID_CASE = {
         {
             "id": "f1",
             "category": "authorization",
+            "defect_type": "authorization_policy_removed",
             "severity": "high",
             "file": "x.php",
             "description": "Authorization check removed.",
@@ -156,6 +157,10 @@ class CategoryNormalizationTests(unittest.TestCase):
         self.assertEqual(normalize_category(None), UNKNOWN_CATEGORY)
         self.assertEqual(normalize_category(42), UNKNOWN_CATEGORY)
 
+    def test_csrf_and_nonce_are_not_authorization_aliases(self) -> None:
+        self.assertEqual(normalize_category("csrf"), UNKNOWN_CATEGORY)
+        self.assertEqual(normalize_category("missing_nonce_verification"), UNKNOWN_CATEGORY)
+
 
 class ModelResponseValidationTests(unittest.TestCase):
     def test_empty_findings_list_is_valid(self) -> None:
@@ -171,6 +176,7 @@ class ModelResponseValidationTests(unittest.TestCase):
             "findings": [
                 {
                     "category": "xss",
+                    "defect_type": "xss_unescaped_output",
                     "severity": "high",
                     "description": "x",
                     "confidence": 1.4,
@@ -181,7 +187,16 @@ class ModelResponseValidationTests(unittest.TestCase):
         self.assertTrue(any("confidence" in e for e in errors), errors)
 
     def test_bad_severity_is_invalid(self) -> None:
-        doc = {"findings": [{"category": "xss", "severity": "catastrophic", "description": "x"}]}
+        doc = {
+            "findings": [
+                {
+                    "category": "xss",
+                    "defect_type": "xss_unescaped_output",
+                    "severity": "catastrophic",
+                    "description": "x",
+                }
+            ]
+        }
         errors = validate_model_response_dict(doc)
         self.assertTrue(any("severity" in e for e in errors), errors)
 
