@@ -1,18 +1,16 @@
 # Dataset — `php-web-v0.1`
 
-Twelve labelled changes from the PHP web ecosystem. All are **synthetic**:
-written for this benchmark, inspired by defect patterns that are common in
-production PHP work. They contain no client, private or third-party source
-code.
+Fifteen labelled changes from the PHP web ecosystem, suite revision **0.1.1**:
+twelve original synthetic fixtures and three **advisory-derived synthetic
+reconstructions** from two public Laravel advisories. All code is written for
+this benchmark; no upstream framework files are vendored.
 
-Synthetic fixtures are deliberate. They isolate one defect at a time, fix
-exactly what a reviewer is allowed to assume, and make false-positive
-measurement reproducible against controls that are known to be clean. They do
-not demonstrate real-world validity, and none is claimed;
-[REAL_WORLD_SOURCES.md](REAL_WORLD_SOURCES.md) plans the advisory-derived
-expansion.
+These small fixtures isolate a pattern with explicit context. Advisory
+provenance makes the selection traceable but does not establish real-world
+review performance. Inspected patches, licenses and rejection reasons are in
+[REAL_WORLD_SOURCES.md](REAL_WORLD_SOURCES.md).
 
-> **Label status.** All twelve cases are currently `label_status:
+> **Label status.** All fifteen cases are currently `label_status:
 > "pending_review"` — drafted, and awaiting the maintainer's review pass. Under
 > the project's ground-truth rule, scores computed against unfrozen labels are
 > provisional, and the harness says so. See [ANNOTATION.md](ANNOTATION.md).
@@ -21,20 +19,20 @@ expansion.
 
 | | Laravel | WordPress | PHP | Total |
 | --- | --- | --- | --- | --- |
-| With a labelled defect | 4 | 3 | 2 | 9 |
-| Clean controls | 1 | 1 | 1 | 3 |
-| **Total** | **5** | **4** | **3** | **12** |
+| With a labelled defect | 6 | 3 | 2 | 11 |
+| Clean controls | 2 | 1 | 1 | 4 |
+| **Total** | **8** | **4** | **3** | **15** |
 
 By category:
 
 | Category | Cases |
 | --- | --- |
 | `authorization` | 3 |
-| `injection` | 2 |
-| `xss` | 2 |
+| `injection` | 3 |
+| `xss` | 3 |
 | `secrets` | 1 |
 | `unsafe_deserialization` | 1 |
-| `clean_control` | 3 |
+| `clean_control` | 4 |
 
 ## The cases
 
@@ -52,6 +50,9 @@ By category:
 | `php-secrets-001` | php | secrets | easy | Replaces `getenv()` with a hardcoded mailer API key literal |
 | `php-injection-001` | php | injection | easy | Replaces a prepared statement with `mysqli_query()` on a concatenated string |
 | `php-clean-001` | php | clean_control | medium | Reformats a PDO lookup and adds `LIMIT 1`; stays parameterised |
+| `laravel-ghsa-debug-xss-001` | laravel | xss | medium | Renders a diagnostic request body with raw Blade output (GHSA-546h-56qp-8jmw) |
+| `laravel-ghsa-env-001` | laravel | injection | medium | Lets web argv override a trusted environment after removing the CLI gate (GHSA-gv7v-rgg6-548h) |
+| `laravel-ghsa-env-clean-001` | laravel | clean_control | medium | Refactors the same selector with an early web return, preserving the CLI gate |
 
 `webfixbench show <id>` prints any case in full, including its diff.
 
@@ -68,6 +69,8 @@ of code that usually *is* a defect:
   handler. Every change it makes is an improvement, and the nonce and
   capability checks are visible as context lines.
 - `php-clean-001` is a SQL change that remains fully parameterised.
+- `laravel-ghsa-env-clean-001` returns an argument-derived value only on CLI;
+  the web SAPI returns the trusted default before any argument is inspected.
 
 A reviewer that reports findings here is producing exactly the output that
 makes teams stop reading review comments.
@@ -124,6 +127,9 @@ Schema invariants, enforced at load time:
 - ids are unique within a suite and lowercase-kebab;
 - unknown fields are rejected, so a typo cannot silently become an unlabelled
   case;
+- `source_type: "public_advisory"` requires a nonempty `source_url`, `advisory_id`,
+  `original_project`, `reconstruction_type` and `license_note`; the supported
+  reconstruction type is `synthetic_reconstruction`.
 - `label_status: "frozen"` requires a human `label_source` and a non-empty
   `reviewed_by`, so an agent-drafted case cannot claim final ground truth.
 
@@ -160,13 +166,26 @@ detection rates instead of left as an opinion.
 
 ## Provenance and licensing
 
-All v0.1 cases are `source_type: "synthetic"` with `source_url: null`, written
-for this project and licensed Apache-2.0 with the rest of the repository.
+The original twelve cases use `source_type: "synthetic"` and `source_url: null`.
+The three additions use `source_type: "public_advisory"`, `advisory_id`,
+`original_project`, `reconstruction_type: "synthetic_reconstruction"` and
+`license_note`, plus exact commit/license links in `references`. These fields
+are preserved by the loader and CLI but never added to model prompts.
 
-If advisory-derived or repository-derived cases are added later, each must set
-`source_type` and `source_url`, record the original licence and the
-modifications made, and attribute the original authors. Apache-2.0 is not
-assumed to cover third-party material. See [ETHICS.md](ETHICS.md).
+Both source advisories concern MIT-licensed Laravel code (Taylor Otwell).
+Fixtures use newly written code and invented names under Apache-2.0, not copied
+framework trees. The defect diffs are synthetic regressions (safe to vulnerable);
+the sibling control is safe to safe. Neither is represented as an original
+upstream patch. The environment siblings share one source and are not independent
+incident samples. All three remain unapproved drafts.
+
+The new `environment_override_from_web_argv` type covers request-controlled web
+arguments overriding trusted runtime environment selection. Its broad category
+is `injection` (configuration injection); it is distinct from `sql_injection`.
+The schema, current `review_v3` prompt and deterministic type matching support
+it. No new broad category or matching algorithm is introduced. Earlier prompt
+versions remain immutable, and results from suite revision 0.1.0 / earlier
+prompts are not directly comparable to the expanded baseline.
 
 ## Adding a case
 
@@ -177,11 +196,11 @@ the failure mode this benchmark exists to measure.
 
 ## Known dataset limitations
 
-- **Small.** Per-category numbers rest on one to three cases.
+- **Small.** Per-category numbers rest on one to three defective cases.
 - **Synthetic.** Tidier than real pull requests; the defect is always in the
   diff, and the diff is short. Good for controlled measurement, not evidence of
   real-world validity.
-- **Labels not yet frozen.** All twelve are `pending_review`.
+- **Labels not yet frozen.** All fifteen are `pending_review`.
 - **Single labeller.** Labels are the maintainer's; inter-rater agreement is
   *not yet measured*.
 - **Canonical patterns.** These are textbook defects, well represented in public

@@ -4,13 +4,13 @@
 
 | File | What it is |
 | --- | --- |
-| `mock-baseline.json` | A full 12-case run of the `mock` provider — raw output plus run metadata |
+| `mock-baseline.json` | A full 15-case run of the `mock` provider — raw output plus run metadata |
 | `mock-baseline.md` | The rendered report for that run |
 
 **No model results are published in this release.** The only committed run uses
 the mock provider.
 
-The run is also **provisional** in the project's own terms: all twelve cases
+The run is also **provisional** in the project's own terms: all fifteen cases
 are `pending_review`, so the labels it was scored against are not yet frozen.
 The report says so at the top, and the evaluation document records how many
 cases are frozen. See [../docs/ANNOTATION.md](../docs/ANNOTATION.md).
@@ -23,7 +23,7 @@ lines and emits a fixed distractor finding on a subset of cases.
 
 Its numbers exist so that the metrics pipeline can be seen working on a run
 that is neither perfect nor empty. **They are not a model result and must not
-be quoted as one.** The stub scores 7 true positives, 3 false positives and 2
+be quoted as one.** The stub scores 8 true positives, 4 false positives and 3
 false negatives on this suite because it was written to be fallible — that is a
 property of the fixture, not a finding about anything.
 

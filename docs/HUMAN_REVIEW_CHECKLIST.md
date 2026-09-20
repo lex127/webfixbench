@@ -142,6 +142,51 @@ exists” means “not applicable, because no defect is intended.”
 - [ ] Clean control is genuinely clean / not applicable
 - [ ] Oleksii manually approved ground truth
 
+## `laravel-ghsa-debug-xss-001`
+
+Review focus: Confirm the request body is a plain string and raw Blade output introduces the sole XSS sink under the stated debug exposure.
+
+- [ ] Advisory, exact upstream fix and license links inspected
+- [ ] Independent reconstruction faithfully isolates the sourced pattern
+- [ ] Diff is realistic
+- [ ] Intended defect exists / not applicable for clean control
+- [ ] No unintended second defect
+- [ ] Context contains every fact needed by reviewer
+- [ ] Expected defect_type is correct / not applicable for clean control
+- [ ] Expected severity is reasonable / not applicable for clean control
+- [ ] Clean control is genuinely clean / not applicable
+- [ ] Oleksii manually approved ground truth
+
+## `laravel-ghsa-env-001`
+
+Review focus: Confirm web argv control and the exact SAPI/configuration assumptions; classify configuration injection separately from SQL injection.
+
+- [ ] Advisory, exact upstream fix and license links inspected
+- [ ] Independent reconstruction faithfully isolates the sourced pattern
+- [ ] Diff is realistic
+- [ ] Intended defect exists / not applicable for clean control
+- [ ] No unintended second defect
+- [ ] Context contains every fact needed by reviewer
+- [ ] Expected defect_type is correct / not applicable for clean control
+- [ ] Expected severity is reasonable / not applicable for clean control
+- [ ] Clean control is genuinely clean / not applicable
+- [ ] Oleksii manually approved ground truth
+
+## `laravel-ghsa-env-clean-001`
+
+Review focus: Compare with the defective sibling: the non-cli return must precede argument scanning, and first-match CLI behaviour must be preserved.
+
+- [ ] Advisory, exact upstream fix and license links inspected
+- [ ] Independent reconstruction faithfully isolates the sourced pattern
+- [ ] Diff is realistic
+- [ ] Intended defect exists / not applicable for clean control
+- [ ] No unintended second defect
+- [ ] Context contains every fact needed by reviewer
+- [ ] Expected defect_type is correct / not applicable for clean control
+- [ ] Expected severity is reasonable / not applicable for clean control
+- [ ] Clean control is genuinely clean / not applicable
+- [ ] Oleksii manually approved ground truth
+
 ## After manual approval
 
 Only after all applicable boxes for a case are checked should Oleksii update

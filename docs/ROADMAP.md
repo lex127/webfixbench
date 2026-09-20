@@ -8,7 +8,7 @@ promised.
 
 These are blockers, not enhancements:
 
-- [ ] **Freeze the ground truth.** All twelve cases are `pending_review`. The
+- [ ] **Freeze the ground truth.** All fifteen cases are `pending_review`. The
       maintainer reviews each one against the checklist in
       [HUMAN_REVIEW_CHECKLIST.md](HUMAN_REVIEW_CHECKLIST.md), writes or approves the expected findings,
       and sets `label_status: "frozen"` with `reviewed_by` filled in. No model
@@ -23,7 +23,7 @@ These are blockers, not enhancements:
       revise the positioning if it does not
 - [ ] A small real-model smoke run (2–3 cases per provider) to confirm the
       providers work end to end against live APIs
-- [ ] A second reader over the twelve cases, to catch labels that are less
+- [ ] A second reader over the fifteen cases, to catch labels that are less
       obvious than the maintainer thinks
 
 ## v0.2 — a dataset worth drawing conclusions from
