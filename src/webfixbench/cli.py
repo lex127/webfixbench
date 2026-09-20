@@ -20,6 +20,7 @@ from . import __version__
 from .cases import list_suites, load_suite
 from .config import DEFAULT_PROMPT, DEFAULT_SUITE, ConfigError, load_pricing, load_prompt
 from .evaluator import EvaluationError, evaluate_document, is_evaluation_document, write_evaluation
+from .experiment import dry_run_summary, load_experiment, preflight, run_experiment
 from .matching import DEFAULT_MATCH_MODE, MATCH_MODES
 from .providers import PROVIDERS, ProviderError, get_provider
 from .providers.mock import MOCK_MODES
@@ -84,6 +85,7 @@ def build_parser() -> argparse.ArgumentParser:
     run_parser.add_argument("--temperature", type=float, default=0.0)
     run_parser.add_argument("--max-output-tokens", type=int, default=2048)
     run_parser.add_argument("--timeout", type=float, default=120.0)
+    run_parser.add_argument("--reasoning-effort", default=None)
     run_parser.add_argument("--limit", type=int, default=None, help="run at most N cases")
     run_parser.add_argument("--pricing", type=Path, default=None, help="pricing table JSON")
     run_parser.add_argument("--out", type=Path, default=None, help="write the result file here")
@@ -113,6 +115,13 @@ def build_parser() -> argparse.ArgumentParser:
     report_parser.add_argument("--match-mode", default=DEFAULT_MATCH_MODE, choices=MATCH_MODES)
     report_parser.add_argument("--out", type=Path, default=None)
     report_parser.set_defaults(func=cmd_report)
+
+    experiment_parser = subparsers.add_parser("experiment", help="run a validated JSON experiment")
+    experiment_parser.add_argument("config", type=Path)
+    experiment_parser.add_argument("--dry-run", action="store_true")
+    experiment_parser.add_argument("--max-requests", type=int, required=True)
+    experiment_parser.add_argument("--output-root", type=Path, default=Path("results/experiments"))
+    experiment_parser.set_defaults(func=cmd_experiment)
 
     return parser
 
@@ -241,10 +250,19 @@ def cmd_run(args: argparse.Namespace) -> int:
     if args.provider == "openai":
         provider_kwargs["api_type"] = args.api_type or "responses"
         provider_kwargs["output_constraint"] = args.output_constraint
+        provider_kwargs["reasoning_effort"] = args.reasoning_effort
     elif args.provider == "anthropic":
         if args.output_constraint == "json_object":
             raise ProviderError("Anthropic supports json_schema or prompt_only, not json_object")
         provider_kwargs["output_constraint"] = args.output_constraint
+    elif args.provider == "xai":
+        provider_kwargs["output_constraint"] = args.output_constraint
+        provider_kwargs["reasoning_effort"] = args.reasoning_effort
+    elif args.provider == "deepseek":
+        if args.output_constraint == "json_schema":
+            raise ProviderError("DeepSeek supports json_object or prompt_only, not json_schema")
+        provider_kwargs["output_constraint"] = args.output_constraint
+        provider_kwargs["reasoning_effort"] = args.reasoning_effort
     provider = get_provider(**provider_kwargs)
 
     pending = [c.id for c in suite.cases if not c.labels_frozen]
@@ -322,6 +340,22 @@ def cmd_report(args: argparse.Namespace) -> int:
     else:
         print(markdown)
     return 0
+
+
+def cmd_experiment(args: argparse.Namespace) -> int:
+    experiment = load_experiment(args.config)
+    suite, cases, missing = preflight(
+        experiment, root=args.root, max_requests=args.max_requests, require_keys=not args.dry_run
+    )
+    if args.dry_run:
+        print(dry_run_summary(experiment, suite, cases, missing, args.output_root, args.max_requests))
+        return 0
+    directory = run_experiment(experiment, root=args.root, output_root=args.output_root,
+                               max_requests=args.max_requests)
+    manifest = json.loads((directory / "manifest.json").read_text(encoding="utf-8"))
+    print(f"wrote {directory}")
+    print(f"status: {manifest['status']}")
+    return 0 if manifest["status"] == "completed" else 1
 
 
 # --------------------------------------------------------------------------
