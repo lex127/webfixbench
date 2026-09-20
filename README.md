@@ -147,6 +147,12 @@ Notes:
 
 - `--model` is required. WebFixBench pins no vendor model ids, so a run always
   records exactly which model produced it.
+- OpenAI defaults to the Responses API; `--api-type chat.completions` selects
+  Chat Completions explicitly. Both vendors default to `--output-constraint
+  json_schema`. Use `prompt_only` only when the selected model lacks structured
+  output support, and do not compare malformed-output rates across different
+  constraint modes.
+- Fable models are excluded by project policy.
 - Keys are read from the environment only, and are never written to result
   files. `.env` is git-ignored.
 - Start with `--limit`. A full 12-case run is 12 requests.
