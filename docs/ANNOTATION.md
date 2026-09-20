@@ -179,6 +179,10 @@ disagreement between the two as a result in its own right.
 
 ## Checklist before freezing a case
 
+The per-case working copy is in
+[HUMAN_REVIEW_CHECKLIST.md](HUMAN_REVIEW_CHECKLIST.md). It must be completed by
+Oleksii manually; test success does not approve or freeze a label.
+
 - [ ] The defect is present in the diff as written
 - [ ] The defect is realistic for the ecosystem
 - [ ] Exactly one primary defect, or all defects labelled
