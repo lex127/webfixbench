@@ -132,7 +132,7 @@ webfixbench report results/my-run.json --out results/my-run.md
 A committed example of that output is in
 [results/mock-baseline.md](results/mock-baseline.md).
 
-## Running with OpenAI / Anthropic
+## Running with hosted providers
 
 ```bash
 cp .env.example .env     # then export the key you need
@@ -142,6 +142,13 @@ webfixbench run --provider openai --model <model-id> --limit 2 --out results/ope
 
 export ANTHROPIC_API_KEY=...
 webfixbench run --provider anthropic --model <model-id> --limit 2 --out results/anthropic-smoke.json
+
+export XAI_API_KEY=...
+webfixbench run --provider xai --model <model-id> --limit 2 --out results/xai-smoke.json
+
+export DEEPSEEK_API_KEY=...
+webfixbench run --provider deepseek --model <model-id> --reasoning-effort none \
+  --output-constraint json_object --limit 2 --out results/deepseek-smoke.json
 ```
 
 Notes:
@@ -155,12 +162,16 @@ Notes:
   constraint modes.
 - Fable models are excluded by project policy.
 - Keys are read from the environment only, and are never written to result
-  files. `.env` is git-ignored.
+  files. `.env` is git-ignored and is not loaded automatically.
 - Start with `--limit`. A full 15-case run is 15 requests.
 - Cost is reported as `null` unless you pass `--pricing` with your own table
   (see [config/pricing.sample.json](config/pricing.sample.json)); the project
   ships no vendor prices, because stale prices produce wrong numbers.
 - The test suite never contacts a paid API.
+
+Repeatable multi-model/repetition runs use strict JSON experiment files. See
+[docs/EXPERIMENTS.md](docs/EXPERIMENTS.md) for dry runs, the pending-label smoke
+boundary, result layout, current vendor documentation, and manual Actions runs.
 
 ## Dataset
 
