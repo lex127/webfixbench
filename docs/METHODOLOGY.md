@@ -226,6 +226,17 @@ Anything beyond that is malformed.
 - `max_output_tokens` defaults to 2048 and is recorded.
 - The model id is never defaulted for paid providers; `--model` is required and
   the id the API reports back is stored.
+- OpenAI uses `POST /v1/responses` by default. Chat Completions remains an
+  explicit `--api-type chat.completions` option; the provider never guesses an
+  endpoint from a model name. Anthropic uses `POST /v1/messages`.
+- Both providers can apply the same model-response JSON Schema: OpenAI through
+  Responses `text.format` (or Chat Completions `response_format`) and Anthropic
+  through `output_config.format`. Each run records `api_type`, endpoint, model
+  and `output_constraint` (`json_schema`, `json_object`, or `prompt_only`).
+- Structured-output support depends on the selected model. The harness does not
+  silently weaken a rejected constraint. Malformed-output rates are not
+  directly comparable when runs used different output constraints.
+- Fable models are excluded by project policy.
 - Latency is wall-clock around the provider call, in milliseconds.
 - Token usage is taken from the provider response when available and flagged
   `estimated: false`; the mock provider reports a character-based estimate and
