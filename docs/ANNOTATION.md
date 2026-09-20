@@ -69,11 +69,11 @@ review sets `academic_review: true`; every other case leaves it `false`.
 
 ### Status of the v0.1 suite
 
-All fifteen cases are currently `agent_drafted` / `pending_review`. They were
-drafted with the workflow above and are awaiting the maintainer's review pass.
-Until that pass is done and the labels are frozen, any scores the harness
-produces are provisional — the CLI, the evaluation document and the rendered
-report all say so, with a count of frozen cases.
+All fifteen cases were explicitly accepted by Oleksii Siniaiev on 2026-09-20
+and are frozen in suite revision 0.1.2. The twelve original synthetic fixtures
+use `human_reviewed`; the three advisory-derived reconstructions use
+`public_advisory_plus_human_review`. All retain `academic_review: false` because
+no separate per-case academic review was confirmed.
 
 ## Choosing a category
 

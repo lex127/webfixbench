@@ -1,8 +1,8 @@
 # Human review packet — `php-web-v0.1`
 
-> **Decision authority:** Oleksii Siniaiev. Everything below is an agent recommendation, not ground truth. No case may be frozen until Oleksii explicitly accepts or changes it. `academic_review` remains false unless review by Valeriia Chumak is explicitly confirmed.
+> **Decision record:** Oleksii Siniaiev explicitly accepted all fifteen cases on 2026-09-20. The cases are frozen in suite revision 0.1.2. The original agent recommendations remain below for audit history; `academic_review` is false because no separate review by Valeriia Chumak was confirmed.
 
-For each case, reply **ACCEPT**, **MODIFY: ...**, or **REMOVE**. The displayed context and diff are exactly what the evaluated model receives (inside the versioned reviewer prompt).
+The displayed context and diff are exactly what the evaluated model receives inside the versioned reviewer prompt.
 
 ## laravel-authz-001
 

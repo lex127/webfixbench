@@ -21,9 +21,9 @@
     }
   ],
   "is_clean": false,
-  "label_source": "agent_drafted",
-  "label_status": "pending_review",
-  "reviewed_by": [],
+  "label_source": "human_reviewed",
+  "label_status": "frozen",
+  "reviewed_by": ["Oleksii Siniaiev"],
   "academic_review": false,
   "tags": [
     "object-injection",

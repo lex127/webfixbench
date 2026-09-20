@@ -4,6 +4,7 @@ import json
 import os
 import tempfile
 import unittest
+from dataclasses import replace
 from pathlib import Path
 from unittest import mock
 
@@ -66,8 +67,13 @@ class ExperimentTests(unittest.TestCase):
         paid = {"provider": "xai", "model": "m", "api_key_env": "XAI_API_KEY",
                 "output_constraint": "json_schema"}
         experiment = self.load(config(providers=[paid], case_limit=2))
-        with self.assertRaisesRegex(ConfigError, "frozen labels"):
-            preflight(experiment, root=ROOT, max_requests=10, require_keys=False)
+        from webfixbench.cases import load_suite
+        suite = load_suite("php-web-v0.1", root=ROOT)
+        suite.cases[0] = replace(suite.cases[0], label_status="pending_review",
+                                 label_source="agent_drafted", reviewed_by=[])
+        with mock.patch("webfixbench.experiment.load_suite", return_value=suite):
+            with self.assertRaisesRegex(ConfigError, "frozen labels"):
+                preflight(experiment, root=ROOT, max_requests=10, require_keys=False)
         experiment = self.load(config(providers=[paid], case_limit=4, mode="smoke"))
         with self.assertRaisesRegex(ConfigError, "limited to 3"):
             preflight(experiment, root=ROOT, max_requests=10, require_keys=False)

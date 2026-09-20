@@ -129,10 +129,9 @@ CLI and the rendered report mark results from unfrozen labels as provisional.
 The full workflow — who may draft, what the reviewer checks, how labels are
 frozen and how revisions are versioned — is in [ANNOTATION.md](ANNOTATION.md).
 
-**Status of the v0.1 suite:** all fifteen cases are currently `agent_drafted` /
-`pending_review`, awaiting the maintainer's review pass. Until that pass is
-complete, any numbers the harness produces are provisional and are labelled as
-such.
+**Status of the v0.1 suite:** Oleksii Siniaiev explicitly reviewed and accepted
+all fifteen labels on 2026-09-20. They are frozen in suite revision 0.1.2.
+No case has separate academic review.
 
 Labels are the maintainer's. That is a single labeller — a real limitation,
 recorded here rather than dressed up. Inter-rater agreement is *not yet

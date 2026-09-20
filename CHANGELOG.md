@@ -5,16 +5,18 @@ All notable changes to this project are recorded here. The format follows
 [semantic versioning](https://semver.org/) with the understanding that
 pre-1.0 releases may change the case schema and the result-file format.
 
-## [Unreleased]
+## [0.1.0rc1] - 2026-09-20
 
-Pre-release research skeleton. A working harness and a small labelled dataset.
-**No formal v0.1.0 release or model results have been published.**
+Release candidate with a working harness and a small human-reviewed dataset.
+**No final v0.1.0 release or real-model results have been published.**
 
 ### Added
 
 - Suite revision 0.1.1: three public-advisory synthetic reconstructions (Laravel
   diagnostic XSS, web argv environment override, and its clean sibling), bringing
-  the suite to 15 cases / 11 defects / 4 controls. All remain pending human review.
+  the suite to 15 cases / 11 defects / 4 controls.
+- Suite revision 0.1.2: Oleksii Siniaiev reviewed, accepted and froze all 15
+  labels. No case received separate academic review.
 - Conditional advisory provenance in both case validators and serialization;
   exact fix/license references and measured USE/SKIP decisions for six candidates.
 - One precise configuration-injection type, `environment_override_from_web_argv`,
@@ -56,8 +58,6 @@ Pre-release research skeleton. A working harness and a small labelled dataset.
 - Related-work entries have been checked against linked primary sources. The
   project makes no first/only/unique claim.
 - Confidence calibration (Brier, ECE) is **not yet measured**.
-- All fifteen cases are `pending_review`: drafted, and awaiting the maintainer's
-  review pass before their labels are frozen.
 - Labels come from a single labeller; inter-rater agreement is **not yet
   measured**.
 - The three advisory-derived cases are synthetic reconstructions, not vendored

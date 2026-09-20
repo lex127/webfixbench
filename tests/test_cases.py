@@ -91,6 +91,15 @@ class SuiteLoadingTests(unittest.TestCase):
             self.assertIn(case.label_source, LABEL_SOURCES, case.id)
             self.assertIn(case.label_status, LABEL_STATUSES, case.id)
 
+    def test_v01_ground_truth_is_maintainer_frozen_without_academic_claims(self) -> None:
+        for case in self.suite.cases:
+            self.assertTrue(case.labels_frozen, case.id)
+            self.assertEqual(case.reviewed_by, ["Oleksii Siniaiev"], case.id)
+            expected_source = ("public_advisory_plus_human_review"
+                               if case.source_type == "public_advisory" else "human_reviewed")
+            self.assertEqual(case.label_source, expected_source, case.id)
+            self.assertFalse(case.academic_review, case.id)
+
     def test_no_case_claims_frozen_labels_without_a_reviewer(self) -> None:
         # The schema enforces this; the suite is checked directly so that a
         # future case cannot quietly assert final ground truth.

@@ -2,18 +2,16 @@
 
 | Field | Value |
 | --- | --- |
-| Suite | `php-web-v0.1` (version 0.1.1) |
+| Suite | `php-web-v0.1` (version 0.1.2) |
 | Provider | `mock` |
 | Model | `mock-heuristic-v1` |
 | Temperature | n/a |
 | Prompt | `review_v3` (sha256 `d2e983ec0fd2…`) |
 | Match mode | `defect_type` |
-| Run id | `459bdd39bf76` |
-| Run at (UTC) | 2026-09-20T13:02:37+00:00 |
-| WebFixBench | 0.1.0.dev0 |
+| Run id | `4e93cf19b9ad` |
+| Run at (UTC) | 2026-09-20T14:24:21+00:00 |
+| WebFixBench | 0.1.0rc1 |
 | Mock mode | `heuristic` |
-
-> **Provisional.** 15 of 15 cases have labels that a human has not yet reviewed and frozen. These results are provisional and must not be published as a model evaluation. See docs/ANNOTATION.md.
 
 > The `mock` provider is a deterministic rule-based stub, not a language model. This report exercises the pipeline; it says nothing about any model's review quality.
 
@@ -21,7 +19,7 @@
 
 - Cases scored: **15** (11 with a defect, 4 clean controls)
 - Valid structured responses: **15**, malformed: **0**, provider errors: **0**
-- Cases with frozen labels: **0** of **15**
+- Cases with frozen labels: **15** of **15**
 
 ## Finding-level results
 
@@ -83,7 +81,7 @@ Calibration: Confidence values are recorded but not turned into a calibration sc
 | --- | --- |
 | Mean latency (ms) | 0.03 |
 | Median latency (ms) | 0.03 |
-| p95 latency (ms) | 0.05 |
+| p95 latency (ms) | 0.06 |
 | Input tokens | 14413 |
 | Output tokens | 1099 |
 | Token counts estimated | yes |

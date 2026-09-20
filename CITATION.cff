@@ -2,13 +2,13 @@ cff-version: 1.2.0
 title: "WebFixBench: a reproducible benchmark for LLM-assisted code review on web-application changes"
 message: "If you use WebFixBench, please cite it as below, and state which suite version and prompt version you ran."
 type: software
-version: 0.1.0.dev0
+version: 0.1.0rc1
 license: Apache-2.0
 repository-code: "https://github.com/lex127/webfixbench"
 abstract: >-
   WebFixBench is a reproducible benchmark for evaluating the reliability of
-  LLM-assisted code review on web-application changes. Version 0.1.0.dev0 is a
-  pre-release research skeleton: an evaluation harness plus one suite, php-web-v0.1, of
+  LLM-assisted code review on web-application changes. Version 0.1.0rc1 is a
+  release candidate: an evaluation harness plus one suite, php-web-v0.1, of
   fifteen synthetic diffs covering PHP, Laravel and WordPress: twelve original
   fixtures and three advisory-derived reconstructions, including four clean
   controls that must produce no findings. It measures detection,

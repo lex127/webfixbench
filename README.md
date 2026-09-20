@@ -4,9 +4,9 @@ WebFixBench is a reproducible benchmark for evaluating the reliability of
 LLM-assisted code review on web-application changes.
 
 WebFixBench v0.1 reports a PHP web ecosystem baseline covering PHP, Laravel and
-WordPress. It is an early research skeleton: a working evaluation harness and a
-small, carefully labelled dataset — not a finished study. No model results are
-published yet.
+WordPress. Version 0.1.0rc1 is a release candidate with a working evaluation
+harness and a small, human-reviewed dataset; it is not a completed empirical
+study. No real-model results are published yet.
 
 ## Why
 
@@ -64,10 +64,11 @@ frozen status without a human label source and a named reviewer. Runs against
 unfrozen labels are marked provisional in the CLI output, the evaluation
 document and the report.
 
-**All fifteen v0.1 cases are currently `pending_review`** — drafted and awaiting
-the maintainer's review pass. The rules are in
-[docs/ANNOTATION.md](docs/ANNOTATION.md).
-The exact per-case decisions awaiting the maintainer are in
+**All fifteen v0.1 cases are `frozen`** after explicit review and acceptance by
+maintainer Oleksii Siniaiev. The three advisory-derived cases use
+`public_advisory_plus_human_review`; the other twelve use `human_reviewed`.
+No case received separate academic review. The rules and preserved decision
+packet are in [docs/ANNOTATION.md](docs/ANNOTATION.md) and
 [docs/HUMAN_REVIEW_PACKET.md](docs/HUMAN_REVIEW_PACKET.md).
 
 ## Why clean controls
@@ -81,7 +82,7 @@ code that touches authorisation, `$_POST` or SQL and is nevertheless correct.
 
 ## Current suite
 
-`php-web-v0.1` — 15 cases (suite revision 0.1.1):
+`php-web-v0.1` — 15 cases (suite revision 0.1.2):
 
 | | Laravel | WordPress | PHP | Total |
 | --- | --- | --- | --- | --- |
@@ -183,7 +184,7 @@ boundary, result layout, current vendor documentation, and manual Actions runs.
 ## Dataset
 
 15 synthetic unified diffs, including three advisory-derived reconstructions,
-with explicit draft labels and four clean controls whose correct review is "no findings". Case format and the full case
+with explicit frozen labels and four clean controls whose correct review is "no findings". Case format and the full case
 table: [docs/DATASET.md](docs/DATASET.md). How labels are written, reviewed and
 frozen: [docs/ANNOTATION.md](docs/ANNOTATION.md). Machine-readable schemas:
 [schema/](schema/).
@@ -221,8 +222,8 @@ Two things v0.1 deliberately does **not** do:
 ## Limitations
 
 - 15 cases. Small: any per-category number rests on one to three cases.
-- Labels are drafted and awaiting human review; results from them are
-  provisional until frozen.
+- Labels were reviewed by one maintainer. Inter-rater agreement and independent
+  academic per-case review are not measured.
 - Synthetic cases are cleaner than real pull requests, and say nothing about
   real-world validity.
 - One defect per defective case, and diff-only context. Real review has
