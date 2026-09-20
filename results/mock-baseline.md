@@ -5,11 +5,11 @@
 | Suite | `php-web-v0.1` (version 0.1.1) |
 | Provider | `mock` |
 | Model | `mock-heuristic-v1` |
-| Temperature | 0.00 |
+| Temperature | n/a |
 | Prompt | `review_v3` (sha256 `d2e983ec0fd2…`) |
 | Match mode | `defect_type` |
-| Run id | `12af5055f743` |
-| Run at (UTC) | 2026-09-20T12:44:29+00:00 |
+| Run id | `459bdd39bf76` |
+| Run at (UTC) | 2026-09-20T13:02:37+00:00 |
 | WebFixBench | 0.1.0.dev0 |
 | Mock mode | `heuristic` |
 

@@ -14,6 +14,7 @@ class RegistrationTests(unittest.TestCase):
     def test_new_providers_are_registered(self):
         self.assertIn("xai", available_providers())
         self.assertIn("deepseek", available_providers())
+        self.assertIn("gemini", available_providers())
 
     def test_dedicated_keys_are_required(self):
         with mock.patch.dict(os.environ, {}, clear=True):
@@ -22,6 +23,8 @@ class RegistrationTests(unittest.TestCase):
                     get_provider(name, model="explicit-model",
                                  output_constraint="json_object",
                                  reasoning_effort="none" if name == "deepseek" else None)
+            with self.assertRaisesRegex(ProviderError, "GEMINI_API_KEY"):
+                get_provider("gemini", model="gemini-explicit")
 
     def test_unexpected_errors_cannot_serialize_a_configured_key(self):
         from webfixbench.providers.base import BaseProvider, ProviderResult
@@ -121,6 +124,62 @@ class DeepSeekTests(unittest.TestCase):
         with mock.patch.dict(os.environ, {"DEEPSEEK_API_KEY": "x"}, clear=True):
             with self.assertRaises(ProviderError):
                 DeepSeekProvider(model="m", output_constraint="json_schema")
+
+
+class GeminiTests(unittest.TestCase):
+    def provider(self, **kwargs):
+        from webfixbench.providers.gemini import GeminiProvider
+        with mock.patch.dict(os.environ, {"GEMINI_API_KEY": "gemini-secret"}, clear=True):
+            return GeminiProvider(model="gemini-3.8-flash", max_output_tokens=321,
+                                  reasoning_effort="low", **kwargs)
+
+    def test_payload_uses_generate_content_schema_without_tools(self):
+        provider = self.provider()
+        payload = provider._payload("review")
+        config = payload["generationConfig"]
+        self.assertEqual(config["maxOutputTokens"], 321)
+        self.assertEqual(config["thinkingConfig"], {"thinkingLevel": "low"})
+        self.assertEqual(config["responseMimeType"], "application/json")
+        self.assertIn("responseJsonSchema", config)
+        self.assertNotIn("temperature", config)
+        self.assertNotIn("tools", payload)
+
+    def test_response_usage_and_headers(self):
+        provider = self.provider()
+        body = {"modelVersion": "gemini-returned", "responseId": "r1",
+                "candidates": [{"finishReason": "STOP", "content": {"parts": [
+                    {"thought": True, "text": "hidden"},
+                    {"text": '{"findings":[],"overall_confidence":0.5}'},
+                ]}}],
+                "usageMetadata": {"promptTokenCount": 10, "candidatesTokenCount": 5,
+                                  "thoughtsTokenCount": 2, "cachedContentTokenCount": 3,
+                                  "totalTokenCount": 17}}
+        with mock.patch("webfixbench.providers.gemini.post_json", return_value=(body, {})) as post:
+            result = provider.review("review", case_id="c")
+        self.assertEqual(post.call_args.args[0],
+                         "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent")
+        self.assertEqual(post.call_args.args[2], {"x-goog-api-key": "gemini-secret"})
+        self.assertEqual(result.model, "gemini-returned")
+        self.assertNotIn("hidden", result.raw_text)
+        self.assertEqual(result.usage["reasoning_tokens"], 2)
+        self.assertEqual(result.usage["total_tokens"], 17)
+
+    def test_http_error_is_redacted_and_empty_response_fails(self):
+        provider = self.provider()
+        with mock.patch("webfixbench.providers.gemini.post_json",
+                        side_effect=HttpError(401, "gemini-secret", "HTTP 401 gemini-secret")):
+            result = provider.review("review", case_id="c")
+        self.assertNotIn("gemini-secret", result.error)
+        with mock.patch("webfixbench.providers.gemini.post_json", return_value=({}, {})):
+            self.assertIn("no text", provider.review("review", case_id="c").error)
+
+    def test_invalid_model_and_reasoning_are_rejected(self):
+        from webfixbench.providers.gemini import GeminiProvider
+        with mock.patch.dict(os.environ, {"GEMINI_API_KEY": "x"}, clear=True):
+            with self.assertRaises(ProviderError):
+                GeminiProvider(model="../model")
+            with self.assertRaises(ProviderError):
+                GeminiProvider(model="m", reasoning_effort="minimal")
 
 
 if __name__ == "__main__":
