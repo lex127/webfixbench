@@ -102,7 +102,7 @@ claim of it is made. Advisory-derived cases are the next expansion — see
 Python 3.9+ and no dependencies:
 
 ```bash
-git clone https://github.com/alexsinyaev/webfixbench.git
+git clone https://github.com/lex127/webfixbench.git
 cd webfixbench
 pip install -e .
 

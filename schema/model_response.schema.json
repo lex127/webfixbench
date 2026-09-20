@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/alexsinyaev/webfixbench/schema/model_response.schema.json",
+  "$id": "https://github.com/lex127/webfixbench/schema/model_response.schema.json",
   "title": "WebFixBench model review response (v0.1)",
   "description": "The JSON object a reviewer must return. An empty findings list is valid and is the expected answer for a clean change. Output that does not validate is recorded as malformed and is never scored as correct.",
   "type": "object",

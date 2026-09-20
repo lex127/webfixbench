@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/alexsinyaev/webfixbench/schema/case.schema.json",
+  "$id": "https://github.com/lex127/webfixbench/schema/case.schema.json",
   "title": "WebFixBench benchmark case (v0.1)",
   "description": "One labelled change under review. The Python engine validates cases with the equivalent checks in src/webfixbench/schemas.py; tests keep the two in sync.",
   "type": "object",
