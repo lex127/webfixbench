@@ -133,12 +133,10 @@ or reject or simplify the case. What is not acceptable is a case with an
 unlabelled second defect: a reviewer that correctly reports it would be
 penalised with a false positive.
 
-v0.1 uses exactly one expected finding per defective case. The known seam is
-`wp-authz-001`, which is missing both a capability check and a nonce and is
-labelled as a single `authorization` finding; a reviewer reporting them as two
-findings scores one true positive and one false positive. This is documented in
-[DATASET.md](DATASET.md) rather than hidden, and multi-finding labelling is a
-v0.2 item.
+v0.1 uses exactly one expected finding per defective case. For example,
+`wp-authz-001` includes nonce verification and a prepared query so that its
+missing capability check is the only intended defect. Multi-finding labelling
+remains a v0.2 item.
 
 ## Freezing and versioning
 
