@@ -10,16 +10,16 @@ These are blockers, not enhancements:
 
 - [ ] **Freeze the ground truth.** All twelve cases are `pending_review`. The
       maintainer reviews each one against the checklist in
-      [ANNOTATION.md](ANNOTATION.md), writes or approves the expected findings,
+      [HUMAN_REVIEW_CHECKLIST.md](HUMAN_REVIEW_CHECKLIST.md), writes or approves the expected findings,
       and sets `label_status: "frozen"` with `reviewed_by` filled in. No model
       evaluation is published before this is done.
 - [ ] Academic review of the taxonomy, the annotation rules, the methodology
       and two to three representative cases; set `academic_review: true` on
       exactly those cases
-- [ ] Complete the related-work verification pass and replace every `unclear`
+- [x] Complete the related-work verification pass and replace every `unclear`
       in [RELATED_WORK.md](RELATED_WORK.md) with a primary-source fact — or with
       a confirmed "not stated by the source"
-- [ ] Re-check whether the project's stated contribution survives that pass, and
+- [x] Re-check whether the project's stated contribution survives that pass, and
       revise the positioning if it does not
 - [ ] A small real-model smoke run (2–3 cases per provider) to confirm the
       providers work end to end against live APIs

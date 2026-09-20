@@ -40,8 +40,8 @@ Pre-release research skeleton. A working harness and a small labelled dataset.
 
 ### Known gaps
 
-- Related-work entries are drafted but **not yet verified against primary
-  sources**; the project makes no novelty claim until that pass is complete.
+- Related-work entries have been checked against linked primary sources. The
+  project makes no first/only/unique claim.
 - Confidence calibration (Brier, ECE) is **not yet measured**.
 - All twelve cases are `pending_review`: drafted, and awaiting the maintainer's
   review pass before their labels are frozen.
