@@ -19,7 +19,7 @@ class SuiteRunTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         cls.suite = load_suite("php-web-v0.1", root=ROOT)
-        cls.prompt = load_prompt("review_v1", root=ROOT)
+        cls.prompt = load_prompt("review_v2", root=ROOT)
         cls.document = run_suite(cls.suite, MockProvider(), cls.prompt)
         cls.evaluation = evaluate_document(cls.document, cls.suite, root=ROOT)
 
@@ -28,7 +28,7 @@ class SuiteRunTests(unittest.TestCase):
 
     def test_run_metadata_pins_prompt_and_provider(self) -> None:
         run = self.document["run"]
-        self.assertEqual(run["prompt"]["id"], "review_v1")
+        self.assertEqual(run["prompt"]["id"], "review_v2")
         self.assertEqual(len(run["prompt"]["sha256"]), 64)
         self.assertEqual(run["provider"]["provider"], "mock")
         self.assertEqual(run["suite"]["id"], "php-web-v0.1")
@@ -93,7 +93,7 @@ class CleanControlTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         cls.suite = load_suite("php-web-v0.1", root=ROOT)
-        cls.prompt = load_prompt("review_v1", root=ROOT)
+        cls.prompt = load_prompt("review_v2", root=ROOT)
 
     def test_a_reviewer_that_reports_nothing_has_no_false_positives(self) -> None:
         document = run_suite(self.suite, MockProvider(mode="empty"), self.prompt)
@@ -119,7 +119,7 @@ class MalformedResponseTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         cls.suite = load_suite("php-web-v0.1", root=ROOT)
-        cls.prompt = load_prompt("review_v1", root=ROOT)
+        cls.prompt = load_prompt("review_v2", root=ROOT)
         cls.document = run_suite(cls.suite, MockProvider(mode="malformed"), cls.prompt)
         cls.evaluation = evaluate_document(cls.document, cls.suite, root=ROOT)
 
@@ -142,16 +142,16 @@ class EvaluationTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         cls.suite = load_suite("php-web-v0.1", root=ROOT)
-        cls.prompt = load_prompt("review_v1", root=ROOT)
+        cls.prompt = load_prompt("review_v2", root=ROOT)
         cls.document = run_suite(cls.suite, MockProvider(), cls.prompt)
 
     def test_match_mode_is_recorded_and_changes_scoring(self) -> None:
-        lenient = evaluate_document(self.document, self.suite, match_mode="category", root=ROOT)
+        lenient = evaluate_document(self.document, self.suite, match_mode="defect_type", root=ROOT)
         strict = evaluate_document(
-            self.document, self.suite, match_mode="category_file", root=ROOT
+            self.document, self.suite, match_mode="defect_type_file", root=ROOT
         )
-        self.assertEqual(lenient["match_mode"], "category")
-        self.assertEqual(strict["match_mode"], "category_file")
+        self.assertEqual(lenient["match_mode"], "defect_type")
+        self.assertEqual(strict["match_mode"], "defect_type_file")
         self.assertGreaterEqual(
             lenient["metrics"]["findings"]["true_positives"],
             strict["metrics"]["findings"]["true_positives"],

@@ -14,6 +14,7 @@ from webfixbench.cases import load_suite
 from webfixbench.schemas import (
     CATEGORIES,
     DEFECT_CATEGORIES,
+    DEFECT_TYPES,
     DIFFICULTIES,
     ECOSYSTEMS,
     LABEL_SOURCES,
@@ -38,6 +39,7 @@ class SchemaDocumentTests(unittest.TestCase):
         self.assertEqual(properties["label_status"]["enum"], list(LABEL_STATUSES))
         finding = CASE_SCHEMA["$defs"]["expectedFinding"]["properties"]
         self.assertEqual(finding["category"]["enum"], list(DEFECT_CATEGORIES))
+        self.assertEqual(finding["defect_type"]["enum"], list(DEFECT_TYPES))
         self.assertEqual(finding["severity"]["enum"], list(SEVERITIES))
 
     def test_case_schema_requires_label_provenance(self) -> None:

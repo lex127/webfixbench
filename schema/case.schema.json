@@ -106,12 +106,24 @@
     "expectedFinding": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["category", "severity", "description"],
+      "required": ["category", "defect_type", "severity", "description"],
       "properties": {
         "id": { "type": ["string", "null"] },
         "category": {
           "type": "string",
           "enum": ["authorization", "injection", "xss", "secrets", "unsafe_deserialization"]
+        },
+        "defect_type": {
+          "type": "string",
+          "enum": [
+            "authorization_policy_removed",
+            "authorization_middleware_removed",
+            "authorization_capability_missing",
+            "sql_injection",
+            "xss_unescaped_output",
+            "hardcoded_secret",
+            "unsafe_deserialization"
+          ]
         },
         "severity": { "type": "string", "enum": ["low", "medium", "high", "critical"] },
         "file": { "type": ["string", "null"] },

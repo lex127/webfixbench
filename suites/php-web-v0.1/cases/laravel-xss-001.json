@@ -14,6 +14,7 @@
     {
       "id": "laravel-xss-001-f1",
       "category": "xss",
+      "defect_type": "xss_unescaped_output",
       "severity": "high",
       "file": "resources/views/comments/_comment.blade.php",
       "description": "User-submitted comment bodies are rendered unescaped with {!! !!}, allowing stored cross-site scripting."

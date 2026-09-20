@@ -148,14 +148,20 @@ interacting defects in one change.
 
 | Category | Ground truth means |
 | --- | --- |
-| `authorization` | The change removes, bypasses or fails to add an access-control obligation (policy, gate, middleware, capability check, nonce) |
+| `authorization` | The change removes, bypasses or fails to add an access-control obligation (policy, gate, middleware or capability check) |
 | `injection` | The change lets untrusted input reach an interpreter (SQL here) without parameterisation |
 | `xss` | The change causes untrusted data to reach output without escaping |
 | `secrets` | The change commits credential material into the repository |
 | `unsafe_deserialization` | The change deserialises untrusted input into PHP objects |
 | `clean_control` | The change contains no defect; any finding is a false positive |
 
-Model output is free text; it is mapped onto this taxonomy through a fixed,
+Each finding also carries one of seven machine-readable defect types:
+`authorization_policy_removed`, `authorization_middleware_removed`,
+`authorization_capability_missing`, `sql_injection`, `xss_unescaped_output`,
+`hardcoded_secret`, or `unsafe_deserialization`. CSRF and nonce verification
+are distinct mechanisms and are not aliases for authorization in v0.1.
+
+Broad model categories are mapped onto the reporting taxonomy through a fixed,
 versioned alias table (`CATEGORY_ALIASES` in `src/webfixbench/schemas.py`), so
 that "SQL injection", "sqli" and "injection" are treated alike. The table is an
 explicit, deliberate list, not fuzzy string similarity: two phrasings are
@@ -174,9 +180,10 @@ reviewer flag this change at all?" is the question a maintainer actually asks.
 
 Deterministic, no LLM judge.
 
-- Default mode `category`: a prediction matches an expected finding when its
-  normalised category equals the expected category.
-- Stricter mode `category_file`: as above, and the predicted file must identify
+- Default mode `defect_type`: a prediction matches an expected finding when its
+  normalised defect type equals the expected defect type. Unknown types remain
+  predictions and therefore become false positives; they are never dropped.
+- Stricter mode `defect_type_file`: as above, and the predicted file must identify
   the same file (trailing path segments compared, so `b/app/X.php` and
   `app/X.php` are the same file).
 - Assignment is greedy and one-to-one, in expected-finding order, preferring a
@@ -185,7 +192,7 @@ Deterministic, no LLM judge.
 
 Known limitations of this rule:
 
-- A prediction with the right category and the wrong explanation still counts
+- A prediction with the right defect type and the wrong explanation still counts
   as a true positive. With one expected finding per case this is a narrow gap,
   but it is a real one.
 - Line numbers are stored but not used in matching; diff line numbering is too
@@ -229,7 +236,8 @@ Anything beyond that is malformed.
 
 ## 12. Prompt freezing
 
-The reviewer prompt is a file, not a string in the code: `prompts/review_v1.txt`.
+The reviewer prompt is a file, not a string in the code. The current default is
+`prompts/review_v2.txt`.
 Every run records the prompt id and the SHA-256 of the exact text used, so a
 result file can always be tied to the prompt that produced it.
 
@@ -238,10 +246,10 @@ frozen. Any change to prompt wording becomes `review_v2.txt`, and results
 produced under different prompt versions are not compared as if they were the
 same experiment.
 
-The v1 prompt asks the reviewer to report material defects visible in the diff,
+The v2 prompt asks the reviewer to report material defects visible in the diff,
 to reason only from the supplied context, to avoid speculation, to return an
-empty list when the change looks safe, and to attach a calibrated confidence to
-each finding. It states explicitly that reporting a defect that is not there is
+empty list when the change looks safe, and to attach self-reported confidence to
+each finding without claiming calibration. It states explicitly that reporting a defect that is not there is
 an error of the same kind as missing one.
 
 ## 13. Run metadata

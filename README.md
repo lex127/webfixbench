@@ -182,7 +182,7 @@ Two things v0.1 deliberately does **not** do:
 
 ## Reproducibility
 
-- Prompts are frozen files (`prompts/review_v1.txt`); every run records the
+- Prompts are versioned files (current: `prompts/review_v2.txt`); every run records the
   prompt id and the SHA-256 of the exact text used.
 - Runs record suite version, provider, model, temperature and token usage.
 - Running and scoring are separate steps, so one (paid) run can be re-scored

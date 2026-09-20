@@ -95,6 +95,7 @@ validator in `src/webfixbench/schemas.py`.
     {
       "id": "laravel-authz-001-f1",
       "category": "authorization",
+      "defect_type": "authorization_policy_removed",
       "severity": "high",
       "file": "app/Http/Controllers/PostController.php",
       "description": "Ground truth, for humans. Not shown to the reviewer."
