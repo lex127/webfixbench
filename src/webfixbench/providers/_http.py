@@ -9,6 +9,7 @@ is upgraded.
 from __future__ import annotations
 
 import json
+import socket
 import urllib.error
 import urllib.request
 from typing import Any, Dict, Optional, Tuple
@@ -21,6 +22,46 @@ class HttpError(Exception):
         self.status = status
         self.body = body
         super().__init__(message)
+
+
+def redact(text: str, *secrets: Optional[str]) -> str:
+    """Remove configured credential values from text destined for results."""
+    cleaned = str(text)
+    for secret in secrets:
+        if secret:
+            cleaned = cleaned.replace(secret, "[REDACTED]")
+    return cleaned
+
+
+def token_usage(usage: Any, *, style: str) -> Optional[Dict[str, Any]]:
+    """Normalize token totals while retaining documented vendor breakdowns."""
+    if not isinstance(usage, dict) or not usage:
+        return None
+    if style == "responses":
+        input_tokens = usage.get("input_tokens")
+        output_tokens = usage.get("output_tokens")
+        input_details = usage.get("input_tokens_details")
+        output_details = usage.get("output_tokens_details")
+    else:
+        input_tokens = usage.get("prompt_tokens")
+        output_tokens = usage.get("completion_tokens")
+        input_details = usage.get("prompt_tokens_details")
+        output_details = usage.get("completion_tokens_details")
+    normalized = {
+        "input_tokens": input_tokens,
+        "output_tokens": output_tokens,
+        "total_tokens": usage.get("total_tokens"),
+        "estimated": False,
+    }
+    if isinstance(input_details, dict):
+        normalized["input_token_details"] = dict(input_details)
+    if isinstance(output_details, dict):
+        normalized["output_token_details"] = dict(output_details)
+    for name in ("prompt_cache_hit_tokens", "prompt_cache_miss_tokens", "num_sources_used",
+                 "num_server_side_tools_used", "cost_in_usd_ticks"):
+        if name in usage:
+            normalized[name] = usage[name]
+    return normalized
 
 
 def post_json(
@@ -46,6 +87,8 @@ def post_json(
         raise HttpError(exc.code, detail, f"HTTP {exc.code}: {detail[:500]}")
     except urllib.error.URLError as exc:
         raise HttpError(None, "", f"request failed: {exc.reason}")
+    except (TimeoutError, socket.timeout):
+        raise HttpError(None, "", "request timed out")
 
     try:
         return json.loads(body), response_headers

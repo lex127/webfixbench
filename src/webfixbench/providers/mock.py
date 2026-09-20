@@ -163,6 +163,7 @@ class MockProvider(BaseProvider):
     def describe(self) -> Dict[str, Any]:
         description = super().describe()
         description.update({"api_type": "offline", "output_constraint": "native_json"})
+        description["settings_sent"] = {"mock_mode": self.mode}
         description["mock_mode"] = self.mode
         description["note"] = (
             "Deterministic rule-based stub. Not a language model; its scores say "

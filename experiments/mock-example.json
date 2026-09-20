@@ -1,0 +1,18 @@
+{
+  "experiment_id": "mock-example",
+  "suite_id": "php-web-v0.1",
+  "prompt_id": "review_v3",
+  "case_limit": 2,
+  "providers": [
+    {
+      "provider": "mock",
+      "model": "mock-heuristic-v1",
+      "output_constraint": "native_json",
+      "mock_mode": "heuristic"
+    }
+  ],
+  "repeat_count": 2,
+  "timeout": 120,
+  "max_output_tokens": 2048,
+  "mode": "reviewed"
+}

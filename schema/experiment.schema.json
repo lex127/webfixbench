@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/lex127/webfixbench/schema/experiment.schema.json",
+  "title": "WebFixBench experiment configuration v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["experiment_id", "providers"],
+  "properties": {
+    "experiment_id": { "$ref": "#/$defs/safeId" },
+    "suite_id": { "$ref": "#/$defs/safeId" },
+    "prompt_id": { "$ref": "#/$defs/safeId" },
+    "case_ids": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "$ref": "#/$defs/safeId" } },
+    "case_limit": { "type": "integer", "minimum": 1 },
+    "providers": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/provider" } },
+    "repeat_count": { "type": "integer", "minimum": 1, "maximum": 100, "default": 1 },
+    "timeout": { "type": "number", "exclusiveMinimum": 0, "maximum": 3600 },
+    "max_output_tokens": { "type": "integer", "minimum": 1, "maximum": 1000000 },
+    "mode": { "enum": ["reviewed", "smoke"], "default": "reviewed" }
+  },
+  "not": { "required": ["case_ids", "case_limit"] },
+  "$defs": {
+    "safeId": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,79}$" },
+    "provider": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["provider", "model"],
+      "properties": {
+        "provider": { "enum": ["mock", "openai", "anthropic", "xai", "deepseek"] },
+        "model": { "type": "string", "minLength": 1 },
+        "api_type": { "enum": ["responses", "chat.completions"] },
+        "output_constraint": { "enum": ["native_json", "json_schema", "json_object", "prompt_only"] },
+        "temperature": { "type": "number", "minimum": 0, "maximum": 2 },
+        "reasoning_effort": { "enum": ["none", "low", "medium", "high", "xhigh", "max"] },
+        "api_key_env": { "enum": ["OPENAI_API_KEY", "ANTHROPIC_API_KEY", "XAI_API_KEY", "DEEPSEEK_API_KEY"] },
+        "mock_mode": { "enum": ["heuristic", "empty", "oracle_free", "malformed"] }
+      }
+    }
+  }
+}

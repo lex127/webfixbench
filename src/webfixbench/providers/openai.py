@@ -6,7 +6,7 @@ import os
 from typing import Any, Dict, Optional
 
 from ..config import ENV_OPENAI_KEY
-from ._http import HttpError, post_json
+from ._http import HttpError, post_json, redact, token_usage
 from .base import RESPONSE_JSON_SCHEMA, BaseProvider, ProviderError, ProviderResult
 
 API_URLS = {
@@ -15,6 +15,7 @@ API_URLS = {
 }
 API_TYPES = tuple(API_URLS)
 OUTPUT_CONSTRAINTS = ("json_schema", "json_object", "prompt_only")
+REASONING_EFFORTS = ("low", "medium", "high", "xhigh", "max")
 SYSTEM_PROMPT = "You are a precise code reviewer. Reply with a single JSON object and nothing else."
 
 
@@ -29,6 +30,7 @@ class OpenAIProvider(BaseProvider):
         *,
         api_type: str = "responses",
         output_constraint: str = "json_schema",
+        reasoning_effort: Optional[str] = None,
         **kwargs: Any,
     ) -> None:
         if not model:
@@ -39,19 +41,34 @@ class OpenAIProvider(BaseProvider):
             raise ProviderError(
                 f"unknown output constraint {output_constraint!r}; expected {list(OUTPUT_CONSTRAINTS)}"
             )
+        if reasoning_effort is not None and reasoning_effort not in REASONING_EFFORTS:
+            raise ProviderError(f"unsupported OpenAI reasoning_effort {reasoning_effort!r}")
+        if reasoning_effort is not None and kwargs.get("temperature", 0.0) != 0.0:
+            raise ProviderError("OpenAI temperature is not sent with explicit reasoning_effort")
         super().__init__(model, **kwargs)
         self.api_type = api_type
         self.output_constraint = output_constraint
+        self.reasoning_effort = reasoning_effort
         self.api_key = os.environ.get(ENV_OPENAI_KEY)
         if not self.api_key:
             raise ProviderError(f"{ENV_OPENAI_KEY} is not set; export it or use --provider mock")
-        self.api_url = self.extra.get("api_url", API_URLS[api_type])
+        self.api_url = API_URLS[api_type]
 
     def describe(self) -> Dict[str, Any]:
         description = super().describe()
         description.update(
             {"api_type": self.api_type, "endpoint": self.api_url, "output_constraint": self.output_constraint}
         )
+        sent: Dict[str, Any] = {"model": self.model,
+            "max_output_tokens" if self.api_type == "responses" else "max_completion_tokens": self.max_output_tokens}
+        if self.temperature != 0.0:
+            sent["temperature"] = self.temperature
+        if self.reasoning_effort is not None:
+            sent["reasoning" if self.api_type == "responses" else "reasoning_effort"] = (
+                {"effort": self.reasoning_effort} if self.api_type == "responses" else self.reasoning_effort)
+        description["settings_sent"] = sent
+        if self.reasoning_effort is not None:
+            description["reasoning"] = {"effort": self.reasoning_effort}
         return description
 
     def _payload(self, prompt: str) -> Dict[str, Any]:
@@ -66,6 +83,8 @@ class OpenAIProvider(BaseProvider):
             }
             if self.temperature != 0.0:
                 payload["temperature"] = self.temperature
+            if self.reasoning_effort is not None:
+                payload["reasoning"] = {"effort": self.reasoning_effort}
             if self.output_constraint == "json_schema":
                 payload["text"] = {
                     "format": {
@@ -89,6 +108,8 @@ class OpenAIProvider(BaseProvider):
         }
         if self.temperature != 0.0:
             payload["temperature"] = self.temperature
+        if self.reasoning_effort is not None:
+            payload["reasoning_effort"] = self.reasoning_effort
         if self.output_constraint == "json_schema":
             payload["response_format"] = {
                 "type": "json_schema",
@@ -112,7 +133,8 @@ class OpenAIProvider(BaseProvider):
                 timeout=self.timeout,
             )
         except HttpError as exc:
-            return ProviderResult(raw_text=None, latency_ms=0.0, model=self.model, error=str(exc))
+            return ProviderResult(raw_text=None, latency_ms=0.0, model=self.model,
+                                  error=redact(str(exc), self.api_key))
 
         text = self._extract_text(body)
         if not text:
@@ -122,23 +144,11 @@ class OpenAIProvider(BaseProvider):
                 model=self.model,
                 error=f"unexpected response shape from OpenAI {self.api_type} API",
             )
-        usage_doc = body.get("usage") or {}
-        if self.api_type == "responses":
-            input_tokens = usage_doc.get("input_tokens")
-            output_tokens = usage_doc.get("output_tokens")
-        else:
-            input_tokens = usage_doc.get("prompt_tokens")
-            output_tokens = usage_doc.get("completion_tokens")
         return ProviderResult(
             raw_text=text,
             latency_ms=0.0,
             model=body.get("model", self.model),
-            usage={
-                "input_tokens": input_tokens,
-                "output_tokens": output_tokens,
-                "total_tokens": usage_doc.get("total_tokens"),
-                "estimated": False,
-            },
+            usage=token_usage(body.get("usage"), style=("responses" if self.api_type == "responses" else "chat")),
             metadata={"api_type": self.api_type, "output_constraint": self.output_constraint},
         )
 

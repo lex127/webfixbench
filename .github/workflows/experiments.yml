@@ -1,0 +1,97 @@
+name: Experiments (manual)
+
+on:
+  workflow_dispatch:
+    inputs:
+      config_path:
+        description: Committed JSON config under experiments/
+        required: true
+        default: experiments/mock-example.json
+        type: string
+      max_requests:
+        description: Hard maximum planned API requests
+        required: true
+        default: "10"
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: webfixbench-experiment-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  experiment:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      CONFIG_PATH: ${{ inputs.config_path }}
+      MAX_REQUESTS: ${{ inputs.max_requests }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install
+        run: python -m pip install -e .
+
+      - name: Validate workflow inputs
+        run: |
+          python - <<'PY'
+          import os
+          from pathlib import Path
+          root = Path.cwd().resolve()
+          path = (root / os.environ["CONFIG_PATH"]).resolve()
+          allowed = (root / "experiments").resolve()
+          if allowed not in path.parents or path.suffix != ".json" or not path.is_file():
+              raise SystemExit("config_path must name a committed .json file under experiments/")
+          value = os.environ["MAX_REQUESTS"]
+          if not value.isdigit() or not 1 <= int(value) <= 1000:
+              raise SystemExit("max_requests must be an integer from 1 to 1000")
+          PY
+
+      - name: Dry run
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          XAI_API_KEY: ${{ secrets.XAI_API_KEY }}
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+        run: webfixbench experiment "$CONFIG_PATH" --dry-run --max-requests "$MAX_REQUESTS"
+
+      - name: Execute experiment
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          XAI_API_KEY: ${{ secrets.XAI_API_KEY }}
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+        run: webfixbench experiment "$CONFIG_PATH" --max-requests "$MAX_REQUESTS"
+
+      - name: Upload partial or completed results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: webfixbench-experiment-${{ github.run_id }}
+          path: results/experiments/
+          if-no-files-found: warn
+          retention-days: 30
+
+      - name: Job summary
+        if: always()
+        run: |
+          python - <<'PY' >> "$GITHUB_STEP_SUMMARY"
+          import json
+          from pathlib import Path
+          print("## WebFixBench experiment")
+          manifests = sorted(Path("results/experiments").glob("*/*/manifest.json"))
+          if not manifests:
+              print("\nNo manifest was produced; inspect the validation/execution logs.")
+          for path in manifests:
+              doc = json.loads(path.read_text())
+              print(f"\n- `{doc['experiment_id']}`: **{doc.get('status', 'incomplete')}**")
+              for run in doc.get("runs", []):
+                  print(f"  - `{run['provider']}/{run['requested_model']}` repetition {run['repetition']}: {run['status']}")
+          print(f"\nArtifact: `webfixbench-experiment-${{ github.run_id }}` (30-day retention; not a permanent archive).")
+          PY
