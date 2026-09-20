@@ -8,11 +8,8 @@ promised.
 
 These are blockers, not enhancements:
 
-- [ ] **Freeze the ground truth.** All fifteen cases are `pending_review`. The
-      maintainer reviews each one against the checklist in
-      [HUMAN_REVIEW_CHECKLIST.md](HUMAN_REVIEW_CHECKLIST.md), writes or approves the expected findings,
-      and sets `label_status: "frozen"` with `reviewed_by` filled in. No model
-      evaluation is published before this is done.
+- [x] **Freeze the ground truth.** Oleksii Siniaiev reviewed and accepted all
+      fifteen labels on 2026-09-20; suite revision 0.1.2 records that decision.
 - [ ] Academic review of the taxonomy, the annotation rules, the methodology
       and two to three representative cases; set `academic_review: true` on
       exactly those cases

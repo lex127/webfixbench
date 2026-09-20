@@ -21,9 +21,9 @@
     }
   ],
   "is_clean": false,
-  "label_source": "agent_drafted",
-  "label_status": "pending_review",
-  "reviewed_by": [],
+  "label_source": "human_reviewed",
+  "label_status": "frozen",
+  "reviewed_by": ["Oleksii Siniaiev"],
   "academic_review": false,
   "tags": ["ajax", "capability-check", "nonce-verified", "data-exposure"],
   "notes": "The nonce is verified and the query is correctly prepared. The only intended defect is the missing capability authorization check; reporting CSRF or SQL injection is a false positive.",

@@ -26,8 +26,8 @@ class DeepSeekProvider(BaseProvider):
             raise ProviderError("DeepSeek supports json_object or prompt_only, not json_schema")
         if reasoning_effort is not None and reasoning_effort not in REASONING_EFFORTS:
             raise ProviderError(f"unsupported DeepSeek reasoning_effort {reasoning_effort!r}")
-        temperature = kwargs.get("temperature", 0.0)
-        if reasoning_effort not in (None, "none") and temperature != 0.0:
+        temperature = kwargs.get("temperature")
+        if reasoning_effort not in (None, "none") and temperature is not None:
             raise ProviderError("DeepSeek temperature is unsupported in thinking mode")
         super().__init__(model, **kwargs)
         self.output_constraint = output_constraint
@@ -45,7 +45,7 @@ class DeepSeekProvider(BaseProvider):
         if self.reasoning_effort is not None:
             sent.update({"reasoning_effort": self.reasoning_effort,
                          "thinking": {"type": "disabled" if self.reasoning_effort == "none" else "enabled"}})
-        if self.reasoning_effort == "none":
+        if self.reasoning_effort == "none" and self.temperature is not None:
             sent["temperature"] = self.temperature
         result["settings_sent"] = sent
         if self.reasoning_effort is not None:
@@ -63,7 +63,7 @@ class DeepSeekProvider(BaseProvider):
         if self.reasoning_effort is not None:
             payload["reasoning_effort"] = self.reasoning_effort
             payload["thinking"] = {"type": "disabled" if self.reasoning_effort == "none" else "enabled"}
-        if self.reasoning_effort == "none":
+        if self.reasoning_effort == "none" and self.temperature is not None:
             payload["temperature"] = self.temperature
         if self.output_constraint == "json_object":
             payload["response_format"] = {"type": "json_object"}

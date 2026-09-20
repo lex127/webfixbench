@@ -1,8 +1,8 @@
 # Reproducible experiments
 
-WebFixBench supports `mock`, `openai`, `anthropic`, `xai`, and `deepseek` as
-distinct providers. Obtain credentials from the official [OpenAI API keys],
-[Anthropic API keys], [xAI API keys], or [DeepSeek API platform] pages. Export
+WebFixBench supports `mock`, `openai`, `anthropic`, `gemini`, `xai`, and
+`deepseek` as distinct providers. Obtain credentials from the official [OpenAI API keys],
+[Anthropic API keys], [Gemini API keys], [xAI API keys], or [DeepSeek API platform] pages. Export
 only the key you need:
 
 ```bash
@@ -10,6 +10,7 @@ export OPENAI_API_KEY='...'
 export ANTHROPIC_API_KEY='...'
 export XAI_API_KEY='...'
 export DEEPSEEK_API_KEY='...'
+export GEMINI_API_KEY='...'
 ```
 
 The CLI reads the process environment. It does **not** load `.env` automatically.
@@ -33,18 +34,27 @@ name its fixed credential variable, for example:
 ```
 
 The placeholder is deliberately not a claimed model ID; replace it using the
-vendor's current [OpenAI models], [Anthropic models], [xAI models], or
+vendor's current [OpenAI models], [Anthropic models], [Gemini models], [xAI models], or
 [DeepSeek models] documentation. OpenAI accepts `responses` or
 `chat.completions` as `api_type`. Anthropic and xAI support `json_schema` or
 `prompt_only` (xAI also supports `json_object`). DeepSeek supports
 `json_object` or `prompt_only` and requires explicit `reasoning_effort`:
 `none`, `low`, `high`, or `max`. DeepSeek temperature is accepted only with
 `none`, because its thinking mode documents temperature as having no effect.
+Gemini supports `json_schema`, `json_object`, or `prompt_only` and the current
+3.8 Flash family supports `low`, `medium`, or `high` thinking, not disabled.
+Anthropic supports explicit `disabled` or `adaptive` thinking; Sonnet 5 rejects
+non-default sampling parameters.
 Temperature and token-limit values do not represent equivalent reasoning
 budgets across vendors.
 
 Request shapes follow the official [OpenAI Responses API], [Anthropic Messages
-API], [xAI Responses API], and [DeepSeek Chat Completions API] references.
+API], [Gemini GenerateContent API], [xAI Responses API], and [DeepSeek Chat Completions API] references.
+
+The reviewed five-provider wave is
+[`v0.1-first-wave.json`](../experiments/v0.1-first-wave.json) (75 requests).
+Its explicit three-case smoke companion plans 15 requests. See
+[BASELINE_PROTOCOL.md](BASELINE_PROTOCOL.md) for the comparability boundary.
 
 Validate selection without a network request:
 
@@ -88,7 +98,7 @@ from benchmark changes.
 
 In repository **Settings → Secrets and variables → Actions**, add only the
 secrets needed by the selected config: `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`,
-`XAI_API_KEY`, and/or `DEEPSEEK_API_KEY`. Run **Experiments (manual)** from the
+`GEMINI_API_KEY`, `XAI_API_KEY`, and/or `DEEPSEEK_API_KEY`. Run **Experiments (manual)** from the
 Actions tab, choose a config committed under `experiments/`, and set a maximum
 request count. The workflow exists only under `workflow_dispatch`; it never
 runs paid APIs on pushes, pull requests, or schedules.
@@ -103,11 +113,14 @@ commit it in a reviewable pull request. The workflow never commits or pushes.
 [Anthropic API keys]: https://console.anthropic.com/settings/keys
 [xAI API keys]: https://console.x.ai/
 [DeepSeek API platform]: https://platform.deepseek.com/api_keys
+[Gemini API keys]: https://aistudio.google.com/app/apikey
 [OpenAI models]: https://platform.openai.com/docs/models
 [Anthropic models]: https://platform.claude.com/docs/en/about-claude/models/overview
 [xAI models]: https://docs.x.ai/developers/models
 [DeepSeek models]: https://api-docs.deepseek.com/quick_start/pricing
+[Gemini models]: https://ai.google.dev/gemini-api/docs/models
 [OpenAI Responses API]: https://platform.openai.com/docs/api-reference/responses/create
 [Anthropic Messages API]: https://platform.claude.com/docs/en/api/messages/create
 [xAI Responses API]: https://docs.x.ai/developers/rest-api-reference/inference/responses
 [DeepSeek Chat Completions API]: https://api-docs.deepseek.com/api/create-chat-completion/
+[Gemini GenerateContent API]: https://ai.google.dev/api/generate-content

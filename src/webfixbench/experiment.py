@@ -8,7 +8,7 @@ import os
 import re
 import subprocess
 import uuid
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Sequence, Tuple
@@ -18,15 +18,16 @@ from .config import DEFAULT_PROMPT, DEFAULT_SUITE, ConfigError, load_prompt
 from .evaluator import evaluate_document, write_evaluation
 from .providers import get_provider
 from .report import render_markdown
-from .runner import run_suite, write_results
+from .runner import build_prompt_text, run_suite, write_results
 
 SAFE_ID = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,79}$")
 KEYS = {"openai": "OPENAI_API_KEY", "anthropic": "ANTHROPIC_API_KEY",
-        "xai": "XAI_API_KEY", "deepseek": "DEEPSEEK_API_KEY"}
+        "gemini": "GEMINI_API_KEY", "xai": "XAI_API_KEY", "deepseek": "DEEPSEEK_API_KEY"}
 ROOT_FIELDS = {"experiment_id", "suite_id", "prompt_id", "case_ids", "case_limit",
                "providers", "repeat_count", "timeout", "max_output_tokens", "mode"}
 PROVIDER_FIELDS = {"provider", "model", "api_type", "output_constraint", "temperature",
-                   "reasoning_effort", "api_key_env", "mock_mode"}
+                   "reasoning_effort", "thinking_mode", "model_id_stability",
+                   "api_key_env", "mock_mode"}
 SMOKE_CASE_LIMIT = 3
 
 
@@ -91,7 +92,7 @@ def _validate_provider(entry: Any) -> Dict[str, Any]:
     if unknown:
         raise ConfigError(f"unknown provider fields: {', '.join(unknown)}")
     name = entry.get("provider")
-    if name not in ("mock", "openai", "anthropic", "xai", "deepseek"):
+    if name not in ("mock", "openai", "anthropic", "gemini", "xai", "deepseek"):
         raise ConfigError(f"unknown provider {name!r}")
     model = entry.get("model")
     if not isinstance(model, str) or not model.strip():
@@ -107,6 +108,7 @@ def _validate_provider(entry: Any) -> Dict[str, Any]:
         "mock": (None, "native_json"),
         "openai": ("json_schema", "json_object", "prompt_only"),
         "anthropic": ("json_schema", "prompt_only"),
+        "gemini": ("json_schema", "json_object", "prompt_only"),
         "xai": ("json_schema", "json_object", "prompt_only"),
         "deepseek": ("json_object", "prompt_only"),
     }[name]
@@ -117,17 +119,33 @@ def _validate_provider(entry: Any) -> Dict[str, Any]:
     if name == "openai" and entry.get("api_type", "responses") not in ("responses", "chat.completions"):
         raise ConfigError("OpenAI api_type must be responses or chat.completions")
     effort = entry.get("reasoning_effort")
-    efforts = {"openai": ("low", "medium", "high", "xhigh", "max"),
+    efforts = {"openai": ("none", "low", "medium", "high", "xhigh", "max"),
+               "anthropic": ("low", "medium", "high", "xhigh", "max"),
+               "gemini": ("low", "medium", "high"),
                "xai": ("low", "medium", "high", "xhigh"),
                "deepseek": ("none", "low", "high", "max")}
     if effort is not None and (name not in efforts or effort not in efforts[name]):
         raise ConfigError(f"provider {name} does not support reasoning_effort {effort!r}")
     if name == "deepseek" and effort is None:
         raise ConfigError("provider deepseek requires explicit reasoning_effort (use 'none' to disable thinking)")
-    if name == "deepseek" and effort not in (None, "none") and entry.get("temperature", 0) != 0:
+    if name == "deepseek" and effort not in (None, "none") and "temperature" in entry:
         raise ConfigError("DeepSeek temperature is unsupported in thinking mode")
-    if name == "openai" and effort is not None and entry.get("temperature", 0) != 0:
+    if name == "openai" and effort is not None and "temperature" in entry:
         raise ConfigError("OpenAI temperature is not supported with explicit reasoning_effort")
+    thinking_mode = entry.get("thinking_mode")
+    if name == "anthropic":
+        if thinking_mode not in (None, "disabled", "adaptive"):
+            raise ConfigError("Anthropic thinking_mode must be disabled or adaptive")
+        if effort is not None and thinking_mode != "adaptive":
+            raise ConfigError("Anthropic reasoning_effort requires thinking_mode 'adaptive'")
+        if result["model"] == "claude-sonnet-5" and "temperature" in entry:
+            raise ConfigError("claude-sonnet-5 baseline must omit temperature")
+    elif thinking_mode is not None:
+        raise ConfigError(f"thinking_mode is not supported for provider {name}")
+    stability = entry.get("model_id_stability", "unknown")
+    if stability not in ("pinned", "stable_alias", "mutable_alias", "unknown"):
+        raise ConfigError("model_id_stability must be pinned, stable_alias, mutable_alias, or unknown")
+    result["model_id_stability"] = stability
     expected_key = KEYS.get(name)
     if expected_key:
         if entry.get("api_key_env") != expected_key:
@@ -188,6 +206,8 @@ def run_experiment(experiment: Experiment, *, root: Optional[Path], output_root:
         "suite": {"id": suite.id, "version": suite.version},
         "prompt": {"id": prompt.id, "sha256": prompt.sha256},
         "repository": git, "case_fingerprints": {c.id: _case_hash(c) for c in cases},
+        "input_fingerprints": {c.id: _input_hash(prompt, c) for c in cases},
+        "configuration": asdict(experiment),
         "repeat_count": experiment.repeat_count,
         "planned_requests": len(cases) * len(experiment.providers) * experiment.repeat_count,
         "runs": [],
@@ -211,6 +231,7 @@ def run_experiment(experiment: Experiment, *, root: Optional[Path], output_root:
                     "experiment_run_id": run_stamp, "repetition": repetition, "mode": experiment.mode}
                 document["run"]["repository"] = git
                 document["run"]["case_fingerprints"] = manifest["case_fingerprints"]
+                document["run"]["input_fingerprints"] = manifest["input_fingerprints"]
                 write_results(document, run_dir / "results.json")
                 evaluation = evaluate_document(document, suite, root=root)
                 evaluation["experiment"] = {"mode": experiment.mode,
@@ -258,8 +279,11 @@ def dry_run_summary(experiment: Experiment, suite: Suite, cases: Sequence[Case],
 def _make_provider(entry: Dict[str, Any], experiment: Experiment):
     kwargs: Dict[str, Any] = {"name": entry["provider"], "model": entry["model"],
         "timeout": experiment.timeout, "max_output_tokens": experiment.max_output_tokens,
-        "temperature": entry.get("temperature", 0.0), "mode": entry.get("mock_mode", "heuristic")}
-    for name in ("api_type", "output_constraint", "reasoning_effort"):
+        "mode": entry.get("mock_mode", "heuristic"),
+        "model_id_stability": entry.get("model_id_stability", "unknown")}
+    if "temperature" in entry:
+        kwargs["temperature"] = entry["temperature"]
+    for name in ("api_type", "output_constraint", "reasoning_effort", "thinking_mode"):
         if entry["provider"] == "mock":
             continue
         if name in entry:
@@ -298,12 +322,16 @@ def _case_hash(case: Case) -> str:
     return hashlib.sha256(canonical.encode()).hexdigest()
 
 
+def _input_hash(prompt: Any, case: Case) -> str:
+    return hashlib.sha256(build_prompt_text(prompt, case).encode()).hexdigest()
+
+
 def _git_state(root: Optional[Path]) -> Dict[str, Any]:
     cwd = str(root or Path.cwd())
     try:
         sha = subprocess.run(["git", "rev-parse", "HEAD"], cwd=cwd, text=True,
                              capture_output=True, check=True).stdout.strip()
-        dirty = bool(subprocess.run(["git", "status", "--porcelain", "--untracked-files=no"],
+        dirty = bool(subprocess.run(["git", "status", "--porcelain"],
                                     cwd=cwd, text=True, capture_output=True, check=True).stdout.strip())
         return {"git_sha": sha, "dirty": dirty}
     except (OSError, subprocess.CalledProcessError):
@@ -320,7 +348,9 @@ def _safe_error(exc: Exception) -> str:
 
 
 def _write_json(path: Path, document: Dict[str, Any]) -> None:
-    path.write_text(json.dumps(document, indent=2) + "\n", encoding="utf-8")
+    temporary = path.with_suffix(path.suffix + ".tmp")
+    temporary.write_text(json.dumps(document, indent=2) + "\n", encoding="utf-8")
+    temporary.replace(path)
 
 
 def _now() -> str:

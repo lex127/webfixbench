@@ -86,15 +86,17 @@ class BaseProvider(ABC):
         self,
         model: Optional[str] = None,
         *,
-        temperature: float = 0.0,
+        temperature: Optional[float] = None,
         max_output_tokens: int = 2048,
         timeout: float = 120.0,
+        model_id_stability: str = "unknown",
         extra: Optional[Dict[str, Any]] = None,
     ) -> None:
         self.model = model or self.default_model
         self.temperature = temperature
         self.max_output_tokens = max_output_tokens
         self.timeout = timeout
+        self.model_id_stability = model_id_stability
         self.extra: Dict[str, Any] = dict(extra or {})
 
     # -- public API ------------------------------------------------------
@@ -107,7 +109,8 @@ class BaseProvider(ABC):
         except Exception as exc:  # pragma: no cover - defensive
             elapsed = (time.perf_counter() - started) * 1000.0
             message = f"{type(exc).__name__}: {exc}"
-            for variable in ("OPENAI_API_KEY", "ANTHROPIC_API_KEY", "XAI_API_KEY", "DEEPSEEK_API_KEY"):
+            for variable in ("OPENAI_API_KEY", "ANTHROPIC_API_KEY", "XAI_API_KEY",
+                             "DEEPSEEK_API_KEY", "GEMINI_API_KEY"):
                 secret = os.environ.get(variable)
                 if secret:
                     message = message.replace(secret, "[REDACTED]")
@@ -124,13 +127,16 @@ class BaseProvider(ABC):
 
     def describe(self) -> Dict[str, Any]:
         """Settings recorded in the run metadata for reproducibility."""
-        return {
+        result = {
             "provider": self.name,
             "model": self.model,
-            "temperature": self.temperature,
             "max_output_tokens": self.max_output_tokens,
+            "model_id_stability": self.model_id_stability,
             **({"settings": self.extra} if self.extra else {}),
         }
+        if self.temperature is not None:
+            result["temperature"] = self.temperature
+        return result
 
     # -- to implement ----------------------------------------------------
 

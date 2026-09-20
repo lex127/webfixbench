@@ -12,9 +12,9 @@
   "diff": "diff --git a/app/Http/Controllers/InvoiceController.php b/app/Http/Controllers/InvoiceController.php\n--- a/app/Http/Controllers/InvoiceController.php\n+++ b/app/Http/Controllers/InvoiceController.php\n@@ -40,13 +40,15 @@ class InvoiceController extends Controller\n\n     public function markPaid(MarkInvoicePaidRequest $request, Invoice $invoice): RedirectResponse\n     {\n         $this->authorize('markPaid', $invoice);\n\n-        $invoice->status = 'paid';\n-        $invoice->paid_at = now();\n-        $invoice->save();\n+        $invoice->fill([\n+            'status'  => 'paid',\n+            'paid_at' => now(),\n+        ]);\n+\n+        $invoice->save();\n\n         return back()->with('status', 'Invoice marked as paid.');\n     }\n",
   "expected_findings": [],
   "is_clean": true,
-  "label_source": "agent_drafted",
-  "label_status": "pending_review",
-  "reviewed_by": [],
+  "label_source": "human_reviewed",
+  "label_status": "frozen",
+  "reviewed_by": ["Oleksii Siniaiev"],
   "academic_review": false,
   "tags": [
     "refactor",

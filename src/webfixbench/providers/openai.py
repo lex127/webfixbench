@@ -15,7 +15,7 @@ API_URLS = {
 }
 API_TYPES = tuple(API_URLS)
 OUTPUT_CONSTRAINTS = ("json_schema", "json_object", "prompt_only")
-REASONING_EFFORTS = ("low", "medium", "high", "xhigh", "max")
+REASONING_EFFORTS = ("none", "low", "medium", "high", "xhigh", "max")
 SYSTEM_PROMPT = "You are a precise code reviewer. Reply with a single JSON object and nothing else."
 
 
@@ -43,7 +43,7 @@ class OpenAIProvider(BaseProvider):
             )
         if reasoning_effort is not None and reasoning_effort not in REASONING_EFFORTS:
             raise ProviderError(f"unsupported OpenAI reasoning_effort {reasoning_effort!r}")
-        if reasoning_effort is not None and kwargs.get("temperature", 0.0) != 0.0:
+        if reasoning_effort is not None and kwargs.get("temperature") is not None:
             raise ProviderError("OpenAI temperature is not sent with explicit reasoning_effort")
         super().__init__(model, **kwargs)
         self.api_type = api_type
@@ -61,7 +61,7 @@ class OpenAIProvider(BaseProvider):
         )
         sent: Dict[str, Any] = {"model": self.model,
             "max_output_tokens" if self.api_type == "responses" else "max_completion_tokens": self.max_output_tokens}
-        if self.temperature != 0.0:
+        if self.temperature is not None:
             sent["temperature"] = self.temperature
         if self.reasoning_effort is not None:
             sent["reasoning" if self.api_type == "responses" else "reasoning_effort"] = (
@@ -81,7 +81,7 @@ class OpenAIProvider(BaseProvider):
                 ],
                 "max_output_tokens": self.max_output_tokens,
             }
-            if self.temperature != 0.0:
+            if self.temperature is not None:
                 payload["temperature"] = self.temperature
             if self.reasoning_effort is not None:
                 payload["reasoning"] = {"effort": self.reasoning_effort}
@@ -106,7 +106,7 @@ class OpenAIProvider(BaseProvider):
             ],
             "max_completion_tokens": self.max_output_tokens,
         }
-        if self.temperature != 0.0:
+        if self.temperature is not None:
             payload["temperature"] = self.temperature
         if self.reasoning_effort is not None:
             payload["reasoning_effort"] = self.reasoning_effort

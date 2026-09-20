@@ -110,11 +110,12 @@ license note, and exact fix/license links in `references`. Both validators
 require nonempty advisory provenance. These fields survive case round-trips
 but are not supplied to the reviewer, who sees only description/context/diff.
 
-All new cases remain `label_source: agent_drafted`, `label_status:
-pending_review`, `reviewed_by: []`, `academic_review: false`. Reading a public
-advisory and passing automated tests do not approve labels. Oleksii must
-complete [HUMAN_REVIEW_CHECKLIST.md](HUMAN_REVIEW_CHECKLIST.md) before freezing
-any case. Only frozen cases may support non-provisional model evaluation.
+Oleksii Siniaiev explicitly reviewed and accepted the three reconstructed cases
+on 2026-09-20. They now use `label_source:
+public_advisory_plus_human_review`, `label_status: frozen`, and retain
+`academic_review: false`. Reading an advisory and passing automated tests alone
+would not have approved them; the human decision is preserved in
+[HUMAN_REVIEW_PACKET.md](HUMAN_REVIEW_PACKET.md).
 
 The upstream projects retain their licenses and attribution. The new fixture
 code is independently written under this repository's Apache-2.0 license;

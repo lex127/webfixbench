@@ -10,10 +10,9 @@
 **No model results are published in this release.** The only committed run uses
 the mock provider.
 
-The run is also **provisional** in the project's own terms: all fifteen cases
-are `pending_review`, so the labels it was scored against are not yet frozen.
-The report says so at the top, and the evaluation document records how many
-cases are frozen. See [../docs/ANNOTATION.md](../docs/ANNOTATION.md).
+The mock baseline was regenerated after all fifteen labels were human-reviewed
+and frozen. It is still not a model result and supports no provider-quality
+claim. See [../docs/ANNOTATION.md](../docs/ANNOTATION.md).
 
 ## Reading the mock baseline
 
@@ -72,7 +71,7 @@ run.suite                suite id, version, case count
 run.cases_run            case ids, in execution order
 run.prompt               prompt id and SHA-256 of the exact prompt text
 run.provider             provider, API type/endpoint, model, output constraint,
-                         temperature and max output tokens
+                         actual optional sampling/reasoning controls and max output tokens
 run.pricing              pricing table metadata, or null
 responses[]              per case: valid, raw, parsed, validation_errors,
                          error, latency_ms, usage, cost_usd

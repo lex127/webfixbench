@@ -69,11 +69,11 @@ review sets `academic_review: true`; every other case leaves it `false`.
 
 ### Status of the v0.1 suite
 
-All fifteen cases are currently `agent_drafted` / `pending_review`. They were
-drafted with the workflow above and are awaiting the maintainer's review pass.
-Until that pass is done and the labels are frozen, any scores the harness
-produces are provisional — the CLI, the evaluation document and the rendered
-report all say so, with a count of frozen cases.
+All fifteen cases were explicitly accepted by Oleksii Siniaiev on 2026-09-20
+and are frozen in suite revision 0.1.2. The twelve original synthetic fixtures
+use `human_reviewed`; the three advisory-derived reconstructions use
+`public_advisory_plus_human_review`. All retain `academic_review: false` because
+no separate per-case academic review was confirmed.
 
 ## Choosing a category
 
@@ -183,6 +183,11 @@ deterministic matching, never as a replacement for it — including the
 disagreement between the two as a result in its own right.
 
 ## Checklist before freezing a case
+
+For the v0.1 maintainer pass, use
+[HUMAN_REVIEW_PACKET.md](HUMAN_REVIEW_PACKET.md). It includes the exact supplied
+input, proposed label, provenance and challenge notes for every case. The packet
+is review material; its agent recommendations are not approval.
 
 The per-case working copy is in
 [HUMAN_REVIEW_CHECKLIST.md](HUMAN_REVIEW_CHECKLIST.md). It must be completed by

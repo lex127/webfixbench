@@ -24,6 +24,8 @@ SYSTEM_PROMPT = (
 
 
 OUTPUT_CONSTRAINTS = ("json_schema", "prompt_only")
+THINKING_MODES = ("disabled", "adaptive")
+REASONING_EFFORTS = ("low", "medium", "high", "xhigh", "max")
 
 
 class AnthropicProvider(BaseProvider):
@@ -36,6 +38,8 @@ class AnthropicProvider(BaseProvider):
         model: Optional[str] = None,
         *,
         output_constraint: str = "json_schema",
+        thinking_mode: Optional[str] = None,
+        reasoning_effort: Optional[str] = None,
         **kwargs: Any,
     ) -> None:
         if not model:
@@ -49,8 +53,18 @@ class AnthropicProvider(BaseProvider):
             )
         if "fable" in model.lower():
             raise ProviderError("Fable models are excluded by WebFixBench owner policy")
+        if thinking_mode is not None and thinking_mode not in THINKING_MODES:
+            raise ProviderError(f"unsupported Anthropic thinking_mode {thinking_mode!r}")
+        if reasoning_effort is not None and reasoning_effort not in REASONING_EFFORTS:
+            raise ProviderError(f"unsupported Anthropic reasoning_effort {reasoning_effort!r}")
+        if reasoning_effort is not None and thinking_mode != "adaptive":
+            raise ProviderError("Anthropic reasoning_effort requires thinking_mode='adaptive'")
+        if model == "claude-sonnet-5" and kwargs.get("temperature") is not None:
+            raise ProviderError("claude-sonnet-5 requests must omit temperature")
         super().__init__(model, **kwargs)
         self.output_constraint = output_constraint
+        self.thinking_mode = thinking_mode
+        self.reasoning_effort = reasoning_effort
         self.api_key = os.environ.get(ENV_ANTHROPIC_KEY)
         if not self.api_key:
             raise ProviderError(
@@ -66,24 +80,39 @@ class AnthropicProvider(BaseProvider):
                 "api_type": "messages",
                 "endpoint": self.api_url,
                 "output_constraint": self.output_constraint,
-                "settings_sent": {"model": self.model, "max_tokens": self.max_output_tokens,
-                                  "temperature": self.temperature},
             }
         )
+        sent: Dict[str, Any] = {"model": self.model, "max_tokens": self.max_output_tokens}
+        if self.temperature is not None:
+            sent["temperature"] = self.temperature
+        if self.thinking_mode is not None:
+            sent["thinking"] = {"type": self.thinking_mode}
+        if self.reasoning_effort is not None:
+            sent["output_config.effort"] = self.reasoning_effort
+        description["settings_sent"] = sent
+        if self.thinking_mode is not None:
+            description["thinking"] = {"type": self.thinking_mode}
+        if self.reasoning_effort is not None:
+            description["reasoning"] = {"effort": self.reasoning_effort}
         return description
 
     def _payload(self, prompt: str) -> Dict[str, Any]:
         payload: Dict[str, Any] = {
             "model": self.model,
             "max_tokens": self.max_output_tokens,
-            "temperature": self.temperature,
             "system": SYSTEM_PROMPT,
             "messages": [{"role": "user", "content": prompt}],
         }
+        if self.temperature is not None:
+            payload["temperature"] = self.temperature
+        if self.thinking_mode is not None:
+            payload["thinking"] = {"type": self.thinking_mode}
         if self.output_constraint == "json_schema":
             payload["output_config"] = {
                 "format": {"type": "json_schema", "schema": RESPONSE_JSON_SCHEMA}
             }
+        if self.reasoning_effort is not None:
+            payload.setdefault("output_config", {})["effort"] = self.reasoning_effort
         return payload
 
     def _review(self, prompt: str, *, case_id: str) -> ProviderResult:

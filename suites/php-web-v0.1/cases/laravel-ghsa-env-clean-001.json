@@ -16,9 +16,9 @@
   "diff": "diff --git a/app/Bootstrap/environment.php b/app/Bootstrap/environment.php\n--- a/app/Bootstrap/environment.php\n+++ b/app/Bootstrap/environment.php\n@@ -1,14 +1,13 @@\n <?php\n function selectRuntimeEnvironment(string $sapi, array $arguments, string $configured): string\n {\n-    $selected = $configured;\n-    if ($sapi === 'cli') {\n-        foreach ($arguments as $argument) {\n-            if (str_starts_with($argument, '--env=')) {\n-                $selected = substr($argument, 6);\n-                break;\n-            }\n+    if ($sapi !== 'cli') {\n+        return $configured;\n+    }\n+    foreach ($arguments as $argument) {\n+        if (str_starts_with($argument, '--env=')) {\n+            return substr($argument, 6);\n         }\n     }\n-    return $selected;\n+    return $configured;\n }\n",
   "expected_findings": [],
   "is_clean": true,
-  "label_source": "agent_drafted",
-  "label_status": "pending_review",
-  "reviewed_by": [],
+  "label_source": "public_advisory_plus_human_review",
+  "label_status": "frozen",
+  "reviewed_by": ["Oleksii Siniaiev"],
   "academic_review": false,
   "tags": [
     "advisory-derived",

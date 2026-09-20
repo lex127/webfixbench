@@ -4,9 +4,9 @@ WebFixBench is a reproducible benchmark for evaluating the reliability of
 LLM-assisted code review on web-application changes.
 
 WebFixBench v0.1 reports a PHP web ecosystem baseline covering PHP, Laravel and
-WordPress. It is an early research skeleton: a working evaluation harness and a
-small, carefully labelled dataset — not a finished study. No model results are
-published yet.
+WordPress. Version 0.1.0rc1 is a release candidate with a working evaluation
+harness and a small, human-reviewed dataset; it is not a completed empirical
+study. No real-model results are published yet.
 
 ## Why
 
@@ -64,9 +64,12 @@ frozen status without a human label source and a named reviewer. Runs against
 unfrozen labels are marked provisional in the CLI output, the evaluation
 document and the report.
 
-**All fifteen v0.1 cases are currently `pending_review`** — drafted and awaiting
-the maintainer's review pass. The rules are in
-[docs/ANNOTATION.md](docs/ANNOTATION.md).
+**All fifteen v0.1 cases are `frozen`** after explicit review and acceptance by
+maintainer Oleksii Siniaiev. The three advisory-derived cases use
+`public_advisory_plus_human_review`; the other twelve use `human_reviewed`.
+No case received separate academic review. The rules and preserved decision
+packet are in [docs/ANNOTATION.md](docs/ANNOTATION.md) and
+[docs/HUMAN_REVIEW_PACKET.md](docs/HUMAN_REVIEW_PACKET.md).
 
 ## Why clean controls
 
@@ -79,7 +82,7 @@ code that touches authorisation, `$_POST` or SQL and is nevertheless correct.
 
 ## Current suite
 
-`php-web-v0.1` — 15 cases (suite revision 0.1.1):
+`php-web-v0.1` — 15 cases (suite revision 0.1.2):
 
 | | Laravel | WordPress | PHP | Total |
 | --- | --- | --- | --- | --- |
@@ -89,12 +92,13 @@ code that touches authorisation, `$_POST` or SQL and is nevertheless correct.
 Defect categories in use: `authorization` (3), `injection` (3), `xss` (3),
 `secrets` (1), `unsafe_deserialization` (1).
 
-All cases are synthetic, written for this benchmark. That is a design choice:
-synthetic fixtures isolate one defect at a time, fix exactly what the reviewer
-is allowed to assume, and make false-positive measurement reproducible against
-controls known to be clean. They do not establish real-world validity, and no
-claim of it is made. Three cases reconstruct patterns from two inspected Laravel
-advisories — see
+All case code is synthetic and written for this benchmark: twelve fixtures are
+original synthetic examples and three are advisory-derived synthetic
+reconstructions of patterns from two inspected Laravel advisories. These are
+not vendored real-world patches or independent incident samples. Synthetic
+fixtures isolate one defect at a time, fix exactly what the reviewer may assume,
+and make false-positive measurement reproducible. They do not establish
+real-world validity. See
 [docs/DATASET.md](docs/DATASET.md) and
 [docs/REAL_WORLD_SOURCES.md](docs/REAL_WORLD_SOURCES.md).
 
@@ -149,15 +153,19 @@ webfixbench run --provider xai --model <model-id> --limit 2 --out results/xai-sm
 export DEEPSEEK_API_KEY=...
 webfixbench run --provider deepseek --model <model-id> --reasoning-effort none \
   --output-constraint json_object --limit 2 --out results/deepseek-smoke.json
+
+export GEMINI_API_KEY=...
+webfixbench run --provider gemini --model <model-id> --reasoning-effort low \
+  --output-constraint json_schema --limit 2 --out results/gemini-smoke.json
 ```
 
 Notes:
 
-- `--model` is required. WebFixBench pins no vendor model ids, so a run always
-  records exactly which model produced it.
+- `--model` is required. The CLI selects no paid default; a run records the
+  requested ID and the provider-returned ID when supplied. The checked-in first
+  wave records IDs verified for that protocol.
 - OpenAI defaults to the Responses API; `--api-type chat.completions` selects
-  Chat Completions explicitly. Both vendors default to `--output-constraint
-  json_schema`. Use `prompt_only` only when the selected model lacks structured
+  Chat Completions explicitly. Use `prompt_only` only when a selected model lacks structured
   output support, and do not compare malformed-output rates across different
   constraint modes.
 - Fable models are excluded by project policy.
@@ -176,7 +184,7 @@ boundary, result layout, current vendor documentation, and manual Actions runs.
 ## Dataset
 
 15 synthetic unified diffs, including three advisory-derived reconstructions,
-with explicit draft labels and four clean controls whose correct review is "no findings". Case format and the full case
+with explicit frozen labels and four clean controls whose correct review is "no findings". Case format and the full case
 table: [docs/DATASET.md](docs/DATASET.md). How labels are written, reviewed and
 frozen: [docs/ANNOTATION.md](docs/ANNOTATION.md). Machine-readable schemas:
 [schema/](schema/).
@@ -202,17 +210,20 @@ Two things v0.1 deliberately does **not** do:
 
 - Prompts are versioned files (current: `prompts/review_v3.txt`); every run records the
   prompt id and the SHA-256 of the exact text used.
-- Runs record suite version, provider, model, temperature and token usage.
+- Runs record suite version, provider, requested and returned model IDs,
+  settings actually sent, model-ID stability, and provider-reported usage.
 - Running and scoring are separate steps, so one (paid) run can be re-scored
   under different matching rules without calling a model again.
-- Default temperature is 0.0. Model output is still not guaranteed to be
-  deterministic; the mock provider is.
+- Sampling parameters are omitted by default. An explicit temperature is sent
+  only when the selected provider/configuration supports it. Neither omission
+  nor temperature zero guarantees deterministic model output; the mock provider
+  is deterministic.
 
 ## Limitations
 
 - 15 cases. Small: any per-category number rests on one to three cases.
-- Labels are drafted and awaiting human review; results from them are
-  provisional until frozen.
+- Labels were reviewed by one maintainer. Inter-rater agreement and independent
+  academic per-case review are not measured.
 - Synthetic cases are cleaner than real pull requests, and say nothing about
   real-world validity.
 - One defect per defective case, and diff-only context. Real review has
