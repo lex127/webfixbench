@@ -1,0 +1,153 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/alexsinyaev/webfixbench/schema/case.schema.json",
+  "title": "WebFixBench benchmark case (v0.1)",
+  "description": "One labelled change under review. The Python engine validates cases with the equivalent checks in src/webfixbench/schemas.py; tests keep the two in sync.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "title",
+    "language",
+    "ecosystem",
+    "category",
+    "difficulty",
+    "source_type",
+    "source_url",
+    "description",
+    "diff",
+    "expected_findings",
+    "is_clean",
+    "label_source",
+    "label_status",
+    "reviewed_by"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$",
+      "description": "Stable case identifier, unique within a suite."
+    },
+    "title": { "type": "string", "minLength": 1 },
+    "language": { "type": "string", "enum": ["php"] },
+    "ecosystem": { "type": "string", "enum": ["php", "laravel", "wordpress"] },
+    "category": {
+      "type": "string",
+      "enum": [
+        "authorization",
+        "injection",
+        "xss",
+        "secrets",
+        "unsafe_deserialization",
+        "clean_control"
+      ],
+      "description": "Primary label of the case; must match one expected finding, or be clean_control."
+    },
+    "difficulty": { "type": "string", "enum": ["easy", "medium", "hard"] },
+    "source_type": {
+      "type": "string",
+      "enum": ["synthetic", "public_advisory", "public_repository"]
+    },
+    "source_url": {
+      "type": ["string", "null"],
+      "description": "Provenance for non-synthetic cases; null for synthetic ones."
+    },
+    "description": { "type": "string", "minLength": 1 },
+    "diff": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Unified diff shown to the reviewer."
+    },
+    "expected_findings": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/expectedFinding" },
+      "description": "Ground truth. Empty for clean controls, non-empty otherwise."
+    },
+    "is_clean": {
+      "type": "boolean",
+      "description": "True when the change contains no defect; any finding is then a false positive."
+    },
+    "label_source": {
+      "type": "string",
+      "enum": [
+        "agent_drafted",
+        "human_authored",
+        "human_reviewed",
+        "public_advisory_plus_human_review"
+      ],
+      "description": "How the ground truth was produced. An agent may draft a fixture; a draft is not ground truth."
+    },
+    "label_status": {
+      "type": "string",
+      "enum": ["draft", "pending_review", "frozen"],
+      "description": "Only frozen labels are ready to score a model against."
+    },
+    "reviewed_by": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Humans who reviewed and accepted these labels. Required to be non-empty when frozen."
+    },
+    "academic_review": {
+      "type": "boolean",
+      "description": "True only when an academic collaborator separately reviewed this case."
+    },
+    "tags": { "type": "array", "items": { "type": "string" } },
+    "context": {
+      "type": ["string", "null"],
+      "description": "Facts about surrounding code the reviewer may rely on."
+    },
+    "notes": {
+      "type": ["string", "null"],
+      "description": "Labelling rationale for human reviewers; not shown to the model."
+    },
+    "references": { "type": "array", "items": { "type": "string" } }
+  },
+  "$defs": {
+    "expectedFinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["category", "severity", "description"],
+      "properties": {
+        "id": { "type": ["string", "null"] },
+        "category": {
+          "type": "string",
+          "enum": ["authorization", "injection", "xss", "secrets", "unsafe_deserialization"]
+        },
+        "severity": { "type": "string", "enum": ["low", "medium", "high", "critical"] },
+        "file": { "type": ["string", "null"] },
+        "description": { "type": "string", "minLength": 1 }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "label_status": { "const": "frozen" } }, "required": ["label_status"] },
+      "then": {
+        "properties": {
+          "reviewed_by": { "minItems": 1 },
+          "label_source": {
+            "enum": ["human_authored", "human_reviewed", "public_advisory_plus_human_review"]
+          }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "is_clean": { "const": true } }, "required": ["is_clean"] },
+      "then": {
+        "properties": {
+          "expected_findings": { "maxItems": 0 },
+          "category": { "const": "clean_control" }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "is_clean": { "const": false } }, "required": ["is_clean"] },
+      "then": {
+        "properties": {
+          "expected_findings": { "minItems": 1 },
+          "category": { "not": { "const": "clean_control" } }
+        }
+      }
+    }
+  ]
+}

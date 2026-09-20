@@ -1,0 +1,18 @@
+{
+  "_comment": [
+    "WebFixBench ships no vendor prices: they change, and a stale table would quietly",
+    "produce wrong cost numbers in published results. Copy this file, fill in the prices",
+    "you were actually charged, record the date and the page you took them from, and pass",
+    "it with --pricing (or $WEBFIXBENCH_PRICING). Without a pricing table, cost is reported",
+    "as null rather than guessed.",
+    "The values below are placeholders (0.0), not real prices."
+  ],
+  "as_of": null,
+  "source": "PLACEHOLDER — replace with the vendor pricing page and the date you read it",
+  "models": {
+    "example-model-id": {
+      "input_usd_per_1m_tokens": 0.0,
+      "output_usd_per_1m_tokens": 0.0
+    }
+  }
+}
