@@ -12,7 +12,7 @@ import os
 from typing import Any, Dict, Optional
 
 from ..config import ENV_ANTHROPIC_KEY
-from ._http import HttpError, post_json
+from ._http import HttpError, post_json, redact
 from .base import RESPONSE_JSON_SCHEMA, BaseProvider, ProviderError, ProviderResult
 
 API_URL = "https://api.anthropic.com/v1/messages"
@@ -56,8 +56,8 @@ class AnthropicProvider(BaseProvider):
             raise ProviderError(
                 f"{ENV_ANTHROPIC_KEY} is not set; export it or use --provider mock"
             )
-        self.api_url = self.extra.get("api_url", API_URL)
-        self.api_version = self.extra.get("api_version", API_VERSION)
+        self.api_url = API_URL
+        self.api_version = API_VERSION
 
     def describe(self) -> Dict[str, Any]:
         description = super().describe()
@@ -66,6 +66,8 @@ class AnthropicProvider(BaseProvider):
                 "api_type": "messages",
                 "endpoint": self.api_url,
                 "output_constraint": self.output_constraint,
+                "settings_sent": {"model": self.model, "max_tokens": self.max_output_tokens,
+                                  "temperature": self.temperature},
             }
         )
         return description
@@ -94,7 +96,8 @@ class AnthropicProvider(BaseProvider):
         try:
             body, _ = post_json(self.api_url, payload, headers, timeout=self.timeout)
         except HttpError as exc:
-            return ProviderResult(raw_text=None, latency_ms=0.0, model=self.model, error=str(exc))
+            return ProviderResult(raw_text=None, latency_ms=0.0, model=self.model,
+                                  error=redact(str(exc), self.api_key))
 
         blocks = body.get("content") or []
         text = "".join(
@@ -113,15 +116,15 @@ class AnthropicProvider(BaseProvider):
         usage_doc = body.get("usage") or {}
         input_tokens = usage_doc.get("input_tokens")
         output_tokens = usage_doc.get("output_tokens")
-        total = None
-        if isinstance(input_tokens, int) and isinstance(output_tokens, int):
-            total = input_tokens + output_tokens
         usage = {
             "input_tokens": input_tokens,
             "output_tokens": output_tokens,
-            "total_tokens": total,
+            "total_tokens": None,
             "estimated": False,
         }
+        for name in ("cache_creation_input_tokens", "cache_read_input_tokens", "output_tokens_details"):
+            if name in usage_doc:
+                usage[name] = usage_doc[name]
         return ProviderResult(
             raw_text=text,
             latency_ms=0.0,

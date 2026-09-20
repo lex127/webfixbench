@@ -12,7 +12,7 @@ from typing import Any, Dict, List
 from .base import BaseProvider, ProviderError, ProviderResult
 from .mock import MockProvider
 
-PROVIDERS = ("mock", "openai", "anthropic")
+PROVIDERS = ("mock", "openai", "anthropic", "xai", "deepseek")
 
 __all__ = [
     "BaseProvider",
@@ -45,6 +45,14 @@ def get_provider(name: str, **kwargs: Any) -> BaseProvider:
         from .anthropic import AnthropicProvider
 
         return AnthropicProvider(**_without_mock_args(kwargs))
+    if key == "xai":
+        from .xai import XAIProvider
+
+        return XAIProvider(**_without_mock_args(kwargs))
+    if key == "deepseek":
+        from .deepseek import DeepSeekProvider
+
+        return DeepSeekProvider(**_without_mock_args(kwargs))
     raise ProviderError(f"unknown provider {name!r}; expected one of {list(PROVIDERS)}")
 
 

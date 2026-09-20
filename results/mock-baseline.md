@@ -8,8 +8,8 @@
 | Temperature | 0.00 |
 | Prompt | `review_v3` (sha256 `d2e983ec0fd2…`) |
 | Match mode | `defect_type` |
-| Run id | `ea2e41913ecc` |
-| Run at (UTC) | 2026-09-20T12:23:15+00:00 |
+| Run id | `12af5055f743` |
+| Run at (UTC) | 2026-09-20T12:44:29+00:00 |
 | WebFixBench | 0.1.0.dev0 |
 | Mock mode | `heuristic` |
 

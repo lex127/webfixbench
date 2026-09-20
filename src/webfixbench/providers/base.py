@@ -7,6 +7,7 @@ imports vendor code, so adding a provider never requires touching the engine.
 
 from __future__ import annotations
 
+import os
 import time
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
@@ -105,11 +106,16 @@ class BaseProvider(ABC):
             result = self._review(prompt, case_id=case_id)
         except Exception as exc:  # pragma: no cover - defensive
             elapsed = (time.perf_counter() - started) * 1000.0
+            message = f"{type(exc).__name__}: {exc}"
+            for variable in ("OPENAI_API_KEY", "ANTHROPIC_API_KEY", "XAI_API_KEY", "DEEPSEEK_API_KEY"):
+                secret = os.environ.get(variable)
+                if secret:
+                    message = message.replace(secret, "[REDACTED]")
             return ProviderResult(
                 raw_text=None,
                 latency_ms=round(elapsed, 3),
                 model=self.model,
-                error=f"{type(exc).__name__}: {exc}",
+                error=message,
             )
         elapsed = (time.perf_counter() - started) * 1000.0
         if result.latency_ms <= 0:
