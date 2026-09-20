@@ -1,0 +1,34 @@
+{
+  "id": "laravel-authz-002",
+  "title": "Admin routes moved out of the auth middleware group",
+  "language": "php",
+  "ecosystem": "laravel",
+  "category": "authorization",
+  "difficulty": "medium",
+  "source_type": "synthetic",
+  "source_url": null,
+  "description": "Admin routes are lifted out of the middleware group while reorganising routes/web.php, leaving them without authentication or the admin gate.",
+  "context": "The 'can:admin' gate is defined in AuthServiceProvider. No other middleware is applied to these routes elsewhere; the controller does not perform its own checks.",
+  "diff": "diff --git a/routes/web.php b/routes/web.php\n--- a/routes/web.php\n+++ b/routes/web.php\n@@ -18,12 +18,10 @@ Route::get('/posts/{post}', [PostController::class, 'show'])->name('posts.show')\n\n-Route::middleware(['auth', 'can:admin'])->group(function () {\n-    Route::get('/admin/users', [AdminUserController::class, 'index'])->name('admin.users');\n-    Route::post('/admin/users/{user}/promote', [AdminUserController::class, 'promote']);\n-    Route::delete('/admin/users/{user}', [AdminUserController::class, 'destroy']);\n-});\n+Route::get('/admin/users', [AdminUserController::class, 'index'])->name('admin.users');\n+Route::post('/admin/users/{user}/promote', [AdminUserController::class, 'promote']);\n+Route::delete('/admin/users/{user}', [AdminUserController::class, 'destroy']);\n",
+  "expected_findings": [
+    {
+      "id": "laravel-authz-002-f1",
+      "category": "authorization",
+      "severity": "critical",
+      "file": "routes/web.php",
+      "description": "The admin routes no longer run the 'auth' and 'can:admin' middleware, exposing user administration endpoints to unauthenticated requests."
+    }
+  ],
+  "is_clean": false,
+  "label_source": "agent_drafted",
+  "label_status": "pending_review",
+  "reviewed_by": [],
+  "academic_review": false,
+  "tags": [
+    "routing",
+    "middleware",
+    "broken-access-control"
+  ],
+  "notes": null,
+  "references": []
+}

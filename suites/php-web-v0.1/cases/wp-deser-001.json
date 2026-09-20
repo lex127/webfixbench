@@ -1,0 +1,34 @@
+{
+  "id": "wp-deser-001",
+  "title": "Visitor preferences cookie decoded with unserialize()",
+  "language": "php",
+  "ecosystem": "wordpress",
+  "category": "unsafe_deserialization",
+  "difficulty": "medium",
+  "source_type": "synthetic",
+  "source_url": null,
+  "description": "A preferences cookie that used to be JSON is now decoded with unserialize(), so attacker-controlled input reaches PHP object instantiation.",
+  "context": "The cookie is set client-side and is not signed or encrypted. The site loads several plugins, so classes with __destruct()/__wakeup() are present in the runtime.",
+  "diff": "diff --git a/wp-content/plugins/wfb-demo/includes/prefs.php b/wp-content/plugins/wfb-demo/includes/prefs.php\n--- a/wp-content/plugins/wfb-demo/includes/prefs.php\n+++ b/wp-content/plugins/wfb-demo/includes/prefs.php\n@@ -3,11 +3,11 @@\n function wfb_get_visitor_prefs() {\n     $raw = isset( $_COOKIE['wfb_prefs'] ) ? wp_unslash( $_COOKIE['wfb_prefs'] ) : '';\n\n     if ( '' === $raw ) {\n         return array();\n     }\n\n-    $prefs = json_decode( $raw, true );\n+    $prefs = unserialize( $raw );\n\n     return is_array( $prefs ) ? $prefs : array();\n }\n",
+  "expected_findings": [
+    {
+      "id": "wp-deser-001-f1",
+      "category": "unsafe_deserialization",
+      "severity": "high",
+      "file": "wp-content/plugins/wfb-demo/includes/prefs.php",
+      "description": "unserialize() is called on an unsigned, attacker-controlled cookie value, enabling PHP object injection."
+    }
+  ],
+  "is_clean": false,
+  "label_source": "agent_drafted",
+  "label_status": "pending_review",
+  "reviewed_by": [],
+  "academic_review": false,
+  "tags": [
+    "object-injection",
+    "cookie",
+    "unserialize"
+  ],
+  "notes": null,
+  "references": []
+}
