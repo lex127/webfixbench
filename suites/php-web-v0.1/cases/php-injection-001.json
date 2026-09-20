@@ -14,6 +14,7 @@
     {
       "id": "php-injection-001-f1",
       "category": "injection",
+      "defect_type": "sql_injection",
       "severity": "critical",
       "file": "src/Legacy/search.php",
       "description": "The search term from $_GET is concatenated into the SQL string passed to mysqli_query(), replacing a prepared statement and allowing SQL injection."

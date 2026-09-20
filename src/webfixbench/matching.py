@@ -3,7 +3,7 @@
 v0.1 deliberately uses transparent, deterministic rules rather than an
 LLM judge: every true positive can be re-derived by hand from a result file.
 The cost of that choice is documented in ``docs/METHODOLOGY.md`` — a prediction
-with the right category but an unrelated explanation still counts as a match.
+with the right defect type counts as a match without judging its prose.
 """
 
 from __future__ import annotations
@@ -13,12 +13,12 @@ from typing import List, Optional, Sequence, Tuple
 
 from .schemas import Case, ExpectedFinding, PredictedFinding, normalize_category
 
-#: ``category``       — a prediction matches when its normalized category
-#:                      equals the expected category.
-#: ``category_file``  — as above, and the predicted file must additionally
+#: ``defect_type``       — a prediction matches when its normalized defect type
+#:                         equals the expected defect type.
+#: ``defect_type_file``  — as above, and the predicted file must additionally
 #:                      identify the same file as the expected finding.
-MATCH_MODES = ("category", "category_file")
-DEFAULT_MATCH_MODE = "category"
+MATCH_MODES = ("defect_type", "defect_type_file")
+DEFAULT_MATCH_MODE = "defect_type"
 
 
 def _same_file(expected: Optional[str], predicted: Optional[str]) -> bool:
@@ -48,6 +48,7 @@ class MatchedPair:
     expected_index: int
     predicted_index: int
     category: str
+    defect_type: str
     file_matched: bool
     confidence: Optional[float]
 
@@ -106,9 +107,9 @@ def match_findings(
         for p_index, pred in enumerate(predicted):
             if p_index in used_predictions:
                 continue
-            if pred.normalized_category != exp.category:
+            if pred.normalized_defect_type != exp.defect_type:
                 continue
-            if mode == "category_file" and not _same_file(exp.file, pred.file):
+            if mode == "defect_type_file" and not _same_file(exp.file, pred.file):
                 continue
             candidates.append(p_index)
 
@@ -128,6 +129,7 @@ def match_findings(
                 expected_index=e_index,
                 predicted_index=chosen,
                 category=exp.category,
+                defect_type=exp.defect_type,
                 file_matched=_same_file(exp.file, predicted[chosen].file),
                 confidence=predicted[chosen].confidence,
             )

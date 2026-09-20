@@ -34,6 +34,21 @@ CATEGORIES = (
 #: cases that must produce no findings, not a defect category).
 DEFECT_CATEGORIES = tuple(c for c in CATEGORIES if c != "clean_control")
 
+#: Machine-readable mechanisms used for finding-level matching. Broad
+#: categories remain on findings for aggregation, but are not precise enough
+#: to decide whether a prediction identified the labelled defect.
+DEFECT_TYPES = (
+    "authorization_policy_removed",
+    "authorization_middleware_removed",
+    "authorization_capability_missing",
+    "sql_injection",
+    "xss_unescaped_output",
+    "hardcoded_secret",
+    "unsafe_deserialization",
+)
+
+UNKNOWN_DEFECT_TYPE = "other"
+
 #: Category returned by :func:`normalize_category` when a predicted category
 #: cannot be mapped onto the v0.1 taxonomy.
 UNKNOWN_CATEGORY = "other"
@@ -79,8 +94,6 @@ CATEGORY_ALIASES: Dict[str, str] = {
     "privilege_escalation": "authorization",
     "idor": "authorization",
     "insecure_direct_object_reference": "authorization",
-    "csrf": "authorization",
-    "missing_nonce_verification": "authorization",
     # injection
     "sql_injection": "injection",
     "sqli": "injection",
@@ -123,6 +136,16 @@ def normalize_category(value: Any) -> str:
     if key in CATEGORIES:
         return key
     return CATEGORY_ALIASES.get(key, UNKNOWN_CATEGORY)
+
+
+def normalize_defect_type(value: Any) -> str:
+    """Return a canonical v0.1 defect type, or ``other`` when unknown."""
+    if not isinstance(value, str):
+        return UNKNOWN_DEFECT_TYPE
+    key = value.strip().lower().replace(" ", "_").replace("-", "_")
+    while "__" in key:
+        key = key.replace("__", "_")
+    return key if key in DEFECT_TYPES else UNKNOWN_DEFECT_TYPE
 
 
 # --------------------------------------------------------------------------
@@ -209,6 +232,7 @@ class ExpectedFinding:
     """A labelled defect that a reviewer is expected to report."""
 
     category: str
+    defect_type: str
     severity: str
     description: str
     file: Optional[str] = None
@@ -218,6 +242,7 @@ class ExpectedFinding:
         return {
             "id": self.id,
             "category": self.category,
+            "defect_type": self.defect_type,
             "severity": self.severity,
             "file": self.file,
             "description": self.description,
@@ -361,10 +386,13 @@ def validate_case_dict(doc: Any) -> List[str]:
         if not isinstance(finding, dict):
             errors.append(f"{where} must be an object")
             continue
-        unknown_f = sorted(set(finding) - {"id", "category", "severity", "file", "description"})
+        unknown_f = sorted(
+            set(finding) - {"id", "category", "defect_type", "severity", "file", "description"}
+        )
         if unknown_f:
             errors.append(f"{where} has unknown field(s): {', '.join(unknown_f)}")
         _check_str(errors, finding, "category", where=where, allowed=DEFECT_CATEGORIES)
+        _check_str(errors, finding, "defect_type", where=where, allowed=DEFECT_TYPES)
         _check_str(errors, finding, "severity", where=where, allowed=SEVERITIES)
         _check_str(errors, finding, "description", where=where)
         _check_optional_str(errors, finding, "file", where=where)
@@ -406,6 +434,7 @@ def case_from_dict(doc: Any, *, path: Optional[Path] = None) -> Case:
     findings = [
         ExpectedFinding(
             category=f["category"],
+            defect_type=f["defect_type"],
             severity=f["severity"],
             description=f["description"],
             file=f.get("file"),
@@ -448,6 +477,7 @@ class PredictedFinding:
     """A finding reported by a reviewer."""
 
     category: str
+    defect_type: str
     severity: str
     description: str
     file: Optional[str] = None
@@ -458,9 +488,14 @@ class PredictedFinding:
     def normalized_category(self) -> str:
         return normalize_category(self.category)
 
+    @property
+    def normalized_defect_type(self) -> str:
+        return normalize_defect_type(self.defect_type)
+
     def to_dict(self) -> Dict[str, Any]:
         return {
             "category": self.category,
+            "defect_type": self.defect_type,
             "severity": self.severity,
             "file": self.file,
             "line": self.line,
@@ -507,11 +542,13 @@ def validate_model_response_dict(doc: Any) -> List[str]:
             errors.append(f"{where} must be an object")
             continue
         unknown_f = sorted(
-            set(finding) - {"category", "severity", "file", "line", "description", "confidence"}
+            set(finding)
+            - {"category", "defect_type", "severity", "file", "line", "description", "confidence"}
         )
         if unknown_f:
             errors.append(f"{where} has unknown field(s): {', '.join(unknown_f)}")
         _check_str(errors, finding, "category", where=where)
+        _check_str(errors, finding, "defect_type", where=where)
         _check_str(errors, finding, "severity", where=where, allowed=SEVERITIES)
         _check_str(errors, finding, "description", where=where)
         _check_optional_str(errors, finding, "file", where=where)
@@ -536,6 +573,7 @@ def model_response_from_dict(doc: Any) -> ModelResponse:
     findings = [
         PredictedFinding(
             category=f["category"],
+            defect_type=f["defect_type"],
             severity=f["severity"],
             description=f["description"],
             file=f.get("file"),

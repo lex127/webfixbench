@@ -22,7 +22,7 @@ from .providers.base import BaseProvider
 from .schemas import ValidationError, parse_model_response
 
 #: Bumped when the result-file layout changes in a backwards-incompatible way.
-RESULTS_FORMAT_VERSION = 1
+RESULTS_FORMAT_VERSION = 2
 
 
 @dataclass

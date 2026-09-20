@@ -13,6 +13,37 @@ from dataclasses import dataclass, field
 from typing import Any, Dict, Optional
 
 
+RESPONSE_JSON_SCHEMA: Dict[str, Any] = {
+    "type": "object",
+    "additionalProperties": False,
+    "properties": {
+        "findings": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "additionalProperties": False,
+                "required": ["category", "defect_type", "severity", "file", "line", "description", "confidence"],
+                "properties": {
+                    "category": {"type": "string"},
+                    "defect_type": {"type": "string"},
+                    "severity": {"type": "string", "enum": ["low", "medium", "high", "critical"]},
+                    "file": {"type": ["string", "null"]},
+                    "line": {"type": ["integer", "null"]},
+                    "description": {"type": "string"},
+                    "confidence": {"type": ["number", "null"], "minimum": 0.0, "maximum": 1.0},
+                },
+            },
+        },
+        "overall_confidence": {
+            "type": ["number", "null"],
+            "minimum": 0.0,
+            "maximum": 1.0,
+        },
+    },
+    "required": ["findings", "overall_confidence"],
+}
+
+
 class ProviderError(RuntimeError):
     """Raised when a provider cannot be constructed or configured.
 

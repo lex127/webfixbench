@@ -67,6 +67,18 @@ def build_parser() -> argparse.ArgumentParser:
     )
     run_parser.add_argument("--provider", default="mock", choices=PROVIDERS)
     run_parser.add_argument("--model", default=None, help="model id (required for paid providers)")
+    run_parser.add_argument(
+        "--api-type",
+        default=None,
+        choices=("responses", "chat.completions"),
+        help="OpenAI API type (default: responses)",
+    )
+    run_parser.add_argument(
+        "--output-constraint",
+        default="json_schema",
+        choices=("json_schema", "json_object", "prompt_only"),
+        help="provider output constraint; support depends on the selected model",
+    )
     run_parser.add_argument("--mock-mode", default="heuristic", choices=MOCK_MODES)
     run_parser.add_argument("--prompt", default=DEFAULT_PROMPT)
     run_parser.add_argument("--temperature", type=float, default=0.0)
@@ -218,14 +230,22 @@ def cmd_run(args: argparse.Namespace) -> int:
     prompt = load_prompt(args.prompt, root=args.root)
     pricing = load_pricing(args.pricing)
 
-    provider = get_provider(
-        args.provider,
-        model=args.model,
-        mode=args.mock_mode,
-        temperature=args.temperature,
-        max_output_tokens=args.max_output_tokens,
-        timeout=args.timeout,
-    )
+    provider_kwargs = {
+        "name": args.provider,
+        "model": args.model,
+        "mode": args.mock_mode,
+        "temperature": args.temperature,
+        "max_output_tokens": args.max_output_tokens,
+        "timeout": args.timeout,
+    }
+    if args.provider == "openai":
+        provider_kwargs["api_type"] = args.api_type or "responses"
+        provider_kwargs["output_constraint"] = args.output_constraint
+    elif args.provider == "anthropic":
+        if args.output_constraint == "json_object":
+            raise ProviderError("Anthropic supports json_schema or prompt_only, not json_object")
+        provider_kwargs["output_constraint"] = args.output_constraint
+    provider = get_provider(**provider_kwargs)
 
     pending = [c.id for c in suite.cases if not c.labels_frozen]
     if pending and not args.quiet:

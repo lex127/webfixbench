@@ -71,7 +71,8 @@ run.created_at           UTC timestamp
 run.suite                suite id, version, case count
 run.cases_run            case ids, in execution order
 run.prompt               prompt id and SHA-256 of the exact prompt text
-run.provider             provider, model, temperature, max output tokens
+run.provider             provider, API type/endpoint, model, output constraint,
+                         temperature and max output tokens
 run.pricing              pricing table metadata, or null
 responses[]              per case: valid, raw, parsed, validation_errors,
                          error, latency_ms, usage, cost_usd

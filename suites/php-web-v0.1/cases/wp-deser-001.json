@@ -14,6 +14,7 @@
     {
       "id": "wp-deser-001-f1",
       "category": "unsafe_deserialization",
+      "defect_type": "unsafe_deserialization",
       "severity": "high",
       "file": "wp-content/plugins/wfb-demo/includes/prefs.php",
       "description": "unserialize() is called on an unsigned, attacker-controlled cookie value, enabling PHP object injection."

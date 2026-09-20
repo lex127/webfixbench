@@ -21,7 +21,7 @@ the licence of this repository.
 Python 3.9+. The package has no runtime dependencies.
 
 ```bash
-git clone https://github.com/alexsinyaev/webfixbench.git
+git clone https://github.com/lex127/webfixbench.git
 cd webfixbench
 pip install -e ".[dev]"
 pytest

@@ -14,6 +14,7 @@
     {
       "id": "laravel-authz-001-f1",
       "category": "authorization",
+      "defect_type": "authorization_policy_removed",
       "severity": "high",
       "file": "app/Http/Controllers/PostController.php",
       "description": "The $this->authorize('update', $post) call was removed, so any authenticated user can update any post."

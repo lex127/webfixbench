@@ -24,9 +24,10 @@ from .base import BaseProvider, ProviderError, ProviderResult
 MOCK_MODES = ("heuristic", "empty", "oracle_free", "malformed")
 
 #: Rules are applied to lines added by the diff. Each entry is
-#: ``(category, severity, base confidence, compiled pattern, message)``.
-_ADDED_LINE_RULES: Tuple[Tuple[str, str, float, "re.Pattern[str]", str], ...] = (
+#: ``(category, defect_type, severity, confidence, pattern, message)``.
+_ADDED_LINE_RULES: Tuple[Tuple[str, str, str, float, "re.Pattern[str]", str], ...] = (
     (
+        "unsafe_deserialization",
         "unsafe_deserialization",
         "high",
         0.82,
@@ -35,6 +36,7 @@ _ADDED_LINE_RULES: Tuple[Tuple[str, str, float, "re.Pattern[str]", str], ...] = 
     ),
     (
         "injection",
+        "sql_injection",
         "high",
         0.80,
         re.compile(r"(DB::(raw|select|statement)|whereRaw|mysqli_query|->query\s*\()"),
@@ -42,6 +44,7 @@ _ADDED_LINE_RULES: Tuple[Tuple[str, str, float, "re.Pattern[str]", str], ...] = 
     ),
     (
         "injection",
+        "sql_injection",
         "high",
         0.74,
         re.compile(r"\$wpdb->(query|get_results|get_row|get_var)\s*\(\s*[\"'].*\$"),
@@ -49,6 +52,7 @@ _ADDED_LINE_RULES: Tuple[Tuple[str, str, float, "re.Pattern[str]", str], ...] = 
     ),
     (
         "xss",
+        "xss_unescaped_output",
         "high",
         0.78,
         re.compile(r"\{!!"),
@@ -56,6 +60,7 @@ _ADDED_LINE_RULES: Tuple[Tuple[str, str, float, "re.Pattern[str]", str], ...] = 
     ),
     (
         "xss",
+        "xss_unescaped_output",
         "medium",
         0.70,
         re.compile(r"\b(echo|print)\s+\$(_GET|_POST|_REQUEST)"),
@@ -63,6 +68,7 @@ _ADDED_LINE_RULES: Tuple[Tuple[str, str, float, "re.Pattern[str]", str], ...] = 
     ),
     (
         "secrets",
+        "hardcoded_secret",
         "high",
         0.85,
         re.compile(
@@ -75,9 +81,10 @@ _ADDED_LINE_RULES: Tuple[Tuple[str, str, float, "re.Pattern[str]", str], ...] = 
 
 #: Rules applied to lines removed by the diff (a guard disappearing is itself
 #: the defect in several authorization cases).
-_REMOVED_LINE_RULES: Tuple[Tuple[str, str, float, "re.Pattern[str]", str], ...] = (
+_REMOVED_LINE_RULES: Tuple[Tuple[str, str, str, float, "re.Pattern[str]", str], ...] = (
     (
         "authorization",
+        "authorization_policy_removed",
         "high",
         0.76,
         re.compile(r"(->authorize\s*\(|Gate::|\bpolicy\s*\(|can\s*\(\s*['\"])"),
@@ -85,6 +92,7 @@ _REMOVED_LINE_RULES: Tuple[Tuple[str, str, float, "re.Pattern[str]", str], ...] 
     ),
     (
         "authorization",
+        "authorization_capability_missing",
         "high",
         0.72,
         re.compile(r"(current_user_can|check_ajax_referer|wp_verify_nonce)"),
@@ -92,6 +100,7 @@ _REMOVED_LINE_RULES: Tuple[Tuple[str, str, float, "re.Pattern[str]", str], ...] 
     ),
     (
         "authorization",
+        "authorization_middleware_removed",
         "medium",
         0.68,
         re.compile(r"middleware\s*\(\s*\[?\s*['\"](auth|can:|verified)"),
@@ -103,6 +112,7 @@ _REMOVED_LINE_RULES: Tuple[Tuple[str, str, float, "re.Pattern[str]", str], ...] 
 #: positives (including on clean controls) appear in mock baselines.
 _DISTRACTOR = (
     "xss",
+    "xss_unescaped_output",
     "low",
     0.31,
     "Output in this change may need escaping; not confirmed from the supplied diff.",
@@ -152,6 +162,7 @@ class MockProvider(BaseProvider):
 
     def describe(self) -> Dict[str, Any]:
         description = super().describe()
+        description.update({"api_type": "offline", "output_constraint": "native_json"})
         description["mock_mode"] = self.mode
         description["note"] = (
             "Deterministic rule-based stub. Not a language model; its scores say "
@@ -199,7 +210,7 @@ class MockProvider(BaseProvider):
             else:
                 continue
             body = line[1:]
-            for category, severity, base_confidence, pattern, message in rules:
+            for category, defect_type, severity, base_confidence, pattern, message in rules:
                 if not pattern.search(body):
                     continue
                 key = (category, current_file)
@@ -210,6 +221,7 @@ class MockProvider(BaseProvider):
                 findings.append(
                     {
                         "category": category,
+                        "defect_type": defect_type,
                         "severity": severity,
                         "file": current_file,
                         "line": None,
@@ -221,11 +233,12 @@ class MockProvider(BaseProvider):
         # `oracle_free` keeps only the rule hits; `heuristic` additionally emits
         # a deterministic distractor on a fixed subset of cases.
         if self.mode == "heuristic" and _stable_unit(case_id, "distractor") < 0.25:
-            category, severity, confidence, message = _DISTRACTOR
+            category, defect_type, severity, confidence, message = _DISTRACTOR
             if not any(f["category"] == category for f in findings):
                 findings.append(
                     {
                         "category": category,
+                        "defect_type": defect_type,
                         "severity": severity,
                         "file": current_file,
                         "line": None,

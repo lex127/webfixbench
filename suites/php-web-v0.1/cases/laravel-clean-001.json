@@ -8,7 +8,7 @@
   "source_type": "synthetic",
   "source_url": null,
   "description": "Three attribute assignments are collapsed into fill()/save(). Behaviour, authorisation and validation are unchanged.",
-  "context": "The authorize() call and the InvoicePolicy are untouched by this change and are visible as context lines in the diff.",
+  "context": "Invoice::$fillable includes both status and paid_at, so fill() will not silently discard either value. The authorize() call and InvoicePolicy are unchanged and visible as context lines in the diff.",
   "diff": "diff --git a/app/Http/Controllers/InvoiceController.php b/app/Http/Controllers/InvoiceController.php\n--- a/app/Http/Controllers/InvoiceController.php\n+++ b/app/Http/Controllers/InvoiceController.php\n@@ -40,13 +40,15 @@ class InvoiceController extends Controller\n\n     public function markPaid(MarkInvoicePaidRequest $request, Invoice $invoice): RedirectResponse\n     {\n         $this->authorize('markPaid', $invoice);\n\n-        $invoice->status = 'paid';\n-        $invoice->paid_at = now();\n-        $invoice->save();\n+        $invoice->fill([\n+            'status'  => 'paid',\n+            'paid_at' => now(),\n+        ]);\n+\n+        $invoice->save();\n\n         return back()->with('status', 'Invoice marked as paid.');\n     }\n",
   "expected_findings": [],
   "is_clean": true,

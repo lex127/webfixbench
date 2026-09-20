@@ -6,11 +6,11 @@
 | Provider | `mock` |
 | Model | `mock-heuristic-v1` |
 | Temperature | 0.00 |
-| Prompt | `review_v1` (sha256 `6b27a50db475…`) |
-| Match mode | `category` |
-| Run id | `d57631961d62` |
-| Run at (UTC) | 2026-09-20T09:38:39+00:00 |
-| WebFixBench | 0.1.0 |
+| Prompt | `review_v2` (sha256 `c7ad40735a4a…`) |
+| Match mode | `defect_type` |
+| Run id | `6915f22f0198` |
+| Run at (UTC) | 2026-09-20T10:38:17+00:00 |
+| WebFixBench | 0.1.0.dev0 |
 | Mock mode | `heuristic` |
 
 > **Provisional.** 12 of 12 cases have labels that a human has not yet reviewed and frozen. These results are provisional and must not be published as a model evaluation. See docs/ANNOTATION.md.
@@ -81,11 +81,11 @@ Calibration: Confidence values are recorded but not turned into a calibration sc
 
 | Metric | Value |
 | --- | --- |
-| Mean latency (ms) | 0.03 |
-| Median latency (ms) | 0.03 |
-| p95 latency (ms) | 0.04 |
-| Input tokens | 9636 |
-| Output tokens | 796 |
+| Mean latency (ms) | 0.05 |
+| Median latency (ms) | 0.04 |
+| p95 latency (ms) | 0.06 |
+| Input tokens | 10403 |
+| Output tokens | 910 |
 | Token counts estimated | yes |
 | Total cost (USD) | n/a |
 

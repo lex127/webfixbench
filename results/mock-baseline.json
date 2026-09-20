@@ -1,9 +1,9 @@
 {
-  "webfixbench_version": "0.1.0",
-  "results_format_version": 1,
+  "webfixbench_version": "0.1.0.dev0",
+  "results_format_version": 2,
   "run": {
-    "run_id": "d57631961d62",
-    "created_at": "2026-09-20T09:38:39+00:00",
+    "run_id": "6915f22f0198",
+    "created_at": "2026-09-20T10:38:17+00:00",
     "suite": {
       "id": "php-web-v0.1",
       "version": "0.1.0",
@@ -24,8 +24,8 @@
       "wp-xss-001"
     ],
     "prompt": {
-      "id": "review_v1",
-      "sha256": "6b27a50db475146fc397ae3e630dfe982b0ba0d910dd897c91838cc0cee71d99"
+      "id": "review_v2",
+      "sha256": "c7ad40735a4aa752e689b1c2c5997370aed0835832d29314c492dd037e9640fb"
     },
     "provider": {
       "provider": "mock",
@@ -35,6 +35,8 @@
       "settings": {
         "mock_mode": "heuristic"
       },
+      "api_type": "offline",
+      "output_constraint": "native_json",
       "mock_mode": "heuristic",
       "note": "Deterministic rule-based stub. Not a language model; its scores say nothing about any model's review quality."
     },
@@ -44,22 +46,23 @@
     {
       "case_id": "laravel-authz-001",
       "valid": true,
-      "latency_ms": 0.043,
+      "latency_ms": 0.057,
       "model": "mock-heuristic-v1",
       "usage": {
-        "input_tokens": 782,
-        "output_tokens": 75,
-        "total_tokens": 857,
+        "input_tokens": 843,
+        "output_tokens": 89,
+        "total_tokens": 932,
         "estimated": true
       },
       "cost_usd": null,
       "error": null,
       "validation_errors": [],
-      "raw": "{\n  \"findings\": [\n    {\n      \"category\": \"authorization\",\n      \"severity\": \"high\",\n      \"file\": \"app/Http/Controllers/PostController.php\",\n      \"line\": null,\n      \"description\": \"An authorization check was removed from this path.\",\n      \"confidence\": 0.76\n    }\n  ],\n  \"overall_confidence\": 0.76\n}",
+      "raw": "{\n  \"findings\": [\n    {\n      \"category\": \"authorization\",\n      \"defect_type\": \"authorization_policy_removed\",\n      \"severity\": \"high\",\n      \"file\": \"app/Http/Controllers/PostController.php\",\n      \"line\": null,\n      \"description\": \"An authorization check was removed from this path.\",\n      \"confidence\": 0.76\n    }\n  ],\n  \"overall_confidence\": 0.76\n}",
       "parsed": {
         "findings": [
           {
             "category": "authorization",
+            "defect_type": "authorization_policy_removed",
             "severity": "high",
             "file": "app/Http/Controllers/PostController.php",
             "line": null,
@@ -74,22 +77,23 @@
     {
       "case_id": "laravel-authz-002",
       "valid": true,
-      "latency_ms": 0.054,
+      "latency_ms": 0.059,
       "model": "mock-heuristic-v1",
       "usage": {
-        "input_tokens": 832,
-        "output_tokens": 68,
-        "total_tokens": 900,
+        "input_tokens": 892,
+        "output_tokens": 82,
+        "total_tokens": 974,
         "estimated": true
       },
       "cost_usd": null,
       "error": null,
       "validation_errors": [],
-      "raw": "{\n  \"findings\": [\n    {\n      \"category\": \"authorization\",\n      \"severity\": \"medium\",\n      \"file\": \"routes/web.php\",\n      \"line\": null,\n      \"description\": \"Auth middleware was removed from this route.\",\n      \"confidence\": 0.7\n    }\n  ],\n  \"overall_confidence\": 0.7\n}",
+      "raw": "{\n  \"findings\": [\n    {\n      \"category\": \"authorization\",\n      \"defect_type\": \"authorization_middleware_removed\",\n      \"severity\": \"medium\",\n      \"file\": \"routes/web.php\",\n      \"line\": null,\n      \"description\": \"Auth middleware was removed from this route.\",\n      \"confidence\": 0.7\n    }\n  ],\n  \"overall_confidence\": 0.7\n}",
       "parsed": {
         "findings": [
           {
             "category": "authorization",
+            "defect_type": "authorization_middleware_removed",
             "severity": "medium",
             "file": "routes/web.php",
             "line": null,
@@ -104,12 +108,12 @@
     {
       "case_id": "laravel-clean-001",
       "valid": true,
-      "latency_ms": 0.03,
+      "latency_ms": 0.032,
       "model": "mock-heuristic-v1",
       "usage": {
-        "input_tokens": 802,
+        "input_tokens": 882,
         "output_tokens": 12,
-        "total_tokens": 814,
+        "total_tokens": 894,
         "estimated": true
       },
       "cost_usd": null,
@@ -125,22 +129,23 @@
     {
       "case_id": "laravel-injection-001",
       "valid": true,
-      "latency_ms": 0.041,
+      "latency_ms": 0.153,
       "model": "mock-heuristic-v1",
       "usage": {
-        "input_tokens": 823,
-        "output_tokens": 152,
-        "total_tokens": 975,
+        "input_tokens": 884,
+        "output_tokens": 173,
+        "total_tokens": 1057,
         "estimated": true
       },
       "cost_usd": null,
       "error": null,
       "validation_errors": [],
-      "raw": "{\n  \"findings\": [\n    {\n      \"category\": \"injection\",\n      \"severity\": \"high\",\n      \"file\": \"app/Http/Controllers/ReportController.php\",\n      \"line\": null,\n      \"description\": \"Raw SQL is built here; check that no request data reaches the statement unparameterised.\",\n      \"confidence\": 0.77\n    },\n    {\n      \"category\": \"xss\",\n      \"severity\": \"low\",\n      \"file\": \"app/Http/Controllers/ReportController.php\",\n      \"line\": null,\n      \"description\": \"Output in this change may need escaping; not confirmed from the supplied diff.\",\n      \"confidence\": 0.31\n    }\n  ],\n  \"overall_confidence\": 0.54\n}",
+      "raw": "{\n  \"findings\": [\n    {\n      \"category\": \"injection\",\n      \"defect_type\": \"sql_injection\",\n      \"severity\": \"high\",\n      \"file\": \"app/Http/Controllers/ReportController.php\",\n      \"line\": null,\n      \"description\": \"Raw SQL is built here; check that no request data reaches the statement unparameterised.\",\n      \"confidence\": 0.77\n    },\n    {\n      \"category\": \"xss\",\n      \"defect_type\": \"xss_unescaped_output\",\n      \"severity\": \"low\",\n      \"file\": \"app/Http/Controllers/ReportController.php\",\n      \"line\": null,\n      \"description\": \"Output in this change may need escaping; not confirmed from the supplied diff.\",\n      \"confidence\": 0.31\n    }\n  ],\n  \"overall_confidence\": 0.54\n}",
       "parsed": {
         "findings": [
           {
             "category": "injection",
+            "defect_type": "sql_injection",
             "severity": "high",
             "file": "app/Http/Controllers/ReportController.php",
             "line": null,
@@ -149,6 +154,7 @@
           },
           {
             "category": "xss",
+            "defect_type": "xss_unescaped_output",
             "severity": "low",
             "file": "app/Http/Controllers/ReportController.php",
             "line": null,
@@ -163,22 +169,23 @@
     {
       "case_id": "laravel-xss-001",
       "valid": true,
-      "latency_ms": 0.022,
+      "latency_ms": 0.038,
       "model": "mock-heuristic-v1",
       "usage": {
-        "input_tokens": 779,
-        "output_tokens": 78,
-        "total_tokens": 857,
+        "input_tokens": 839,
+        "output_tokens": 89,
+        "total_tokens": 928,
         "estimated": true
       },
       "cost_usd": null,
       "error": null,
       "validation_errors": [],
-      "raw": "{\n  \"findings\": [\n    {\n      \"category\": \"xss\",\n      \"severity\": \"high\",\n      \"file\": \"resources/views/comments/_comment.blade.php\",\n      \"line\": null,\n      \"description\": \"Unescaped Blade output ({!! !!}) renders a value without escaping.\",\n      \"confidence\": 0.76\n    }\n  ],\n  \"overall_confidence\": 0.76\n}",
+      "raw": "{\n  \"findings\": [\n    {\n      \"category\": \"xss\",\n      \"defect_type\": \"xss_unescaped_output\",\n      \"severity\": \"high\",\n      \"file\": \"resources/views/comments/_comment.blade.php\",\n      \"line\": null,\n      \"description\": \"Unescaped Blade output ({!! !!}) renders a value without escaping.\",\n      \"confidence\": 0.76\n    }\n  ],\n  \"overall_confidence\": 0.76\n}",
       "parsed": {
         "findings": [
           {
             "category": "xss",
+            "defect_type": "xss_unescaped_output",
             "severity": "high",
             "file": "resources/views/comments/_comment.blade.php",
             "line": null,
@@ -193,12 +200,12 @@
     {
       "case_id": "php-clean-001",
       "valid": true,
-      "latency_ms": 0.033,
+      "latency_ms": 0.042,
       "model": "mock-heuristic-v1",
       "usage": {
-        "input_tokens": 812,
+        "input_tokens": 873,
         "output_tokens": 12,
-        "total_tokens": 824,
+        "total_tokens": 885,
         "estimated": true
       },
       "cost_usd": null,
@@ -214,22 +221,23 @@
     {
       "case_id": "php-injection-001",
       "valid": true,
-      "latency_ms": 0.03,
+      "latency_ms": 0.035,
       "model": "mock-heuristic-v1",
       "usage": {
-        "input_tokens": 784,
-        "output_tokens": 79,
-        "total_tokens": 863,
+        "input_tokens": 845,
+        "output_tokens": 88,
+        "total_tokens": 933,
         "estimated": true
       },
       "cost_usd": null,
       "error": null,
       "validation_errors": [],
-      "raw": "{\n  \"findings\": [\n    {\n      \"category\": \"injection\",\n      \"severity\": \"high\",\n      \"file\": \"src/Legacy/search.php\",\n      \"line\": null,\n      \"description\": \"Raw SQL is built here; check that no request data reaches the statement unparameterised.\",\n      \"confidence\": 0.8\n    }\n  ],\n  \"overall_confidence\": 0.8\n}",
+      "raw": "{\n  \"findings\": [\n    {\n      \"category\": \"injection\",\n      \"defect_type\": \"sql_injection\",\n      \"severity\": \"high\",\n      \"file\": \"src/Legacy/search.php\",\n      \"line\": null,\n      \"description\": \"Raw SQL is built here; check that no request data reaches the statement unparameterised.\",\n      \"confidence\": 0.8\n    }\n  ],\n  \"overall_confidence\": 0.8\n}",
       "parsed": {
         "findings": [
           {
             "category": "injection",
+            "defect_type": "sql_injection",
             "severity": "high",
             "file": "src/Legacy/search.php",
             "line": null,
@@ -244,22 +252,23 @@
     {
       "case_id": "php-secrets-001",
       "valid": true,
-      "latency_ms": 0.021,
+      "latency_ms": 0.026,
       "model": "mock-heuristic-v1",
       "usage": {
-        "input_tokens": 712,
-        "output_tokens": 131,
-        "total_tokens": 843,
+        "input_tokens": 773,
+        "output_tokens": 153,
+        "total_tokens": 926,
         "estimated": true
       },
       "cost_usd": null,
       "error": null,
       "validation_errors": [],
-      "raw": "{\n  \"findings\": [\n    {\n      \"category\": \"secrets\",\n      \"severity\": \"high\",\n      \"file\": \"config/services.php\",\n      \"line\": null,\n      \"description\": \"A credential-looking literal is committed in source.\",\n      \"confidence\": 0.87\n    },\n    {\n      \"category\": \"xss\",\n      \"severity\": \"low\",\n      \"file\": \"config/services.php\",\n      \"line\": null,\n      \"description\": \"Output in this change may need escaping; not confirmed from the supplied diff.\",\n      \"confidence\": 0.31\n    }\n  ],\n  \"overall_confidence\": 0.59\n}",
+      "raw": "{\n  \"findings\": [\n    {\n      \"category\": \"secrets\",\n      \"defect_type\": \"hardcoded_secret\",\n      \"severity\": \"high\",\n      \"file\": \"config/services.php\",\n      \"line\": null,\n      \"description\": \"A credential-looking literal is committed in source.\",\n      \"confidence\": 0.87\n    },\n    {\n      \"category\": \"xss\",\n      \"defect_type\": \"xss_unescaped_output\",\n      \"severity\": \"low\",\n      \"file\": \"config/services.php\",\n      \"line\": null,\n      \"description\": \"Output in this change may need escaping; not confirmed from the supplied diff.\",\n      \"confidence\": 0.31\n    }\n  ],\n  \"overall_confidence\": 0.59\n}",
       "parsed": {
         "findings": [
           {
             "category": "secrets",
+            "defect_type": "hardcoded_secret",
             "severity": "high",
             "file": "config/services.php",
             "line": null,
@@ -268,6 +277,7 @@
           },
           {
             "category": "xss",
+            "defect_type": "xss_unescaped_output",
             "severity": "low",
             "file": "config/services.php",
             "line": null,
@@ -282,12 +292,12 @@
     {
       "case_id": "wp-authz-001",
       "valid": true,
-      "latency_ms": 0.043,
+      "latency_ms": 0.052,
       "model": "mock-heuristic-v1",
       "usage": {
-        "input_tokens": 850,
+        "input_tokens": 943,
         "output_tokens": 12,
-        "total_tokens": 862,
+        "total_tokens": 955,
         "estimated": true
       },
       "cost_usd": null,
@@ -303,22 +313,23 @@
     {
       "case_id": "wp-clean-001",
       "valid": true,
-      "latency_ms": 0.027,
+      "latency_ms": 0.025,
       "model": "mock-heuristic-v1",
       "usage": {
-        "input_tokens": 895,
-        "output_tokens": 81,
-        "total_tokens": 976,
+        "input_tokens": 942,
+        "output_tokens": 92,
+        "total_tokens": 1034,
         "estimated": true
       },
       "cost_usd": null,
       "error": null,
       "validation_errors": [],
-      "raw": "{\n  \"findings\": [\n    {\n      \"category\": \"xss\",\n      \"severity\": \"low\",\n      \"file\": \"wp-content/plugins/wfb-demo/includes/ajax.php\",\n      \"line\": null,\n      \"description\": \"Output in this change may need escaping; not confirmed from the supplied diff.\",\n      \"confidence\": 0.31\n    }\n  ],\n  \"overall_confidence\": 0.31\n}",
+      "raw": "{\n  \"findings\": [\n    {\n      \"category\": \"xss\",\n      \"defect_type\": \"xss_unescaped_output\",\n      \"severity\": \"low\",\n      \"file\": \"wp-content/plugins/wfb-demo/includes/ajax.php\",\n      \"line\": null,\n      \"description\": \"Output in this change may need escaping; not confirmed from the supplied diff.\",\n      \"confidence\": 0.31\n    }\n  ],\n  \"overall_confidence\": 0.31\n}",
       "parsed": {
         "findings": [
           {
             "category": "xss",
+            "defect_type": "xss_unescaped_output",
             "severity": "low",
             "file": "wp-content/plugins/wfb-demo/includes/ajax.php",
             "line": null,
@@ -333,22 +344,23 @@
     {
       "case_id": "wp-deser-001",
       "valid": true,
-      "latency_ms": 0.017,
+      "latency_ms": 0.019,
       "model": "mock-heuristic-v1",
       "usage": {
-        "input_tokens": 773,
-        "output_tokens": 84,
-        "total_tokens": 857,
+        "input_tokens": 834,
+        "output_tokens": 96,
+        "total_tokens": 930,
         "estimated": true
       },
       "cost_usd": null,
       "error": null,
       "validation_errors": [],
-      "raw": "{\n  \"findings\": [\n    {\n      \"category\": \"unsafe_deserialization\",\n      \"severity\": \"high\",\n      \"file\": \"wp-content/plugins/wfb-demo/includes/prefs.php\",\n      \"line\": null,\n      \"description\": \"Added call to unserialize() on data that is not shown to be trusted.\",\n      \"confidence\": 0.79\n    }\n  ],\n  \"overall_confidence\": 0.79\n}",
+      "raw": "{\n  \"findings\": [\n    {\n      \"category\": \"unsafe_deserialization\",\n      \"defect_type\": \"unsafe_deserialization\",\n      \"severity\": \"high\",\n      \"file\": \"wp-content/plugins/wfb-demo/includes/prefs.php\",\n      \"line\": null,\n      \"description\": \"Added call to unserialize() on data that is not shown to be trusted.\",\n      \"confidence\": 0.79\n    }\n  ],\n  \"overall_confidence\": 0.79\n}",
       "parsed": {
         "findings": [
           {
             "category": "unsafe_deserialization",
+            "defect_type": "unsafe_deserialization",
             "severity": "high",
             "file": "wp-content/plugins/wfb-demo/includes/prefs.php",
             "line": null,
@@ -363,12 +375,12 @@
     {
       "case_id": "wp-xss-001",
       "valid": true,
-      "latency_ms": 0.02,
+      "latency_ms": 0.022,
       "model": "mock-heuristic-v1",
       "usage": {
-        "input_tokens": 792,
+        "input_tokens": 853,
         "output_tokens": 12,
-        "total_tokens": 804,
+        "total_tokens": 865,
         "estimated": true
       },
       "cost_usd": null,
