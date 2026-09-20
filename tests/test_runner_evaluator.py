@@ -19,7 +19,7 @@ class SuiteRunTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         cls.suite = load_suite("php-web-v0.1", root=ROOT)
-        cls.prompt = load_prompt("review_v2", root=ROOT)
+        cls.prompt = load_prompt("review_v3", root=ROOT)
         cls.document = run_suite(cls.suite, MockProvider(), cls.prompt)
         cls.evaluation = evaluate_document(cls.document, cls.suite, root=ROOT)
 
@@ -28,7 +28,7 @@ class SuiteRunTests(unittest.TestCase):
 
     def test_run_metadata_pins_prompt_and_provider(self) -> None:
         run = self.document["run"]
-        self.assertEqual(run["prompt"]["id"], "review_v2")
+        self.assertEqual(run["prompt"]["id"], "review_v3")
         self.assertEqual(len(run["prompt"]["sha256"]), 64)
         self.assertEqual(run["provider"]["provider"], "mock")
         self.assertEqual(run["suite"]["id"], "php-web-v0.1")
@@ -93,7 +93,7 @@ class CleanControlTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         cls.suite = load_suite("php-web-v0.1", root=ROOT)
-        cls.prompt = load_prompt("review_v2", root=ROOT)
+        cls.prompt = load_prompt("review_v3", root=ROOT)
 
     def test_a_reviewer_that_reports_nothing_has_no_false_positives(self) -> None:
         document = run_suite(self.suite, MockProvider(mode="empty"), self.prompt)
@@ -108,7 +108,7 @@ class CleanControlTests(unittest.TestCase):
         document = run_suite(self.suite, MockProvider(), self.prompt)
         evaluation = evaluate_document(document, self.suite, root=ROOT)
         clean = [c for c in evaluation["cases"] if c["is_clean"]]
-        self.assertEqual(len(clean), 3)
+        self.assertEqual(len(clean), 4)
         for entry in clean:
             self.assertEqual(entry["expected"], 0)
             self.assertEqual(entry["true_positives"], 0)
@@ -119,7 +119,7 @@ class MalformedResponseTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         cls.suite = load_suite("php-web-v0.1", root=ROOT)
-        cls.prompt = load_prompt("review_v2", root=ROOT)
+        cls.prompt = load_prompt("review_v3", root=ROOT)
         cls.document = run_suite(cls.suite, MockProvider(mode="malformed"), cls.prompt)
         cls.evaluation = evaluate_document(cls.document, cls.suite, root=ROOT)
 
@@ -134,7 +134,7 @@ class MalformedResponseTests(unittest.TestCase):
         self.assertEqual(metrics["counts"]["invalid_responses"], len(self.suite))
         self.assertEqual(metrics["findings"]["true_positives"], 0)
         self.assertEqual(metrics["findings"]["false_positives"], 0)
-        self.assertEqual(metrics["findings"]["false_negatives"], 9)
+        self.assertEqual(metrics["findings"]["false_negatives"], 11)
         self.assertIsNone(metrics["false_alarms"]["clean_case_false_alarm_rate"])
 
 
@@ -142,7 +142,7 @@ class EvaluationTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         cls.suite = load_suite("php-web-v0.1", root=ROOT)
-        cls.prompt = load_prompt("review_v2", root=ROOT)
+        cls.prompt = load_prompt("review_v3", root=ROOT)
         cls.document = run_suite(cls.suite, MockProvider(), cls.prompt)
 
     def test_match_mode_is_recorded_and_changes_scoring(self) -> None:

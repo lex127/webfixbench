@@ -69,7 +69,7 @@ review sets `academic_review: true`; every other case leaves it `false`.
 
 ### Status of the v0.1 suite
 
-All twelve cases are currently `agent_drafted` / `pending_review`. They were
+All fifteen cases are currently `agent_drafted` / `pending_review`. They were
 drafted with the workflow above and are awaiting the maintainer's review pass.
 Until that pass is done and the labels are frozen, any scores the harness
 produces are provisional — the CLI, the evaluation document and the rendered
@@ -87,6 +87,10 @@ do not collapse them into one authorization finding. CSRF and missing nonce
 verification are outside the v0.1 taxonomy. If both defects occur in a draft,
 simplify the case to isolate one supported defect before accepting it into
 v0.1, following the single-finding rule below.
+
+The `injection` category includes configuration injection via the precise
+`environment_override_from_web_argv` type as well as `sql_injection`. These
+mechanisms do not match one another. See [METHODOLOGY.md](METHODOLOGY.md).
 
 New categories are a deliberate decision, not an ad-hoc one. v0.1's five
 categories were chosen because their ground truth is objective; adding
@@ -149,14 +153,14 @@ remains a v0.2 item.
   freezing is a **case revision**: bump the suite version and note the change in
   the changelog, because it changes what past numbers meant.
 - Adding a new case bumps the suite's `case_count` and its version.
-- The prompt is frozen the same way: `prompts/review_v1.txt` is immutable, and
-  a wording change becomes `review_v2.txt`.
+- Prompts are immutable: `review_v1.txt` and `review_v2.txt` remain unchanged;
+  the current prompt is `review_v3.txt`. Future wording changes require a new version.
 
 ## Matching predictions to ground truth
 
 Deterministic, conservative, and documented — no LLM judge.
 
-1. **Normalise** the predicted `defect_type` against the explicit seven-value
+1. **Normalise** the predicted `defect_type` against the explicit eight-value
    v0.1 list in `src/webfixbench/schemas.py`. Unknown types become `other` and
    are counted as false positives, never discarded. Broad category aliases are
    retained for aggregate reporting, but CSRF and missing nonce verification

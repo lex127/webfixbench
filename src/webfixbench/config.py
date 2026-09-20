@@ -15,7 +15,7 @@ from pathlib import Path
 from typing import Any, Dict, Optional
 
 DEFAULT_SUITE = "php-web-v0.1"
-DEFAULT_PROMPT = "review_v2"
+DEFAULT_PROMPT = "review_v3"
 
 #: Environment variables read by the benchmark. API keys are read by the
 #: providers only, never logged and never written to result files.

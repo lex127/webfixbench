@@ -12,6 +12,15 @@ Pre-release research skeleton. A working harness and a small labelled dataset.
 
 ### Added
 
+- Suite revision 0.1.1: three public-advisory synthetic reconstructions (Laravel
+  diagnostic XSS, web argv environment override, and its clean sibling), bringing
+  the suite to 15 cases / 11 defects / 4 controls. All remain pending human review.
+- Conditional advisory provenance in both case validators and serialization;
+  exact fix/license references and measured USE/SKIP decisions for six candidates.
+- One precise configuration-injection type, `environment_override_from_web_argv`,
+  and immutable `review_v3`; prior prompts and matching logic are unchanged.
+- Root AGENTS.md and per-case human review checklists; refreshed offline baseline.
+
 - Benchmark engine: case loading, suite execution, deterministic matching,
   metrics, evaluation and Markdown reporting. No runtime dependencies.
 - `webfixbench` CLI: `list`, `show`, `validate`, `run`, `evaluate`, `report`.

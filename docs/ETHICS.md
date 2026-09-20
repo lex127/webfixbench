@@ -60,7 +60,7 @@ that a model, a tool or a product is safe, secure, or fit for review work.
 
 Specifically:
 
-- v0.1 is twelve synthetic cases in one ecosystem. It cannot support claims
+- v0.1 is fifteen synthetic cases (including advisory reconstructions) in one ecosystem. It cannot support claims
   about a model's general security capability.
 - Results must not be the sole justification for a security decision — choosing
   a review tool, sizing a security budget, or deciding that a change has been

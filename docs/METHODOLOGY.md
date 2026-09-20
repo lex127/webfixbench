@@ -49,7 +49,7 @@ Cases were chosen against four criteria:
    case's `context` field and included in the prompt.
 4. **Reproducibility.** A fixed diff, fixed context, fixed labels.
 
-Categories are restricted to five defect types with objective ground truth:
+Categories are restricted to five broad groups with objective ground truth:
 `authorization`, `injection`, `xss`, `secrets`, `unsafe_deserialization`.
 Subjective categories (style, readability, maintainability, architecture,
 performance) are excluded from v0.1 — not because they do not matter, but
@@ -75,12 +75,12 @@ available when the ground truth has to be inferred from someone else's patch.
 What they do not provide is real-world validity. Real pull requests are larger
 and noisier, and the defect is rarely centred in the diff. The cases are
 disclosed as synthetic everywhere they are described, no claim of real-world
-validity is made from them, and public advisory-derived cases are the next
-dataset expansion ([REAL_WORLD_SOURCES.md](REAL_WORLD_SOURCES.md)).
+validity is made from them. Three independently written advisory-derived
+reconstructions now document two public Laravel source patterns ([REAL_WORLD_SOURCES.md](REAL_WORLD_SOURCES.md)).
 
 ## 5. Clean controls
 
-Three of the twelve cases contain no defect and must produce zero findings.
+Four of the fifteen cases contain no defect and must produce zero findings.
 
 Clean controls are mandatory, and the reason is mechanical: **without clean
 controls, a model can achieve high recall simply by reporting vulnerabilities
@@ -94,7 +94,8 @@ They are chosen to be *plausible* rather than trivially safe:
   while leaving the `authorize()` call intact;
 - a WordPress AJAX handler that is *improved* (input sanitised, output escaped)
   while mentioning `$_POST` and touching the database;
-- a PDO query reformatted while staying parameterised.
+- a PDO query reformatted while staying parameterised;
+- an argv environment-selector refactor preserving its CLI-only boundary.
 
 A reviewer that reports findings on these is producing exactly the kind of
 output that erodes trust in review tooling.
@@ -128,7 +129,7 @@ CLI and the rendered report mark results from unfrozen labels as provisional.
 The full workflow — who may draft, what the reviewer checks, how labels are
 frozen and how revisions are versioned — is in [ANNOTATION.md](ANNOTATION.md).
 
-**Status of the v0.1 suite:** all twelve cases are currently `agent_drafted` /
+**Status of the v0.1 suite:** all fifteen cases are currently `agent_drafted` /
 `pending_review`, awaiting the maintainer's review pass. Until that pass is
 complete, any numbers the harness produces are provisional and are labelled as
 such.
@@ -149,17 +150,20 @@ interacting defects in one change.
 | Category | Ground truth means |
 | --- | --- |
 | `authorization` | The change removes, bypasses or fails to add an access-control obligation (policy, gate, middleware or capability check) |
-| `injection` | The change lets untrusted input reach an interpreter (SQL here) without parameterisation |
+| `injection` | The change lets untrusted input reach SQL without parameterisation, or a console environment-option parser across the web/CLI trust boundary |
 | `xss` | The change causes untrusted data to reach output without escaping |
 | `secrets` | The change commits credential material into the repository |
 | `unsafe_deserialization` | The change deserialises untrusted input into PHP objects |
 | `clean_control` | The change contains no defect; any finding is a false positive |
 
-Each finding also carries one of seven machine-readable defect types:
+Each finding also carries one of eight machine-readable defect types:
 `authorization_policy_removed`, `authorization_middleware_removed`,
 `authorization_capability_missing`, `sql_injection`, `xss_unescaped_output`,
-`hardcoded_secret`, or `unsafe_deserialization`. CSRF and nonce verification
-are distinct mechanisms and are not aliases for authorization in v0.1.
+`hardcoded_secret`, `unsafe_deserialization`, or
+`environment_override_from_web_argv`. The last type is configuration injection:
+request-controlled web argv overrides trusted runtime environment selection. It
+is not a SQL-injection alias and cannot match `sql_injection`. CSRF and nonce
+verification are distinct mechanisms and are not aliases for authorization in v0.1.
 
 Broad model categories are mapped onto the reporting taxonomy through a fixed,
 versioned alias table (`CATEGORY_ALIASES` in `src/webfixbench/schemas.py`), so
@@ -250,16 +254,16 @@ Anything beyond that is malformed.
 ## 12. Prompt freezing
 
 The reviewer prompt is a file, not a string in the code. The current default is
-`prompts/review_v2.txt`.
+`prompts/review_v3.txt`.
 Every run records the prompt id and the SHA-256 of the exact text used, so a
 result file can always be tied to the prompt that produced it.
 
-Prompts are versioned by filename and are append-only: `review_v1.txt` is
-frozen. Any change to prompt wording becomes `review_v2.txt`, and results
+Prompts are versioned by filename and are append-only: `review_v1.txt` and
+`review_v2.txt` are frozen. The configuration-injection addition uses `review_v3.txt`, and results
 produced under different prompt versions are not compared as if they were the
 same experiment.
 
-The v2 prompt asks the reviewer to report material defects visible in the diff,
+The v3 prompt asks the reviewer to report material defects visible in the diff,
 to reason only from the supplied context, to avoid speculation, to return an
 empty list when the change looks safe, and to attach self-reported confidence to
 each finding without claiming calibration. It states explicitly that reporting a defect that is not there is
@@ -320,7 +324,7 @@ design that asks for a well-specified probability.
 
 ## 16. Known limitations
 
-1. **Size.** 12 cases. Any per-category number is computed over one to three
+1. **Size.** 15 cases. Any per-category number is computed over one to three
    cases and should be read as illustrative, not as an estimate.
 2. **Synthetic data.** Cleaner and smaller than real pull requests.
 3. **Single labeller.** No inter-rater agreement yet.
@@ -357,7 +361,7 @@ directly measurable question.
 ## 19. What this benchmark cannot tell you
 
 A small synthetic benchmark does **not** establish general model security
-capability. A good score here means a reviewer handled twelve specific,
+capability. A good score here means a reviewer handled fifteen specific,
 clearly-labelled changes. It is not evidence that the reviewer is safe to rely
 on for a codebase, and it must not be used to certify a model or a tool as
 secure. See [ETHICS.md](ETHICS.md).

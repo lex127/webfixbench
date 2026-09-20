@@ -29,7 +29,7 @@ success rates.
 > across defect categories and frameworks?
 
 v0.1 can only speak to the PHP web ecosystem. It makes no claim about other
-languages, and a 12-case synthetic suite cannot establish general model
+languages, and a 15-case synthetic suite cannot establish general model
 capability.
 
 ## Scope
@@ -64,13 +64,13 @@ frozen status without a human label source and a named reviewer. Runs against
 unfrozen labels are marked provisional in the CLI output, the evaluation
 document and the report.
 
-**All twelve v0.1 cases are currently `pending_review`** — drafted and awaiting
+**All fifteen v0.1 cases are currently `pending_review`** — drafted and awaiting
 the maintainer's review pass. The rules are in
 [docs/ANNOTATION.md](docs/ANNOTATION.md).
 
 ## Why clean controls
 
-Three of the twelve cases contain no defect at all, and the correct review of
+Four of the fifteen cases contain no defect at all, and the correct review of
 them is silence. Without clean controls, a reviewer can post a high recall
 score simply by reporting vulnerabilities on every diff — the benchmark would
 reward exactly the behaviour that makes review tooling unusable. Clean controls
@@ -79,21 +79,22 @@ code that touches authorisation, `$_POST` or SQL and is nevertheless correct.
 
 ## Current suite
 
-`php-web-v0.1` — 12 cases:
+`php-web-v0.1` — 15 cases (suite revision 0.1.1):
 
 | | Laravel | WordPress | PHP | Total |
 | --- | --- | --- | --- | --- |
-| With a labelled defect | 4 | 3 | 2 | 9 |
-| Clean controls | 1 | 1 | 1 | 3 |
+| With a labelled defect | 6 | 3 | 2 | 11 |
+| Clean controls | 2 | 1 | 1 | 4 |
 
-Defect categories in use: `authorization` (3), `injection` (2), `xss` (2),
+Defect categories in use: `authorization` (3), `injection` (3), `xss` (3),
 `secrets` (1), `unsafe_deserialization` (1).
 
 All cases are synthetic, written for this benchmark. That is a design choice:
 synthetic fixtures isolate one defect at a time, fix exactly what the reviewer
 is allowed to assume, and make false-positive measurement reproducible against
 controls known to be clean. They do not establish real-world validity, and no
-claim of it is made. Advisory-derived cases are the next expansion — see
+claim of it is made. Three cases reconstruct patterns from two inspected Laravel
+advisories — see
 [docs/DATASET.md](docs/DATASET.md) and
 [docs/REAL_WORLD_SOURCES.md](docs/REAL_WORLD_SOURCES.md).
 
@@ -155,7 +156,7 @@ Notes:
 - Fable models are excluded by project policy.
 - Keys are read from the environment only, and are never written to result
   files. `.env` is git-ignored.
-- Start with `--limit`. A full 12-case run is 12 requests.
+- Start with `--limit`. A full 15-case run is 15 requests.
 - Cost is reported as `null` unless you pass `--pricing` with your own table
   (see [config/pricing.sample.json](config/pricing.sample.json)); the project
   ships no vendor prices, because stale prices produce wrong numbers.
@@ -163,8 +164,8 @@ Notes:
 
 ## Dataset
 
-12 synthetic unified diffs with explicit ground truth, including three clean
-controls whose correct review is "no findings". Case format and the full case
+15 synthetic unified diffs, including three advisory-derived reconstructions,
+with explicit draft labels and four clean controls whose correct review is "no findings". Case format and the full case
 table: [docs/DATASET.md](docs/DATASET.md). How labels are written, reviewed and
 frozen: [docs/ANNOTATION.md](docs/ANNOTATION.md). Machine-readable schemas:
 [schema/](schema/).
@@ -188,7 +189,7 @@ Two things v0.1 deliberately does **not** do:
 
 ## Reproducibility
 
-- Prompts are versioned files (current: `prompts/review_v2.txt`); every run records the
+- Prompts are versioned files (current: `prompts/review_v3.txt`); every run records the
   prompt id and the SHA-256 of the exact text used.
 - Runs record suite version, provider, model, temperature and token usage.
 - Running and scoring are separate steps, so one (paid) run can be re-scored
@@ -198,7 +199,7 @@ Two things v0.1 deliberately does **not** do:
 
 ## Limitations
 
-- 12 cases. Small: any per-category number rests on one to three cases.
+- 15 cases. Small: any per-category number rests on one to three cases.
 - Labels are drafted and awaiting human review; results from them are
   provisional until frozen.
 - Synthetic cases are cleaner than real pull requests, and say nothing about

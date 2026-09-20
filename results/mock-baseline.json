@@ -2,17 +2,20 @@
   "webfixbench_version": "0.1.0.dev0",
   "results_format_version": 2,
   "run": {
-    "run_id": "6915f22f0198",
-    "created_at": "2026-09-20T10:38:17+00:00",
+    "run_id": "ea2e41913ecc",
+    "created_at": "2026-09-20T12:23:15+00:00",
     "suite": {
       "id": "php-web-v0.1",
-      "version": "0.1.0",
-      "case_count": 12
+      "version": "0.1.1",
+      "case_count": 15
     },
     "cases_run": [
       "laravel-authz-001",
       "laravel-authz-002",
       "laravel-clean-001",
+      "laravel-ghsa-debug-xss-001",
+      "laravel-ghsa-env-001",
+      "laravel-ghsa-env-clean-001",
       "laravel-injection-001",
       "laravel-xss-001",
       "php-clean-001",
@@ -24,8 +27,8 @@
       "wp-xss-001"
     ],
     "prompt": {
-      "id": "review_v2",
-      "sha256": "c7ad40735a4aa752e689b1c2c5997370aed0835832d29314c492dd037e9640fb"
+      "id": "review_v3",
+      "sha256": "d2e983ec0fd24820f3d5fd74f2fa9e3c7112d0202657725cd8ffc6da5cdd7c9b"
     },
     "provider": {
       "provider": "mock",
@@ -46,12 +49,12 @@
     {
       "case_id": "laravel-authz-001",
       "valid": true,
-      "latency_ms": 0.057,
+      "latency_ms": 0.052,
       "model": "mock-heuristic-v1",
       "usage": {
-        "input_tokens": 843,
+        "input_tokens": 912,
         "output_tokens": 89,
-        "total_tokens": 932,
+        "total_tokens": 1001,
         "estimated": true
       },
       "cost_usd": null,
@@ -77,12 +80,12 @@
     {
       "case_id": "laravel-authz-002",
       "valid": true,
-      "latency_ms": 0.059,
+      "latency_ms": 0.065,
       "model": "mock-heuristic-v1",
       "usage": {
-        "input_tokens": 892,
+        "input_tokens": 962,
         "output_tokens": 82,
-        "total_tokens": 974,
+        "total_tokens": 1044,
         "estimated": true
       },
       "cost_usd": null,
@@ -108,12 +111,12 @@
     {
       "case_id": "laravel-clean-001",
       "valid": true,
-      "latency_ms": 0.032,
+      "latency_ms": 0.033,
       "model": "mock-heuristic-v1",
       "usage": {
-        "input_tokens": 882,
+        "input_tokens": 952,
         "output_tokens": 12,
-        "total_tokens": 894,
+        "total_tokens": 964,
         "estimated": true
       },
       "cost_usd": null,
@@ -127,14 +130,97 @@
       "metadata": {}
     },
     {
-      "case_id": "laravel-injection-001",
+      "case_id": "laravel-ghsa-debug-xss-001",
       "valid": true,
-      "latency_ms": 0.153,
+      "latency_ms": 0.024,
       "model": "mock-heuristic-v1",
       "usage": {
-        "input_tokens": 884,
+        "input_tokens": 957,
+        "output_tokens": 89,
+        "total_tokens": 1046,
+        "estimated": true
+      },
+      "cost_usd": null,
+      "error": null,
+      "validation_errors": [],
+      "raw": "{\n  \"findings\": [\n    {\n      \"category\": \"xss\",\n      \"defect_type\": \"xss_unescaped_output\",\n      \"severity\": \"high\",\n      \"file\": \"resources/views/diagnostics/body.blade.php\",\n      \"line\": null,\n      \"description\": \"Unescaped Blade output ({!! !!}) renders a value without escaping.\",\n      \"confidence\": 0.75\n    }\n  ],\n  \"overall_confidence\": 0.75\n}",
+      "parsed": {
+        "findings": [
+          {
+            "category": "xss",
+            "defect_type": "xss_unescaped_output",
+            "severity": "high",
+            "file": "resources/views/diagnostics/body.blade.php",
+            "line": null,
+            "description": "Unescaped Blade output ({!! !!}) renders a value without escaping.",
+            "confidence": 0.75
+          }
+        ],
+        "overall_confidence": 0.75
+      },
+      "metadata": {}
+    },
+    {
+      "case_id": "laravel-ghsa-env-001",
+      "valid": true,
+      "latency_ms": 0.033,
+      "model": "mock-heuristic-v1",
+      "usage": {
+        "input_tokens": 1098,
+        "output_tokens": 12,
+        "total_tokens": 1110,
+        "estimated": true
+      },
+      "cost_usd": null,
+      "error": null,
+      "validation_errors": [],
+      "raw": "{\n  \"findings\": [],\n  \"overall_confidence\": 0.8\n}",
+      "parsed": {
+        "findings": [],
+        "overall_confidence": 0.8
+      },
+      "metadata": {}
+    },
+    {
+      "case_id": "laravel-ghsa-env-clean-001",
+      "valid": true,
+      "latency_ms": 0.04,
+      "model": "mock-heuristic-v1",
+      "usage": {
+        "input_tokens": 1124,
+        "output_tokens": 88,
+        "total_tokens": 1212,
+        "estimated": true
+      },
+      "cost_usd": null,
+      "error": null,
+      "validation_errors": [],
+      "raw": "{\n  \"findings\": [\n    {\n      \"category\": \"xss\",\n      \"defect_type\": \"xss_unescaped_output\",\n      \"severity\": \"low\",\n      \"file\": \"app/Bootstrap/environment.php\",\n      \"line\": null,\n      \"description\": \"Output in this change may need escaping; not confirmed from the supplied diff.\",\n      \"confidence\": 0.31\n    }\n  ],\n  \"overall_confidence\": 0.31\n}",
+      "parsed": {
+        "findings": [
+          {
+            "category": "xss",
+            "defect_type": "xss_unescaped_output",
+            "severity": "low",
+            "file": "app/Bootstrap/environment.php",
+            "line": null,
+            "description": "Output in this change may need escaping; not confirmed from the supplied diff.",
+            "confidence": 0.31
+          }
+        ],
+        "overall_confidence": 0.31
+      },
+      "metadata": {}
+    },
+    {
+      "case_id": "laravel-injection-001",
+      "valid": true,
+      "latency_ms": 0.041,
+      "model": "mock-heuristic-v1",
+      "usage": {
+        "input_tokens": 953,
         "output_tokens": 173,
-        "total_tokens": 1057,
+        "total_tokens": 1126,
         "estimated": true
       },
       "cost_usd": null,
@@ -169,12 +255,12 @@
     {
       "case_id": "laravel-xss-001",
       "valid": true,
-      "latency_ms": 0.038,
+      "latency_ms": 0.023,
       "model": "mock-heuristic-v1",
       "usage": {
-        "input_tokens": 839,
+        "input_tokens": 909,
         "output_tokens": 89,
-        "total_tokens": 928,
+        "total_tokens": 998,
         "estimated": true
       },
       "cost_usd": null,
@@ -200,12 +286,12 @@
     {
       "case_id": "php-clean-001",
       "valid": true,
-      "latency_ms": 0.042,
+      "latency_ms": 0.037,
       "model": "mock-heuristic-v1",
       "usage": {
-        "input_tokens": 873,
+        "input_tokens": 942,
         "output_tokens": 12,
-        "total_tokens": 885,
+        "total_tokens": 954,
         "estimated": true
       },
       "cost_usd": null,
@@ -221,12 +307,12 @@
     {
       "case_id": "php-injection-001",
       "valid": true,
-      "latency_ms": 0.035,
+      "latency_ms": 0.032,
       "model": "mock-heuristic-v1",
       "usage": {
-        "input_tokens": 845,
+        "input_tokens": 914,
         "output_tokens": 88,
-        "total_tokens": 933,
+        "total_tokens": 1002,
         "estimated": true
       },
       "cost_usd": null,
@@ -252,12 +338,12 @@
     {
       "case_id": "php-secrets-001",
       "valid": true,
-      "latency_ms": 0.026,
+      "latency_ms": 0.023,
       "model": "mock-heuristic-v1",
       "usage": {
-        "input_tokens": 773,
+        "input_tokens": 842,
         "output_tokens": 153,
-        "total_tokens": 926,
+        "total_tokens": 995,
         "estimated": true
       },
       "cost_usd": null,
@@ -292,12 +378,12 @@
     {
       "case_id": "wp-authz-001",
       "valid": true,
-      "latency_ms": 0.052,
+      "latency_ms": 0.051,
       "model": "mock-heuristic-v1",
       "usage": {
-        "input_tokens": 943,
+        "input_tokens": 1012,
         "output_tokens": 12,
-        "total_tokens": 955,
+        "total_tokens": 1024,
         "estimated": true
       },
       "cost_usd": null,
@@ -313,12 +399,12 @@
     {
       "case_id": "wp-clean-001",
       "valid": true,
-      "latency_ms": 0.025,
+      "latency_ms": 0.022,
       "model": "mock-heuristic-v1",
       "usage": {
-        "input_tokens": 942,
+        "input_tokens": 1011,
         "output_tokens": 92,
-        "total_tokens": 1034,
+        "total_tokens": 1103,
         "estimated": true
       },
       "cost_usd": null,
@@ -347,9 +433,9 @@
       "latency_ms": 0.019,
       "model": "mock-heuristic-v1",
       "usage": {
-        "input_tokens": 834,
+        "input_tokens": 903,
         "output_tokens": 96,
-        "total_tokens": 930,
+        "total_tokens": 999,
         "estimated": true
       },
       "cost_usd": null,
@@ -378,9 +464,9 @@
       "latency_ms": 0.022,
       "model": "mock-heuristic-v1",
       "usage": {
-        "input_tokens": 853,
+        "input_tokens": 922,
         "output_tokens": 12,
-        "total_tokens": 865,
+        "total_tokens": 934,
         "estimated": true
       },
       "cost_usd": null,
