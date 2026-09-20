@@ -1,0 +1,35 @@
+{
+  "id": "laravel-ghsa-env-clean-001",
+  "title": "Environment selector uses early returns",
+  "language": "php",
+  "ecosystem": "laravel",
+  "category": "clean_control",
+  "difficulty": "medium",
+  "source_type": "public_advisory",
+  "source_url": "https://github.com/laravel/framework/security/advisories/GHSA-gv7v-rgg6-548h",
+  "advisory_id": "GHSA-gv7v-rgg6-548h",
+  "original_project": "laravel/framework",
+  "reconstruction_type": "synthetic_reconstruction",
+  "license_note": "Upstream Laravel framework is MIT, copyright Taylor Otwell (LICENSE.md at 18b326d22d831e1fe05e737209e367e30796d5f3). This independently written fixture reconstructs the pattern with invented names and reduced context; no framework file or advisory prose is vendored. The fixture is licensed Apache-2.0 by WebFixBench.",
+  "description": "Refactor environment selection to return immediately for web requests and matching console arguments.",
+  "context": "This PHP 8+ bootstrap helper serves a Laravel-style application's web and CLI entry points. The caller passes PHP_SAPI as $sapi, $_SERVER['argv'] ?? [] as $arguments (a list of strings), and a trusted deployment environment name as $configured. Web requests run with SAPI cgi-fcgi and register_argc_argv enabled; this deployment populates argv from the request query string, so a remote caller can control those argument strings. On cli the arguments are intentionally operator-controlled. The returned name selects the application's runtime environment and its environment-specific configuration; web requests must retain $configured. There is no other SAPI gate or validation before this function. This fixture models environment selection only, not .env file loading, debug enablement, command execution or any downstream vulnerability.",
+  "diff": "diff --git a/app/Bootstrap/environment.php b/app/Bootstrap/environment.php\n--- a/app/Bootstrap/environment.php\n+++ b/app/Bootstrap/environment.php\n@@ -1,14 +1,13 @@\n <?php\n function selectRuntimeEnvironment(string $sapi, array $arguments, string $configured): string\n {\n-    $selected = $configured;\n-    if ($sapi === 'cli') {\n-        foreach ($arguments as $argument) {\n-            if (str_starts_with($argument, '--env=')) {\n-                $selected = substr($argument, 6);\n-                break;\n-            }\n+    if ($sapi !== 'cli') {\n+        return $configured;\n+    }\n+    foreach ($arguments as $argument) {\n+        if (str_starts_with($argument, '--env=')) {\n+            return substr($argument, 6);\n         }\n     }\n-    return $selected;\n+    return $configured;\n }\n",
+  "expected_findings": [],
+  "is_clean": true,
+  "label_source": "agent_drafted",
+  "label_status": "pending_review",
+  "reviewed_by": [],
+  "academic_review": false,
+  "tags": [
+    "advisory-derived",
+    "environment",
+    "argv",
+    "sapi",
+    "control"
+  ],
+  "notes": "Safe-to-safe sibling of laravel-ghsa-env-001, inspired by the fixed console boundary rather than a separate real incident. Non-cli input is never scanned; cli still uses the first --env= option, including the same empty-string behaviour, or falls back to the trusted configured value. A direct return of an argument is intentional for CLI and does not create a web override. All assumptions match the defective sibling.",
+  "references": [
+    "https://github.com/laravel/framework/commit/18b326d22d831e1fe05e737209e367e30796d5f3",
+    "https://github.com/laravel/framework/blob/18b326d22d831e1fe05e737209e367e30796d5f3/LICENSE.md"
+  ]
+}

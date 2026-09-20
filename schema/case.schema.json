@@ -52,6 +52,13 @@
       "type": ["string", "null"],
       "description": "Provenance for non-synthetic cases; null for synthetic ones."
     },
+    "advisory_id": { "type": "string", "pattern": "\\S" },
+    "original_project": { "type": "string", "pattern": "\\S" },
+    "reconstruction_type": {
+      "type": "string",
+      "enum": ["synthetic_reconstruction"]
+    },
+    "license_note": { "type": "string", "pattern": "\\S" },
     "description": { "type": "string", "minLength": 1 },
     "diff": {
       "type": "string",
@@ -122,7 +129,8 @@
             "sql_injection",
             "xss_unescaped_output",
             "hardcoded_secret",
-            "unsafe_deserialization"
+            "unsafe_deserialization",
+            "environment_override_from_web_argv"
           ]
         },
         "severity": { "type": "string", "enum": ["low", "medium", "high", "critical"] },
@@ -132,6 +140,13 @@
     }
   },
   "allOf": [
+    {
+      "if": { "properties": { "source_type": { "const": "public_advisory" } }, "required": ["source_type"] },
+      "then": {
+        "required": ["advisory_id", "original_project", "reconstruction_type", "license_note"],
+        "properties": { "source_url": { "type": "string", "pattern": "\\S" } }
+      }
+    },
     {
       "if": { "properties": { "label_status": { "const": "frozen" } }, "required": ["label_status"] },
       "then": {

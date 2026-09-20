@@ -1,0 +1,42 @@
+{
+  "id": "laravel-ghsa-debug-xss-001",
+  "title": "Request body display in a diagnostic view",
+  "language": "php",
+  "ecosystem": "laravel",
+  "category": "xss",
+  "difficulty": "medium",
+  "source_type": "public_advisory",
+  "source_url": "https://github.com/advisories/GHSA-546h-56qp-8jmw",
+  "advisory_id": "GHSA-546h-56qp-8jmw",
+  "original_project": "laravel/framework",
+  "reconstruction_type": "synthetic_reconstruction",
+  "license_note": "Upstream Laravel framework is MIT, copyright Taylor Otwell (LICENSE.md at 45287fb2a91c69bb1c110539b9b7341faf5aee33). This independently written fixture reconstructs the pattern with invented names and reduced context; no framework file or advisory prose is vendored. The fixture is licensed Apache-2.0 by WebFixBench.",
+  "description": "Change how the request body is rendered in the diagnostic panel.",
+  "context": "This Blade view is rendered as text/html on a development diagnostic endpoint. $submittedBody is a plain PHP string containing the raw request body, including any HTML characters supplied by the visitor; it is not an Htmlable object. The endpoint is reachable by visitors and its page can be viewed by another user. Debug access itself is unchanged and in scope only as a stated precondition. No filter, sanitizer, escaping wrapper or script-blocking CSP runs after this view. No credentials or other diagnostic data are displayed. Blade {{ }} HTML-escapes strings; {!! !!} outputs them verbatim.",
+  "diff": "diff --git a/resources/views/diagnostics/body.blade.php b/resources/views/diagnostics/body.blade.php\n--- a/resources/views/diagnostics/body.blade.php\n+++ b/resources/views/diagnostics/body.blade.php\n@@ -1,4 +1,4 @@\n <section aria-label=\"Request diagnostics\">\n     <h2>Submitted body</h2>\n-    <pre><code>{{ $submittedBody }}</code></pre>\n+    <pre><code>{!! $submittedBody !!}</code></pre>\n </section>\n",
+  "expected_findings": [
+    {
+      "id": "laravel-ghsa-debug-xss-001-f1",
+      "file": "resources/views/diagnostics/body.blade.php",
+      "category": "xss",
+      "defect_type": "xss_unescaped_output",
+      "severity": "medium",
+      "description": "Changing the body expression to raw Blade output lets request-controlled HTML be parsed in the diagnostic page, introducing reflected XSS. The previous escaped expression displayed the same body as text."
+    }
+  ],
+  "is_clean": false,
+  "label_source": "agent_drafted",
+  "label_status": "pending_review",
+  "reviewed_by": [],
+  "academic_review": false,
+  "tags": [
+    "advisory-derived",
+    "debug-view",
+    "output-escaping"
+  ],
+  "notes": "Synthetic regression (safe to vulnerable), not the upstream fixing direction. The upstream patch escapes request-body and route-parameter output in one component; only the body sink is reconstructed here. Independent tiny layout and identifiers; no framework layout copied. Severity is conditional on the stated debug endpoint exposure; this is not a claim about production deployments.",
+  "references": [
+    "https://github.com/laravel/framework/commit/45287fb2a91c69bb1c110539b9b7341faf5aee33",
+    "https://github.com/laravel/framework/blob/45287fb2a91c69bb1c110539b9b7341faf5aee33/LICENSE.md"
+  ]
+}

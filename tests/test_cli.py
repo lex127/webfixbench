@@ -27,13 +27,13 @@ class ListAndShowTests(unittest.TestCase):
         self.assertEqual(code, 0)
         self.assertIn("php-web-v0.1", out)
         self.assertIn("laravel-authz-001", out)
-        self.assertIn("12 cases", out)
+        self.assertIn("15 cases", out)
 
     def test_list_json(self) -> None:
         code, out, _ = run_cli("list", "--json")
         self.assertEqual(code, 0)
         payload = json.loads(out)
-        self.assertEqual(len(payload["cases"]), 12)
+        self.assertEqual(len(payload["cases"]), 15)
 
     def test_show(self) -> None:
         code, out, _ = run_cli("show", "laravel-authz-001")
@@ -55,7 +55,7 @@ class ListAndShowTests(unittest.TestCase):
     def test_validate(self) -> None:
         code, out, _ = run_cli("validate")
         self.assertEqual(code, 0)
-        self.assertIn("12 cases validated", out)
+        self.assertIn("15 cases validated", out)
         self.assertIn("labels:", out)
 
     def test_list_reports_label_status(self) -> None:
@@ -88,13 +88,13 @@ class RunEvaluateReportTests(unittest.TestCase):
             self.assertEqual(code, 0)
             self.assertIn("cases", out)
             document = json.loads(results.read_text(encoding="utf-8"))
-            self.assertEqual(len(document["responses"]), 12)
+            self.assertEqual(len(document["responses"]), 15)
 
             code, out, _ = run_cli("evaluate", str(results), "--out", str(evaluation))
             self.assertEqual(code, 0)
             scored = json.loads(evaluation.read_text(encoding="utf-8"))
             self.assertEqual(scored["match_mode"], "defect_type")
-            self.assertEqual(len(scored["cases"]), 12)
+            self.assertEqual(len(scored["cases"]), 15)
 
             code, _, _ = run_cli("report", str(results), "--out", str(report))
             self.assertEqual(code, 0)

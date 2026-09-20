@@ -1,0 +1,43 @@
+{
+  "id": "laravel-ghsa-env-001",
+  "title": "Shared environment selector reads argument overrides",
+  "language": "php",
+  "ecosystem": "laravel",
+  "category": "injection",
+  "difficulty": "medium",
+  "source_type": "public_advisory",
+  "source_url": "https://github.com/laravel/framework/security/advisories/GHSA-gv7v-rgg6-548h",
+  "advisory_id": "GHSA-gv7v-rgg6-548h",
+  "original_project": "laravel/framework",
+  "reconstruction_type": "synthetic_reconstruction",
+  "license_note": "Upstream Laravel framework is MIT, copyright Taylor Otwell (LICENSE.md at 18b326d22d831e1fe05e737209e367e30796d5f3). This independently written fixture reconstructs the pattern with invented names and reduced context; no framework file or advisory prose is vendored. The fixture is licensed Apache-2.0 by WebFixBench.",
+  "description": "Simplify the argument scan in the shared environment selector.",
+  "context": "This PHP 8+ bootstrap helper serves a Laravel-style application's web and CLI entry points. The caller passes PHP_SAPI as $sapi, $_SERVER['argv'] ?? [] as $arguments (a list of strings), and a trusted deployment environment name as $configured. Web requests run with SAPI cgi-fcgi and register_argc_argv enabled; this deployment populates argv from the request query string, so a remote caller can control those argument strings. On cli the arguments are intentionally operator-controlled. The returned name selects the application's runtime environment and its environment-specific configuration; web requests must retain $configured. There is no other SAPI gate or validation before this function. This fixture models environment selection only, not .env file loading, debug enablement, command execution or any downstream vulnerability.",
+  "diff": "diff --git a/app/Bootstrap/environment.php b/app/Bootstrap/environment.php\n--- a/app/Bootstrap/environment.php\n+++ b/app/Bootstrap/environment.php\n@@ -1,14 +1,12 @@\n <?php\n function selectRuntimeEnvironment(string $sapi, array $arguments, string $configured): string\n {\n     $selected = $configured;\n-    if ($sapi === 'cli') {\n-        foreach ($arguments as $argument) {\n-            if (str_starts_with($argument, '--env=')) {\n-                $selected = substr($argument, 6);\n-                break;\n-            }\n+    foreach ($arguments as $argument) {\n+        if (str_starts_with($argument, '--env=')) {\n+            $selected = substr($argument, 6);\n+            break;\n         }\n     }\n     return $selected;\n }\n",
+  "expected_findings": [
+    {
+      "id": "laravel-ghsa-env-001-f1",
+      "file": "app/Bootstrap/environment.php",
+      "category": "injection",
+      "defect_type": "environment_override_from_web_argv",
+      "severity": "high",
+      "description": "Removing the CLI-only guard lets request-controlled web argv values enter the --env= option parser and override the trusted deployment environment. This is configuration injection across the web/CLI trust boundary, not SQL injection or proof of a downstream exploit."
+    }
+  ],
+  "is_clean": false,
+  "label_source": "agent_drafted",
+  "label_status": "pending_review",
+  "reviewed_by": [],
+  "academic_review": false,
+  "tags": [
+    "advisory-derived",
+    "environment",
+    "argv",
+    "sapi"
+  ],
+  "notes": "Synthetic safe-to-vulnerable regression of the Application::detectEnvironment console guard. The option parser is newly written and included in full so the label does not depend on unseen framework internals. Models only the equals-form option and cli versus cgi-fcgi; no .env file selection or RCE claim. The clean sibling is laravel-ghsa-env-clean-001. High severity reflects attacker-controlled configuration selection under the pinned deployment assumptions; requires human review.",
+  "references": [
+    "https://github.com/laravel/framework/commit/18b326d22d831e1fe05e737209e367e30796d5f3",
+    "https://github.com/laravel/framework/blob/18b326d22d831e1fe05e737209e367e30796d5f3/LICENSE.md"
+  ]
+}

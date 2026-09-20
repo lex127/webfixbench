@@ -45,6 +45,7 @@ DEFECT_TYPES = (
     "xss_unescaped_output",
     "hardcoded_secret",
     "unsafe_deserialization",
+    "environment_override_from_web_argv",
 )
 
 UNKNOWN_DEFECT_TYPE = "other"
@@ -222,7 +223,13 @@ CASE_REQUIRED_FIELDS = (
     "reviewed_by",
 )
 
-CASE_OPTIONAL_FIELDS = ("tags", "context", "notes", "references", "academic_review")
+ADVISORY_PROVENANCE_FIELDS = (
+    "advisory_id", "original_project", "reconstruction_type", "license_note",
+)
+RECONSTRUCTION_TYPES = ("synthetic_reconstruction",)
+CASE_OPTIONAL_FIELDS = (
+    "tags", "context", "notes", "references", "academic_review",
+) + ADVISORY_PROVENANCE_FIELDS
 
 _CASE_KNOWN_FIELDS = set(CASE_REQUIRED_FIELDS) | set(CASE_OPTIONAL_FIELDS)
 
@@ -273,6 +280,10 @@ class Case:
     context: Optional[str] = None
     notes: Optional[str] = None
     references: List[str] = field(default_factory=list)
+    advisory_id: Optional[str] = None
+    original_project: Optional[str] = None
+    reconstruction_type: Optional[str] = None
+    license_note: Optional[str] = None
     path: Optional[Path] = None
 
     @property
@@ -285,7 +296,7 @@ class Case:
         return self.label_status == "frozen"
 
     def to_dict(self) -> Dict[str, Any]:
-        return {
+        document = {
             "id": self.id,
             "title": self.title,
             "language": self.language,
@@ -307,6 +318,11 @@ class Case:
             "notes": self.notes,
             "references": list(self.references),
         }
+        for key in ADVISORY_PROVENANCE_FIELDS:
+            value = getattr(self, key)
+            if value is not None:
+                document[key] = value
+        return document
 
 
 def validate_case_dict(doc: Any) -> List[str]:
@@ -335,6 +351,15 @@ def validate_case_dict(doc: Any) -> List[str]:
     _check_optional_str(errors, doc, "source_url", where="case")
     _check_optional_str(errors, doc, "context", where="case")
     _check_optional_str(errors, doc, "notes", where="case")
+
+    # Advisory provenance is mandatory for sourced drafts, never a substitute
+    # for human approval. Original synthetic cases keep their existing shape.
+    for key in ADVISORY_PROVENANCE_FIELDS:
+        if key in doc or doc.get("source_type") == "public_advisory":
+            allowed = RECONSTRUCTION_TYPES if key == "reconstruction_type" else None
+            _check_str(errors, doc, key, where="case", allowed=allowed)
+    if doc.get("source_type") == "public_advisory":
+        _check_str(errors, doc, "source_url", where="case")
 
     case_id = doc.get("id")
     if isinstance(case_id, str) and case_id.strip():
@@ -463,6 +488,10 @@ def case_from_dict(doc: Any, *, path: Optional[Path] = None) -> Case:
         context=doc.get("context"),
         notes=doc.get("notes"),
         references=list(doc.get("references", [])),
+        advisory_id=doc.get("advisory_id"),
+        original_project=doc.get("original_project"),
+        reconstruction_type=doc.get("reconstruction_type"),
+        license_note=doc.get("license_note"),
         path=path,
     )
 
