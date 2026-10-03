@@ -80,9 +80,29 @@ webfixbench run --case <your-case-id> --provider mock --out /tmp/check.json --ev
 pytest
 ```
 
-Update `case_count` in `suites/php-web-v0.1/suite.json`, the composition tables
-in [docs/DATASET.md](docs/DATASET.md), and the case counts asserted in
-`tests/test_cases.py`. Note in the pull request why the label is unambiguous.
+Adding a case changes the suite's size, so the same pull request also updates:
+
+- `suites/php-web-v0.1/suite.json`: `case_count`, `version`, and the counts in
+  `description` and `notes`;
+- the composition tables in [docs/DATASET.md](docs/DATASET.md);
+- a review entry for the case in
+  [docs/HUMAN_REVIEW_CHECKLIST.md](docs/HUMAN_REVIEW_CHECKLIST.md), and for an
+  advisory- or repository-derived case its provenance in
+  [docs/REAL_WORLD_SOURCES.md](docs/REAL_WORLD_SOURCES.md);
+- the counts asserted in `tests/test_cases.py`, `tests/test_cli.py` and
+  `tests/test_runner_evaluator.py`;
+- the committed mock baseline, which CI compares with a fresh mock run:
+
+  ```bash
+  webfixbench run --provider mock --out results/mock-baseline.json --quiet
+  webfixbench report results/mock-baseline.json --out results/mock-baseline.md
+  python scripts/check_baseline.py
+  ```
+
+- the case counts quoted in `README.md` and `docs/` (search for "fifteen" and
+  "15"), plus a line under `[Unreleased]` in `CHANGELOG.md`.
+
+Note in the pull request why the label is unambiguous.
 
 The mock provider's rule table is a test fixture, not a target. Do not tune a
 case so the stub scores better on it.
