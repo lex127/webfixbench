@@ -54,8 +54,8 @@ A case earns its place by being *decidable*. Before opening a pull request:
 
 1. **One defect**, from the fixed taxonomy: `authorization`, `injection`,
    `xss`, `secrets`, `unsafe_deserialization`. New categories need a separate
-   discussion — subjective categories (style, performance, architecture) are
-   out of scope.
+   [discussion][ideas] — subjective categories (style, performance,
+   architecture) are out of scope.
 2. **Objective ground truth.** A competent reviewer with the diff and the
    `context` paragraph should agree on the label without argument. If two
    reviewers could reasonably disagree, the case is not ready.
@@ -130,3 +130,12 @@ prefer *not yet measured* to an estimate.
 
 Open an issue titled `case <id>: <problem>` and say what is ambiguous, wrong or
 unrealistic. A well-argued "this label is wrong" is more useful than a new case.
+
+## Questions and ideas
+
+Ask usage and methodology questions in [Q&A][q-a] and propose new categories,
+metrics or larger changes under [Ideas][ideas]. Keep issues for concrete
+problems: a wrong or ambiguous label, a bug, broken documentation.
+
+[q-a]: https://github.com/lex127/webfixbench/discussions/categories/q-a
+[ideas]: https://github.com/lex127/webfixbench/discussions/categories/ideas
