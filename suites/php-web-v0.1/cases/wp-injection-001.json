@@ -1,0 +1,36 @@
+{
+  "id": "wp-injection-001",
+  "title": "Event list query switched from $wpdb->prepare() to string interpolation",
+  "language": "php",
+  "ecosystem": "wordpress",
+  "category": "injection",
+  "difficulty": "easy",
+  "source_type": "synthetic",
+  "source_url": null,
+  "description": "A public AJAX handler that lists events for a city drops $wpdb->prepare() and interpolates the unslashed query-string value into the SQL string.",
+  "context": "The handler is registered with both wp_ajax_ and wp_ajax_nopriv_ on purpose: published events are public and anonymous visitors may list them, so no capability check or nonce is expected for this read-only endpoint. $_GET['city'] is attacker-controllable. wp_unslash() removes the slashes WordPress adds to request superglobals, and nothing else escapes the value before the query runs. The returned columns are sent as JSON by wp_send_json_success(), which encodes them.",
+  "diff": "diff --git a/wp-content/plugins/wfb-demo/includes/events-ajax.php b/wp-content/plugins/wfb-demo/includes/events-ajax.php\n--- a/wp-content/plugins/wfb-demo/includes/events-ajax.php\n+++ b/wp-content/plugins/wfb-demo/includes/events-ajax.php\n@@ -4,17 +4,15 @@ add_action( 'wp_ajax_nopriv_wfb_list_events', 'wfb_ajax_list_events' );\n function wfb_ajax_list_events() {\n     global $wpdb;\n \n-    $city = isset( $_GET['city'] ) ? sanitize_text_field( wp_unslash( $_GET['city'] ) ) : '';\n+    $city = isset( $_GET['city'] ) ? wp_unslash( $_GET['city'] ) : '';\n+    $table = $wpdb->prefix . 'wfb_events';\n \n     $rows = $wpdb->get_results(\n-        $wpdb->prepare(\n-            \"SELECT id, title, starts_at FROM {$wpdb->prefix}wfb_events\n-             WHERE city = %s AND is_published = 1\n-             ORDER BY starts_at ASC\n-             LIMIT 20\",\n-            $city\n-        )\n+        \"SELECT id, title, starts_at FROM {$table}\n+         WHERE city = '{$city}' AND is_published = 1\n+         ORDER BY starts_at ASC\n+         LIMIT 20\"\n     );\n \n     wp_send_json_success( $rows );\n }\n",
+  "expected_findings": [
+    {
+      "id": "wp-injection-001-f1",
+      "category": "injection",
+      "defect_type": "sql_injection",
+      "severity": "high",
+      "file": "wp-content/plugins/wfb-demo/includes/events-ajax.php",
+      "description": "The unslashed city query-string parameter is interpolated into a SQL string executed by $wpdb->get_results(), allowing anonymous SQL injection."
+    }
+  ],
+  "is_clean": false,
+  "label_source": "agent_drafted",
+  "label_status": "pending_review",
+  "reviewed_by": [],
+  "academic_review": false,
+  "tags": [
+    "sql-injection",
+    "wpdb",
+    "prepared-statement",
+    "ajax-nopriv"
+  ],
+  "notes": "WordPress counterpart of php-injection-001 and laravel-injection-001. The endpoint is public by design and stated as such in context, so a missing capability check or nonce is not a defect here; reporting authorization or CSRF is a false positive. The output path is JSON-encoded, so XSS is not intended either. The only intended defect is the SQL injection.",
+  "references": []
+}

@@ -2,12 +2,12 @@
   "webfixbench_version": "0.1.0.dev0",
   "results_format_version": 2,
   "run": {
-    "run_id": "12af5055f743",
-    "created_at": "2026-09-20T12:44:29+00:00",
+    "run_id": "09107162cf22",
+    "created_at": "2026-10-03T16:54:39+00:00",
     "suite": {
       "id": "php-web-v0.1",
-      "version": "0.1.1",
-      "case_count": 15
+      "version": "0.1.2",
+      "case_count": 16
     },
     "cases_run": [
       "laravel-authz-001",
@@ -24,6 +24,7 @@
       "wp-authz-001",
       "wp-clean-001",
       "wp-deser-001",
+      "wp-injection-001",
       "wp-xss-001"
     ],
     "prompt": {
@@ -52,7 +53,7 @@
     {
       "case_id": "laravel-authz-001",
       "valid": true,
-      "latency_ms": 0.042,
+      "latency_ms": 0.107,
       "model": "mock-heuristic-v1",
       "usage": {
         "input_tokens": 912,
@@ -83,7 +84,7 @@
     {
       "case_id": "laravel-authz-002",
       "valid": true,
-      "latency_ms": 0.057,
+      "latency_ms": 0.119,
       "model": "mock-heuristic-v1",
       "usage": {
         "input_tokens": 962,
@@ -114,7 +115,7 @@
     {
       "case_id": "laravel-clean-001",
       "valid": true,
-      "latency_ms": 0.03,
+      "latency_ms": 0.069,
       "model": "mock-heuristic-v1",
       "usage": {
         "input_tokens": 952,
@@ -135,7 +136,7 @@
     {
       "case_id": "laravel-ghsa-debug-xss-001",
       "valid": true,
-      "latency_ms": 0.022,
+      "latency_ms": 0.06,
       "model": "mock-heuristic-v1",
       "usage": {
         "input_tokens": 957,
@@ -166,7 +167,7 @@
     {
       "case_id": "laravel-ghsa-env-001",
       "valid": true,
-      "latency_ms": 0.031,
+      "latency_ms": 0.072,
       "model": "mock-heuristic-v1",
       "usage": {
         "input_tokens": 1098,
@@ -187,7 +188,7 @@
     {
       "case_id": "laravel-ghsa-env-clean-001",
       "valid": true,
-      "latency_ms": 0.039,
+      "latency_ms": 0.089,
       "model": "mock-heuristic-v1",
       "usage": {
         "input_tokens": 1124,
@@ -218,7 +219,7 @@
     {
       "case_id": "laravel-injection-001",
       "valid": true,
-      "latency_ms": 0.038,
+      "latency_ms": 0.094,
       "model": "mock-heuristic-v1",
       "usage": {
         "input_tokens": 953,
@@ -258,7 +259,7 @@
     {
       "case_id": "laravel-xss-001",
       "valid": true,
-      "latency_ms": 0.021,
+      "latency_ms": 0.057,
       "model": "mock-heuristic-v1",
       "usage": {
         "input_tokens": 909,
@@ -289,7 +290,7 @@
     {
       "case_id": "php-clean-001",
       "valid": true,
-      "latency_ms": 0.032,
+      "latency_ms": 0.076,
       "model": "mock-heuristic-v1",
       "usage": {
         "input_tokens": 942,
@@ -310,7 +311,7 @@
     {
       "case_id": "php-injection-001",
       "valid": true,
-      "latency_ms": 0.032,
+      "latency_ms": 0.076,
       "model": "mock-heuristic-v1",
       "usage": {
         "input_tokens": 914,
@@ -341,7 +342,7 @@
     {
       "case_id": "php-secrets-001",
       "valid": true,
-      "latency_ms": 0.021,
+      "latency_ms": 0.063,
       "model": "mock-heuristic-v1",
       "usage": {
         "input_tokens": 842,
@@ -381,7 +382,7 @@
     {
       "case_id": "wp-authz-001",
       "valid": true,
-      "latency_ms": 0.047,
+      "latency_ms": 0.111,
       "model": "mock-heuristic-v1",
       "usage": {
         "input_tokens": 1012,
@@ -402,7 +403,7 @@
     {
       "case_id": "wp-clean-001",
       "valid": true,
-      "latency_ms": 0.021,
+      "latency_ms": 0.056,
       "model": "mock-heuristic-v1",
       "usage": {
         "input_tokens": 1011,
@@ -433,7 +434,7 @@
     {
       "case_id": "wp-deser-001",
       "valid": true,
-      "latency_ms": 0.017,
+      "latency_ms": 0.053,
       "model": "mock-heuristic-v1",
       "usage": {
         "input_tokens": 903,
@@ -462,9 +463,30 @@
       "metadata": {}
     },
     {
+      "case_id": "wp-injection-001",
+      "valid": true,
+      "latency_ms": 0.089,
+      "model": "mock-heuristic-v1",
+      "usage": {
+        "input_tokens": 1115,
+        "output_tokens": 12,
+        "total_tokens": 1127,
+        "estimated": true
+      },
+      "cost_usd": null,
+      "error": null,
+      "validation_errors": [],
+      "raw": "{\n  \"findings\": [],\n  \"overall_confidence\": 0.62\n}",
+      "parsed": {
+        "findings": [],
+        "overall_confidence": 0.62
+      },
+      "metadata": {}
+    },
+    {
       "case_id": "wp-xss-001",
       "valid": true,
-      "latency_ms": 0.02,
+      "latency_ms": 0.05,
       "model": "mock-heuristic-v1",
       "usage": {
         "input_tokens": 922,

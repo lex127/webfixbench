@@ -26,7 +26,7 @@ class SuiteLoadingTests(unittest.TestCase):
         self.assertEqual(list_suites(ROOT), ["php-web-v0.1"])
 
     def test_case_count_is_within_the_declared_range(self) -> None:
-        self.assertEqual(len(self.suite), 15)
+        self.assertEqual(len(self.suite), 16)
         self.assertEqual(len(self.suite), self.suite.metadata["case_count"])
 
     def test_cases_are_unique_and_sorted(self) -> None:
@@ -36,7 +36,7 @@ class SuiteLoadingTests(unittest.TestCase):
 
     def test_suite_has_clean_controls_and_defect_cases(self) -> None:
         self.assertEqual(len(self.suite.clean_cases), 4)
-        self.assertEqual(len(self.suite.defect_cases), 11)
+        self.assertEqual(len(self.suite.defect_cases), 12)
 
     def test_every_ecosystem_is_represented(self) -> None:
         ecosystems = {c.ecosystem for c in self.suite.cases}
@@ -64,7 +64,7 @@ class SuiteLoadingTests(unittest.TestCase):
             {c.source_type for c in self.suite.cases},
         )
         originals = [c for c in self.suite.cases if c.source_type == "synthetic"]
-        self.assertEqual(len(originals), 12)
+        self.assertEqual(len(originals), 13)
         for case in originals:
             self.assertIsNone(case.source_url, case.id)
 

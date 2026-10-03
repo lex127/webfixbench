@@ -150,7 +150,7 @@ class MalformedResponseTests(unittest.TestCase):
         self.assertEqual(metrics["counts"]["invalid_responses"], len(self.suite))
         self.assertEqual(metrics["findings"]["true_positives"], 0)
         self.assertEqual(metrics["findings"]["false_positives"], 0)
-        self.assertEqual(metrics["findings"]["false_negatives"], 11)
+        self.assertEqual(metrics["findings"]["false_negatives"], 12)
         self.assertIsNone(metrics["false_alarms"]["clean_case_false_alarm_rate"])
 
 

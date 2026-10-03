@@ -1,8 +1,8 @@
 {
   "id": "php-web-v0.1",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "title": "PHP web ecosystem (PHP, Laravel, WordPress)",
-  "description": "Fifteen synthetic PHP web diffs: eleven single-defect drafts and four clean controls. Includes three advisory-derived synthetic reconstructions; all labels await human review.",
+  "description": "Sixteen synthetic PHP web diffs: twelve single-defect drafts and four clean controls. Includes three advisory-derived synthetic reconstructions; all labels await human review.",
   "language": "php",
   "ecosystems": [
     "php",
@@ -17,12 +17,12 @@
     "unsafe_deserialization",
     "clean_control"
   ],
-  "case_count": 15,
+  "case_count": 16,
   "source_types": [
     "synthetic",
     "public_advisory"
   ],
   "license": "Apache-2.0",
   "prompt": "review_v3",
-  "notes": "Twelve original synthetic fixtures and three independent reconstructions of two public Laravel advisories. No upstream source files are vendored. Advisory provenance is recorded per case. All labels are pending_review, not frozen ground truth. See docs/DATASET.md and docs/REAL_WORLD_SOURCES.md."
+  "notes": "Thirteen original synthetic fixtures and three independent reconstructions of two public Laravel advisories. No upstream source files are vendored. Advisory provenance is recorded per case. All labels are pending_review, not frozen ground truth. See docs/DATASET.md and docs/REAL_WORLD_SOURCES.md."
 }

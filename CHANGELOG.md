@@ -12,6 +12,10 @@ Pre-release research skeleton. A working harness and a small labelled dataset.
 
 ### Added
 
+- Suite revision 0.1.2: `wp-injection-001`, a synthetic WordPress SQL injection
+  case (`$wpdb->prepare()` replaced by string interpolation in a public
+  `wp_ajax_nopriv_` handler), bringing the suite to 16 cases / 12 defects /
+  4 controls. Agent-drafted, pending human review.
 - Suite revision 0.1.1: three public-advisory synthetic reconstructions (Laravel
   diagnostic XSS, web argv environment override, and its clean sibling), bringing
   the suite to 15 cases / 11 defects / 4 controls. All remain pending human review.
