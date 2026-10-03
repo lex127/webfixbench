@@ -193,7 +193,7 @@ Two things v0.1 deliberately does **not** do:
 - **No calibration score.** Confidence is stored, but Brier/ECE need
   well-defined event semantics that a single self-reported number does not
   have. Reported as *not yet measured*.
-- **No LLM judge.** Matching is deterministic (normalised category, optionally
+- **No LLM judge.** Matching is deterministic (normalised defect type, optionally
   file), so every scored true positive can be re-derived by hand from a result
   file. The cost of that choice is documented in
   [docs/METHODOLOGY.md](docs/METHODOLOGY.md).
@@ -217,7 +217,7 @@ Two things v0.1 deliberately does **not** do:
   real-world validity.
 - One defect per defective case, and diff-only context. Real review has
   repository context and interacting defects.
-- Category-level matching can credit a finding that names the right category
+- Defect-type matching can credit a finding that names the right defect type
   for the wrong reason.
 - Synthetic cases written in 2026 may resemble patterns in model training data;
   contamination is not controlled for.
