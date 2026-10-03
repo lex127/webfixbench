@@ -197,7 +197,7 @@ the failure mode this benchmark exists to measure.
 
 ## Known dataset limitations
 
-- **Small.** Per-category numbers rest on one to three defective cases.
+- **Small.** Per-category numbers rest on one to four defective cases.
 - **Synthetic.** Tidier than real pull requests; the defect is always in the
   diff, and the diff is short. Good for controlled measurement, not evidence of
   real-world validity.

@@ -3,7 +3,7 @@
 Inspected on **2026-09-20** against public advisories, upstream fix patches and
 licenses at those commits. This is a small selection record, not an exhaustive
 survey. The suite now contains three **synthetic reconstructions** from two
-advisories, alongside twelve original synthetic cases. They are not original
+advisories, alongside thirteen original synthetic cases. They are not original
 upstream patches, evidence of real-world review performance, or frozen ground truth.
 
 ## Selection gate and measurements

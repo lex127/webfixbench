@@ -324,7 +324,7 @@ design that asks for a well-specified probability.
 
 ## 16. Known limitations
 
-1. **Size.** 16 cases. Any per-category number is computed over one to three
+1. **Size.** 16 cases. Any per-category number is computed over one to four
    cases and should be read as illustrative, not as an estimate.
 2. **Synthetic data.** Cleaner and smaller than real pull requests.
 3. **Single labeller.** No inter-rater agreement yet.

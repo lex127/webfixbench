@@ -210,7 +210,7 @@ Two things v0.1 deliberately does **not** do:
 
 ## Limitations
 
-- 16 cases. Small: any per-category number rests on one to three cases.
+- 16 cases. Small: any per-category number rests on one to four cases.
 - Labels are drafted and awaiting human review; results from them are
   provisional until frozen.
 - Synthetic cases are cleaner than real pull requests, and say nothing about

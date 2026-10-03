@@ -99,8 +99,11 @@ Adding a case changes the suite's size, so the same pull request also updates:
   python scripts/check_baseline.py
   ```
 
-- the case counts quoted in `README.md` and `docs/` (search for "fifteen" and
-  "15"), plus a line under `[Unreleased]` in `CHANGELOG.md`.
+- every place that quotes the suite's size: `README.md`, `CITATION.cff` and
+  `docs/` (search for the old count in words and in digits; the number of
+  original synthetic cases is also in `docs/REAL_WORLD_SOURCES.md`, and the
+  per-category range in the README, DATASET and METHODOLOGY limitations),
+  plus a line under `[Unreleased]` in `CHANGELOG.md`.
 
 Note in the pull request why the label is unambiguous.
 
