@@ -12,6 +12,10 @@ Pre-release research skeleton. A working harness and a small labelled dataset.
 
 ### Added
 
+- Planned designs from discussions #10–#12: inter-rater agreement for the
+  second labeller (METHODOLOGY section 6), the reporting format for published
+  model results (section 14) and the calibration events for `review_v4`
+  (section 15).
 - Suite revision 0.1.2: `wp-injection-001`, a synthetic WordPress SQL injection
   case (`$wpdb->prepare()` replaced by string interpolation in a public
   `wp_ajax_nopriv_` handler), bringing the suite to 16 cases / 12 defects /
