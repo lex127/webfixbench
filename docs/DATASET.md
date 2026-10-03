@@ -1,7 +1,7 @@
 # Dataset — `php-web-v0.1`
 
-Fifteen labelled changes from the PHP web ecosystem, suite revision **0.1.2**:
-twelve original synthetic fixtures and three **advisory-derived synthetic
+Sixteen labelled changes from the PHP web ecosystem, suite revision **0.1.3**:
+thirteen original synthetic fixtures and three **advisory-derived synthetic
 reconstructions** from two public Laravel advisories. All code is written for
 this benchmark; no upstream framework files are vendored.
 
@@ -10,24 +10,26 @@ provenance makes the selection traceable but does not establish real-world
 review performance. Inspected patches, licenses and rejection reasons are in
 [REAL_WORLD_SOURCES.md](REAL_WORLD_SOURCES.md).
 
-> **Label status.** Oleksii Siniaiev explicitly reviewed and accepted all
-> fifteen cases on 2026-09-20. Every label is frozen; `academic_review` remains
-> false for every case. See [ANNOTATION.md](ANNOTATION.md).
+> **Label status.** Oleksii Siniaiev explicitly reviewed and accepted the
+> fifteen cases that existed on 2026-09-20; those labels are frozen.
+> `wp-injection-001`, added later, is `pending_review`, so runs that include it
+> are marked provisional. `academic_review` remains false for every case. See
+> [ANNOTATION.md](ANNOTATION.md).
 
 ## Composition
 
 | | Laravel | WordPress | PHP | Total |
 | --- | --- | --- | --- | --- |
-| With a labelled defect | 6 | 3 | 2 | 11 |
+| With a labelled defect | 6 | 4 | 2 | 12 |
 | Clean controls | 2 | 1 | 1 | 4 |
-| **Total** | **8** | **4** | **3** | **15** |
+| **Total** | **8** | **5** | **3** | **16** |
 
 By category:
 
 | Category | Cases |
 | --- | --- |
 | `authorization` | 3 |
-| `injection` | 3 |
+| `injection` | 4 |
 | `xss` | 3 |
 | `secrets` | 1 |
 | `unsafe_deserialization` | 1 |
@@ -44,6 +46,7 @@ By category:
 | `laravel-clean-001` | laravel | clean_control | easy | Collapses three assignments into `fill()`/`save()`; `authorize()` untouched |
 | `wp-authz-001` | wordpress | authorization | medium | Adds a nonce-protected `wp_ajax_` subscriber-export handler with no capability check |
 | `wp-xss-001` | wordpress | xss | easy | Echoes `$_GET['wfb_q']` into a template instead of `esc_html( $query )` |
+| `wp-injection-001` | wordpress | injection | easy | Replaces `$wpdb->prepare()` in a public `wp_ajax_nopriv_` event list with an interpolated `$_GET['city']` |
 | `wp-deser-001` | wordpress | unsafe_deserialization | medium | Decodes an unsigned cookie with `unserialize()` instead of `json_decode()` |
 | `wp-clean-001` | wordpress | clean_control | medium | Adds `sanitize_text_field()` to an existing guarded AJAX handler and returns the value as JSON |
 | `php-secrets-001` | php | secrets | easy | Replaces `getenv()` with a hardcoded mailer API key literal |
@@ -154,7 +157,8 @@ findings, are untested. Multi-finding cases are a v0.2 item.
 missing capability check as its intended defect. The other eight defective
 cases were also reviewed for a second reasonable finding; none was identified.
 This is an implementation review, not the required human ground-truth approval,
-before the maintainer's acceptance; all labels are now frozen.
+before the maintainer's acceptance; the fifteen labels reviewed then are now
+frozen. `wp-injection-001` was added later and was not part of that review.
 
 ## Difficulty
 
@@ -165,7 +169,7 @@ detection rates instead of left as an opinion.
 
 ## Provenance and licensing
 
-The original twelve cases use `source_type: "synthetic"` and `source_url: null`.
+The thirteen original cases use `source_type: "synthetic"` and `source_url: null`.
 The three additions use `source_type: "public_advisory"`, `advisory_id`,
 `original_project`, `reconstruction_type: "synthetic_reconstruction"` and
 `license_note`, plus exact commit/license links in `references`. These fields
@@ -195,12 +199,13 @@ the failure mode this benchmark exists to measure.
 
 ## Known dataset limitations
 
-- **Small.** Per-category numbers rest on one to three defective cases.
+- **Small.** Per-category numbers rest on one to four defective cases.
 - **Synthetic.** Tidier than real pull requests; the defect is always in the
   diff, and the diff is short. Good for controlled measurement, not evidence of
   real-world validity.
-- **Single human reviewer.** All fifteen labels were reviewed by the maintainer;
-  no inter-rater agreement or per-case academic review is available.
+- **Single human reviewer.** Fifteen labels were reviewed by the maintainer and
+  `wp-injection-001` still awaits review; no inter-rater agreement or per-case
+  academic review is available.
 - **Single labeller.** Labels are the maintainer's; inter-rater agreement is
   *not yet measured*.
 - **Canonical patterns.** These are textbook defects, well represented in public

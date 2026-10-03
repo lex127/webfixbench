@@ -69,11 +69,14 @@ review sets `academic_review: true`; every other case leaves it `false`.
 
 ### Status of the v0.1 suite
 
-All fifteen cases were explicitly accepted by Oleksii Siniaiev on 2026-09-20
-and are frozen in suite revision 0.1.2. The twelve original synthetic fixtures
-use `human_reviewed`; the three advisory-derived reconstructions use
-`public_advisory_plus_human_review`. All retain `academic_review: false` because
-no separate per-case academic review was confirmed.
+All fifteen cases that existed on 2026-09-20 were explicitly accepted by
+Oleksii Siniaiev on that date and are frozen in suite revision 0.1.3. The twelve
+original synthetic fixtures use `human_reviewed`; the three advisory-derived
+reconstructions use `public_advisory_plus_human_review`. All retain
+`academic_review: false` because no separate per-case academic review was
+confirmed. `wp-injection-001`, added in revision 0.1.2, stays `agent_drafted` /
+`pending_review` until the maintainer reviews it, and runs that include it are
+marked provisional by the CLI, the evaluation document and the report.
 
 ## Choosing a category
 

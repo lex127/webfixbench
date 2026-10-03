@@ -14,6 +14,26 @@ from webfixbench.schemas import (
 
 ROOT = Path(__file__).resolve().parents[1]
 
+# Cases accepted in the maintainer's review of 2026-09-20 (suite revision 0.1.3).
+# A case added later stays pending until a later review freezes it.
+REVIEWED_2026_09_20 = {
+    "laravel-authz-001",
+    "laravel-authz-002",
+    "laravel-clean-001",
+    "laravel-ghsa-debug-xss-001",
+    "laravel-ghsa-env-001",
+    "laravel-ghsa-env-clean-001",
+    "laravel-injection-001",
+    "laravel-xss-001",
+    "php-clean-001",
+    "php-injection-001",
+    "php-secrets-001",
+    "wp-authz-001",
+    "wp-clean-001",
+    "wp-deser-001",
+    "wp-xss-001",
+}
+
 
 class SuiteLoadingTests(unittest.TestCase):
     def setUp(self) -> None:
@@ -26,7 +46,7 @@ class SuiteLoadingTests(unittest.TestCase):
         self.assertEqual(list_suites(ROOT), ["php-web-v0.1"])
 
     def test_case_count_is_within_the_declared_range(self) -> None:
-        self.assertEqual(len(self.suite), 15)
+        self.assertEqual(len(self.suite), 16)
         self.assertEqual(len(self.suite), self.suite.metadata["case_count"])
 
     def test_cases_are_unique_and_sorted(self) -> None:
@@ -36,7 +56,7 @@ class SuiteLoadingTests(unittest.TestCase):
 
     def test_suite_has_clean_controls_and_defect_cases(self) -> None:
         self.assertEqual(len(self.suite.clean_cases), 4)
-        self.assertEqual(len(self.suite.defect_cases), 11)
+        self.assertEqual(len(self.suite.defect_cases), 12)
 
     def test_every_ecosystem_is_represented(self) -> None:
         ecosystems = {c.ecosystem for c in self.suite.cases}
@@ -64,7 +84,7 @@ class SuiteLoadingTests(unittest.TestCase):
             {c.source_type for c in self.suite.cases},
         )
         originals = [c for c in self.suite.cases if c.source_type == "synthetic"]
-        self.assertEqual(len(originals), 12)
+        self.assertEqual(len(originals), 13)
         for case in originals:
             self.assertIsNone(case.source_url, case.id)
 
@@ -92,7 +112,11 @@ class SuiteLoadingTests(unittest.TestCase):
             self.assertIn(case.label_status, LABEL_STATUSES, case.id)
 
     def test_v01_ground_truth_is_maintainer_frozen_without_academic_claims(self) -> None:
+        self.assertLessEqual(REVIEWED_2026_09_20, {c.id for c in self.suite.cases})
         for case in self.suite.cases:
+            if case.id not in REVIEWED_2026_09_20:
+                self.assertFalse(case.academic_review, case.id)
+                continue
             self.assertTrue(case.labels_frozen, case.id)
             self.assertEqual(case.reviewed_by, ["Oleksii Siniaiev"], case.id)
             expected_source = ("public_advisory_plus_human_review"

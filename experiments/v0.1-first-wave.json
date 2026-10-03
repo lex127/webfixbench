@@ -2,6 +2,23 @@
   "experiment_id": "v0.1-first-wave",
   "suite_id": "php-web-v0.1",
   "prompt_id": "review_v3",
+  "case_ids": [
+    "laravel-authz-001",
+    "laravel-authz-002",
+    "laravel-clean-001",
+    "laravel-ghsa-debug-xss-001",
+    "laravel-ghsa-env-001",
+    "laravel-ghsa-env-clean-001",
+    "laravel-injection-001",
+    "laravel-xss-001",
+    "php-clean-001",
+    "php-injection-001",
+    "php-secrets-001",
+    "wp-authz-001",
+    "wp-clean-001",
+    "wp-deser-001",
+    "wp-xss-001"
+  ],
   "providers": [
     {
       "provider": "anthropic",

@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Question about using or extending WebFixBench
+    url: https://github.com/lex127/webfixbench/discussions/categories/q-a
+    about: Ask in Discussions. Issues are for concrete problems with a case or the code.
+  - name: New category or larger change
+    url: https://github.com/lex127/webfixbench/discussions/categories/ideas
+    about: Propose new categories, metrics or bigger changes in Discussions first.

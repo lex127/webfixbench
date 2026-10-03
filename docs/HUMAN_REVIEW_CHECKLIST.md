@@ -142,6 +142,19 @@ exists” means “not applicable, because no defect is intended.”
 - [ ] Clean control is genuinely clean / not applicable
 - [ ] Oleksii manually approved ground truth
 
+## `wp-injection-001`
+
+Review focus: Confirm the public nopriv endpoint is stated as intended, so SQL injection through `$_GET['city']` is the sole defect and authorization/CSRF are not.
+
+- [ ] Diff is realistic
+- [ ] Intended defect exists
+- [ ] No unintended second defect
+- [ ] Context contains every fact needed by reviewer
+- [ ] Expected defect_type is correct
+- [ ] Expected severity is reasonable
+- [ ] Clean control is genuinely clean / not applicable
+- [ ] Oleksii manually approved ground truth
+
 ## `laravel-ghsa-debug-xss-001`
 
 Review focus: Confirm the request body is a plain string and raw Blade output introduces the sole XSS sink under the stated debug exposure.

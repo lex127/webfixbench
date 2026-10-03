@@ -54,8 +54,8 @@ A case earns its place by being *decidable*. Before opening a pull request:
 
 1. **One defect**, from the fixed taxonomy: `authorization`, `injection`,
    `xss`, `secrets`, `unsafe_deserialization`. New categories need a separate
-   discussion — subjective categories (style, performance, architecture) are
-   out of scope.
+   [discussion][ideas] — subjective categories (style, performance,
+   architecture) are out of scope.
 2. **Objective ground truth.** A competent reviewer with the diff and the
    `context` paragraph should agree on the label without argument. If two
    reviewers could reasonably disagree, the case is not ready.
@@ -80,9 +80,32 @@ webfixbench run --case <your-case-id> --provider mock --out /tmp/check.json --ev
 pytest
 ```
 
-Update `case_count` in `suites/php-web-v0.1/suite.json`, the composition tables
-in [docs/DATASET.md](docs/DATASET.md), and the case counts asserted in
-`tests/test_cases.py`. Note in the pull request why the label is unambiguous.
+Adding a case changes the suite's size, so the same pull request also updates:
+
+- `suites/php-web-v0.1/suite.json`: `case_count`, `version`, and the counts in
+  `description` and `notes`;
+- the composition tables in [docs/DATASET.md](docs/DATASET.md);
+- a review entry for the case in
+  [docs/HUMAN_REVIEW_CHECKLIST.md](docs/HUMAN_REVIEW_CHECKLIST.md), and for an
+  advisory- or repository-derived case its provenance in
+  [docs/REAL_WORLD_SOURCES.md](docs/REAL_WORLD_SOURCES.md);
+- the counts asserted in `tests/test_cases.py`, `tests/test_cli.py` and
+  `tests/test_runner_evaluator.py`;
+- the committed mock baseline, which CI compares with a fresh mock run:
+
+  ```bash
+  webfixbench run --provider mock --out results/mock-baseline.json --quiet
+  webfixbench report results/mock-baseline.json --out results/mock-baseline.md
+  python scripts/check_baseline.py
+  ```
+
+- every place that quotes the suite's size: `README.md`, `CITATION.cff` and
+  `docs/` (search for the old count in words and in digits; the number of
+  original synthetic cases is also in `docs/REAL_WORLD_SOURCES.md`, and the
+  per-category range in the README, DATASET and METHODOLOGY limitations),
+  plus a line under `[Unreleased]` in `CHANGELOG.md`.
+
+Note in the pull request why the label is unambiguous.
 
 The mock provider's rule table is a test fixture, not a target. Do not tune a
 case so the stub scores better on it.
@@ -130,3 +153,12 @@ prefer *not yet measured* to an estimate.
 
 Open an issue titled `case <id>: <problem>` and say what is ambiguous, wrong or
 unrealistic. A well-argued "this label is wrong" is more useful than a new case.
+
+## Questions and ideas
+
+Ask usage and methodology questions in [Q&A][q-a] and propose new categories,
+metrics or larger changes under [Ideas][ideas]. Keep issues for concrete
+problems: a wrong or ambiguous label, a bug, broken documentation.
+
+[q-a]: https://github.com/lex127/webfixbench/discussions/categories/q-a
+[ideas]: https://github.com/lex127/webfixbench/discussions/categories/ideas

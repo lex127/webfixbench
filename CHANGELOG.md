@@ -5,18 +5,27 @@ All notable changes to this project are recorded here. The format follows
 [semantic versioning](https://semver.org/) with the understanding that
 pre-1.0 releases may change the case schema and the result-file format.
 
-## [0.1.0rc1] - 2026-09-20
+## [0.1.0rc1] - 2026-10-03
 
 Release candidate with a working harness and a small human-reviewed dataset.
 **No final v0.1.0 release or real-model results have been published.**
 
 ### Added
 
+- Planned designs from discussions #10–#12: inter-rater agreement for the
+  second labeller (METHODOLOGY section 6), the reporting format for published
+  model results (section 14) and the calibration events for `review_v4`
+  (section 15).
+- Suite revision 0.1.3: Oleksii Siniaiev's review of 2026-09-20 freezes the 15
+  cases that predate `wp-injection-001`, which stays pending review. No case
+  received separate academic review.
+- Suite revision 0.1.2: `wp-injection-001`, a synthetic WordPress SQL injection
+  case (`$wpdb->prepare()` replaced by string interpolation in a public
+  `wp_ajax_nopriv_` handler), bringing the suite to 16 cases / 12 defects /
+  4 controls. Agent-drafted, pending human review.
 - Suite revision 0.1.1: three public-advisory synthetic reconstructions (Laravel
   diagnostic XSS, web argv environment override, and its clean sibling), bringing
   the suite to 15 cases / 11 defects / 4 controls.
-- Suite revision 0.1.2: Oleksii Siniaiev reviewed, accepted and froze all 15
-  labels. No case received separate academic review.
 - Conditional advisory provenance in both case validators and serialization;
   exact fix/license references and measured USE/SKIP decisions for six candidates.
 - One precise configuration-injection type, `environment_override_from_web_argv`,
@@ -52,6 +61,11 @@ Release candidate with a working harness and a small human-reviewed dataset.
   real-world source research plan, roadmap and a contributor guide.
 - Offline test suite that never contacts a paid API, plus GitHub Actions CI.
 - Mock baseline artifacts in `results/`.
+
+### Fixed
+
+- `run` rejects a repeated `--case` and a `--limit` below 1 instead of running a
+  case twice or silently dropping cases.
 
 ### Known gaps
 

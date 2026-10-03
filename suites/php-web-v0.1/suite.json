@@ -1,8 +1,8 @@
 {
   "id": "php-web-v0.1",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "title": "PHP web ecosystem (PHP, Laravel, WordPress)",
-  "description": "Fifteen synthetic PHP web diffs: eleven single-defect cases and four clean controls. Includes three advisory-derived synthetic reconstructions; all labels are human-reviewed and frozen.",
+  "description": "Sixteen synthetic PHP web diffs: twelve single-defect cases and four clean controls. Includes three advisory-derived synthetic reconstructions; fifteen labels are human-reviewed and frozen, and wp-injection-001 awaits review.",
   "language": "php",
   "ecosystems": [
     "php",
@@ -17,12 +17,12 @@
     "unsafe_deserialization",
     "clean_control"
   ],
-  "case_count": 15,
+  "case_count": 16,
   "source_types": [
     "synthetic",
     "public_advisory"
   ],
   "license": "Apache-2.0",
   "prompt": "review_v3",
-  "notes": "Twelve original synthetic fixtures and three reconstructions of two public Laravel advisories; the two environment cases share one source mechanism and are not independent incidents. No upstream source files are vendored. Advisory provenance is recorded per case. Oleksii Siniaiev reviewed and froze all labels; academic_review remains false. See docs/DATASET.md and docs/REAL_WORLD_SOURCES.md."
+  "notes": "Thirteen original synthetic fixtures and three reconstructions of two public Laravel advisories; the two environment cases share one source mechanism and are not independent incidents. No upstream source files are vendored. Advisory provenance is recorded per case. Oleksii Siniaiev reviewed and froze the fifteen labels that existed on 2026-09-20; wp-injection-001, added in 0.1.2, is pending_review. academic_review remains false. See docs/DATASET.md and docs/REAL_WORLD_SOURCES.md."
 }

@@ -27,7 +27,7 @@ CHALLENGES = {
 
 def main():
     lines = ["# Human review packet — `php-web-v0.1`", "",
-        "> **Decision record:** Oleksii Siniaiev explicitly accepted all fifteen cases on 2026-09-20. The cases are frozen in suite revision 0.1.2. The original agent recommendations remain below for audit history; `academic_review` is false because no separate review by Valeriia Chumak was confirmed.", "",
+        "> **Decision record:** Oleksii Siniaiev explicitly accepted all fifteen cases on 2026-09-20. The cases are frozen in suite revision 0.1.3. The original agent recommendations remain below for audit history; `academic_review` is false because no separate review by Valeriia Chumak was confirmed.", "",
         "The displayed context and diff are exactly what the evaluated model receives inside the versioned reviewer prompt.", ""]
     for path in sorted(CASES.glob("*.json")):
         c = json.loads(path.read_text())

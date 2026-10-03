@@ -4,15 +4,16 @@
 
 | File | What it is |
 | --- | --- |
-| `mock-baseline.json` | A full 15-case run of the `mock` provider — raw output plus run metadata |
+| `mock-baseline.json` | A full 16-case run of the `mock` provider — raw output plus run metadata |
 | `mock-baseline.md` | The rendered report for that run |
 
 **No model results are published in this release.** The only committed run uses
 the mock provider.
 
-The mock baseline was regenerated after all fifteen labels were human-reviewed
-and frozen. It is still not a model result and supports no provider-quality
-claim. See [../docs/ANNOTATION.md](../docs/ANNOTATION.md).
+The mock baseline was regenerated after fifteen of the sixteen labels were
+human-reviewed and frozen. `wp-injection-001` is still `pending_review`, so the
+report marks the run provisional. It is still not a model result and supports
+no provider-quality claim. See [../docs/ANNOTATION.md](../docs/ANNOTATION.md).
 
 ## Reading the mock baseline
 
@@ -22,7 +23,7 @@ lines and emits a fixed distractor finding on a subset of cases.
 
 Its numbers exist so that the metrics pipeline can be seen working on a run
 that is neither perfect nor empty. **They are not a model result and must not
-be quoted as one.** The stub scores 8 true positives, 4 false positives and 3
+be quoted as one.** The stub scores 8 true positives, 4 false positives and 4
 false negatives on this suite because it was written to be fallible — that is a
 property of the fixture, not a finding about anything.
 

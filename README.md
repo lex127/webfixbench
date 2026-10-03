@@ -5,8 +5,9 @@ LLM-assisted code review on web-application changes.
 
 WebFixBench v0.1 reports a PHP web ecosystem baseline covering PHP, Laravel and
 WordPress. Version 0.1.0rc1 is a release candidate with a working evaluation
-harness and a small, human-reviewed dataset; it is not a completed empirical
-study. No real-model results are published yet.
+harness and a small dataset whose labels are human-reviewed, apart from one
+newer case that still awaits review; it is not a completed empirical study. No
+real-model results are published yet.
 
 ## Why
 
@@ -29,7 +30,7 @@ success rates.
 > across defect categories and frameworks?
 
 v0.1 can only speak to the PHP web ecosystem. It makes no claim about other
-languages, and a 15-case synthetic suite cannot establish general model
+languages, and a 16-case synthetic suite cannot establish general model
 capability.
 
 ## Scope
@@ -64,16 +65,17 @@ frozen status without a human label source and a named reviewer. Runs against
 unfrozen labels are marked provisional in the CLI output, the evaluation
 document and the report.
 
-**All fifteen v0.1 cases are `frozen`** after explicit review and acceptance by
-maintainer Oleksii Siniaiev. The three advisory-derived cases use
+**Fifteen of the sixteen v0.1 cases are `frozen`** after explicit review and
+acceptance by maintainer Oleksii Siniaiev. The three advisory-derived cases use
 `public_advisory_plus_human_review`; the other twelve use `human_reviewed`.
-No case received separate academic review. The rules and preserved decision
-packet are in [docs/ANNOTATION.md](docs/ANNOTATION.md) and
+`wp-injection-001`, added afterwards, stays `pending_review` until the
+maintainer reviews it. No case received separate academic review. The rules and
+preserved decision packet are in [docs/ANNOTATION.md](docs/ANNOTATION.md) and
 [docs/HUMAN_REVIEW_PACKET.md](docs/HUMAN_REVIEW_PACKET.md).
 
 ## Why clean controls
 
-Four of the fifteen cases contain no defect at all, and the correct review of
+Four of the sixteen cases contain no defect at all, and the correct review of
 them is silence. Without clean controls, a reviewer can post a high recall
 score simply by reporting vulnerabilities on every diff — the benchmark would
 reward exactly the behaviour that makes review tooling unusable. Clean controls
@@ -82,17 +84,17 @@ code that touches authorisation, `$_POST` or SQL and is nevertheless correct.
 
 ## Current suite
 
-`php-web-v0.1` — 15 cases (suite revision 0.1.2):
+`php-web-v0.1` — 16 cases (suite revision 0.1.3):
 
 | | Laravel | WordPress | PHP | Total |
 | --- | --- | --- | --- | --- |
-| With a labelled defect | 6 | 3 | 2 | 11 |
+| With a labelled defect | 6 | 4 | 2 | 12 |
 | Clean controls | 2 | 1 | 1 | 4 |
 
-Defect categories in use: `authorization` (3), `injection` (3), `xss` (3),
+Defect categories in use: `authorization` (3), `injection` (4), `xss` (3),
 `secrets` (1), `unsafe_deserialization` (1).
 
-All case code is synthetic and written for this benchmark: twelve fixtures are
+All case code is synthetic and written for this benchmark: thirteen fixtures are
 original synthetic examples and three are advisory-derived synthetic
 reconstructions of patterns from two inspected Laravel advisories. These are
 not vendored real-world patches or independent incident samples. Synthetic
@@ -171,7 +173,7 @@ Notes:
 - Fable models are excluded by project policy.
 - Keys are read from the environment only, and are never written to result
   files. `.env` is git-ignored and is not loaded automatically.
-- Start with `--limit`. A full 15-case run is 15 requests.
+- Start with `--limit`. A full 16-case run is 16 requests.
 - Cost is reported as `null` unless you pass `--pricing` with your own table
   (see [config/pricing.sample.json](config/pricing.sample.json)); the project
   ships no vendor prices, because stale prices produce wrong numbers.
@@ -183,8 +185,8 @@ boundary, result layout, current vendor documentation, and manual Actions runs.
 
 ## Dataset
 
-15 synthetic unified diffs, including three advisory-derived reconstructions,
-with explicit frozen labels and four clean controls whose correct review is "no findings". Case format and the full case
+16 synthetic unified diffs, including three advisory-derived reconstructions,
+with explicit labels (fifteen frozen, one pending review) and four clean controls whose correct review is "no findings". Case format and the full case
 table: [docs/DATASET.md](docs/DATASET.md). How labels are written, reviewed and
 frozen: [docs/ANNOTATION.md](docs/ANNOTATION.md). Machine-readable schemas:
 [schema/](schema/).
@@ -201,7 +203,7 @@ Two things v0.1 deliberately does **not** do:
 - **No calibration score.** Confidence is stored, but Brier/ECE need
   well-defined event semantics that a single self-reported number does not
   have. Reported as *not yet measured*.
-- **No LLM judge.** Matching is deterministic (normalised category, optionally
+- **No LLM judge.** Matching is deterministic (normalised defect type, optionally
   file), so every scored true positive can be re-derived by hand from a result
   file. The cost of that choice is documented in
   [docs/METHODOLOGY.md](docs/METHODOLOGY.md).
@@ -221,18 +223,19 @@ Two things v0.1 deliberately does **not** do:
 
 ## Limitations
 
-- 15 cases. Small: any per-category number rests on one to three cases.
-- Labels were reviewed by one maintainer. Inter-rater agreement and independent
-  academic per-case review are not measured.
+- 16 cases. Small: any per-category number rests on one to four cases.
+- Labels were reviewed by one maintainer, and `wp-injection-001` still awaits
+  review. Inter-rater agreement and independent academic per-case review are
+  not measured.
 - Synthetic cases are cleaner than real pull requests, and say nothing about
   real-world validity.
 - One defect per defective case, and diff-only context. Real review has
   repository context and interacting defects.
-- Category-level matching can credit a finding that names the right category
+- Defect-type matching can credit a finding that names the right defect type
   for the wrong reason.
 - Synthetic cases written in 2026 may resemble patterns in model training data;
   contamination is not controlled for.
-- No model results are published in this release — **not yet measured**.
+- No model results are published in this release: **not yet measured**.
 
 ## Related work
 
