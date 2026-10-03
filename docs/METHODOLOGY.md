@@ -330,7 +330,7 @@ design that asks for a well-specified probability.
 3. **Single labeller.** No inter-rater agreement yet.
 4. **One defect per case.** Interacting defects are untested.
 5. **Diff-only context.** Real reviewers can open the repository.
-6. **Category-level matching.** Right category for the wrong reason scores as a
+6. **Defect-type matching.** Right defect type for the wrong reason scores as a
    hit.
 7. **No statistical claims.** Provider differences on this small, purposively
    selected suite are descriptive. Statistical significance has not been
