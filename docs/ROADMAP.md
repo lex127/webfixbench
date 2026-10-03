@@ -36,15 +36,18 @@ These are blockers, not enhancements:
 - Multi-finding cases, so prioritisation and interacting defects are testable
 - Harder cases: defects that need framework knowledge rather than pattern
   recognition, and near-miss clean controls
-- A second labeller and a reported inter-rater agreement figure
-- First published model results, with run-to-run variance rather than a single
-  run per model
+- A second labeller and a reported inter-rater agreement figure, measured as
+  described in [METHODOLOGY.md](METHODOLOGY.md) section 6
+- First published model results in the reporting format of
+  [METHODOLOGY.md](METHODOLOGY.md) section 14: counts with denominators, Wilson
+  intervals, five runs per model and paired per-case comparisons
 
 ## v0.3 — confidence and context
 
-- **Calibration.** Redesign the prompt so confidence has well-defined event
-  semantics, then report Brier score and ECE properly. Until then the fields
-  stay `null` and the answer stays *not yet measured*.
+- **Calibration.** Add `review_v4` with the case-level and finding-level events
+  in [METHODOLOGY.md](METHODOLOGY.md) section 15, report the Brier score against
+  the base-rate reference, and ECE only once there are a few hundred forecasts.
+  Until then the fields stay `null` and the answer stays *not yet measured*.
 - **Context levels.** Hold the defect fixed and vary what the reviewer sees:
   diff only, diff plus the full changed file, diff plus repository context.
   This is the experiment the case format was designed for.

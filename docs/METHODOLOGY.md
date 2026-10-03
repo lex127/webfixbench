@@ -141,6 +141,37 @@ reviews the taxonomy, the annotation rules, the methodology and two to three
 representative cases, and is not expected to annotate the whole suite; cases
 that received that separate review carry `academic_review: true`.
 
+**Planned agreement measurement (v0.2).** From discussion
+[#10](https://github.com/lex127/webfixbench/discussions/10). When a second
+labeller joins, both label every case independently, without seeing each other's
+labels or any model output, and agreement is computed on those pre-discussion
+labels. The unit is the case: a v0.1 case carries exactly one label, one of the
+eight defect types or "no defect", so agreement is a single nominal variable
+with nine values. The report gives, in this order:
+
+1. raw agreement as a count ("14 of 16 cases"), not only as a percentage;
+2. the full list of disagreeing cases with both labels, since a 9×9 confusion
+   matrix would be almost empty;
+3. Krippendorff's alpha (nominal) with a bootstrap interval. It is preferred to
+   Cohen's kappa because it corrects for small samples, extends to a third
+   labeller unchanged and tolerates a missing label. It still drops when most
+   labels fall into a few types even if raw agreement is high, which is why it
+   comes second and why the interval matters more than the point value;
+4. agreement on "defect" versus "no defect" as a separate figure, because that
+   decision drives the clean-control false-alarm rate.
+
+File agreement is reported conditionally, among cases where both labellers chose
+the same defect type, mirroring the `defect_type` / `defect_type_file` split. No
+per-category coefficient is reported: with one to four cases per type it is
+undefined or meaningless.
+
+Disagreements are then discussed and resolved before freezing, and both the
+pre-discussion figure and the outcome of each disagreement are reported. A
+disagreement that survives discussion means the case is not decidable (see
+[ANNOTATION.md](ANNOTATION.md)), so the case is simplified or rejected rather
+than settled by a vote. The number of cases that end that way is itself a
+measure of how decidable the suite is.
+
 Each defective case carries exactly one expected finding in v0.1. That keeps
 matching unambiguous, at the cost of not testing how reviewers handle several
 interacting defects in one change.
@@ -304,6 +335,30 @@ Every rate is either a number or `null`. `null` means "not computable from this
 run" — an empty denominator, or data the provider did not report. Nothing is
 silently rendered as zero.
 
+**Reporting format for published model results.** Fixed before the first
+real-model results are published, from discussion
+[#12](https://github.com/lex127/webfixbench/discussions/12):
+
+- **Counts first, rates beside them.** Every headline number carries its
+  denominator ("recall 9/12", not "75%"). Per-category results are counts only,
+  without rates or intervals.
+- **Wilson 95% intervals** on the suite-level rates: recall (over expected
+  findings), precision (over predicted findings, so n varies by model) and the
+  clean-control false-alarm rate. With four clean controls, a perfect 0/4 still
+  has an upper bound of about 0.49, so "no false alarms" cannot be read as "safe
+  on clean code".
+- **Five runs per model** with the same settings, because temperature 0 is not
+  deterministic on hosted APIs: the median and the min–max of each headline
+  count, plus the number of cases whose outcome flipped between runs.
+- **Paired per-case comparisons, not rankings.** Providers are compared case by
+  case (which cases one model got and the other missed). No ranking or "model A
+  beats model B" statement is made unless the exact McNemar test on the
+  discordant cases rejects; at p < 0.05 that takes at least six discordant cases
+  all going the same way (five give p ≈ 0.06), which twelve defect cases will
+  rarely produce. A rough size for a ranking is about 30 cases per comparison.
+- **Run metadata in every table:** model id, prompt version, suite version,
+  match mode, the number of frozen cases and the run count.
+
 ## 15. Confidence data
 
 Stored per finding and per response (`overall_confidence`). Reported as
@@ -322,12 +377,39 @@ a number that looks rigorous and is not, v0.1 stores the raw values, keeps the
 fields in the metrics document as `null`, and defers the metric to a prompt
 design that asks for a well-specified probability.
 
+**Planned calibration design (v0.3).** From discussion
+[#11](https://github.com/lex127/webfixbench/discussions/11). The next prompt
+version, `review_v4` (`review_v3` stays frozen), asks for two probabilities,
+each worded so the event is unambiguous:
+
+- **Case level (primary):** the probability that the diff contains at least one
+  defect from the taxonomy. The outcome is fixed by the labels (`is_clean`),
+  every case contributes exactly one forecast, clean controls are covered, and
+  every model forecasts the same events, so the score is comparable across
+  models.
+- **Finding level (secondary):** the probability that a finding is a real defect
+  of the stated type in this diff, scored as a match under `defect_type`
+  matching; the prompt does not mention the rule. The set of forecasts depends
+  on what the model chose to report, so a model that reports fewer, safer
+  findings gets an easier sample. This score is not compared across models
+  without that note, and the number of findings it rests on is printed beside
+  it.
+
+At the current size only the Brier score is reported, next to a base-rate
+reference: on the current suite, always forecasting the prevalence (12/16 =
+0.75) scores 0.1875 on the case-level event, and a reviewer shows useful
+confidence only by beating that. ECE is not reported until there are a few
+hundred forecasts, roughly 20–30 per bin over 5–10 bins, and even then beside a
+reliability diagram with counts per bin. Repeated runs add forecasts but not
+independent cases. The TP-versus-FP confidence gap stays in the report.
+
 ## 16. Known limitations
 
 1. **Size.** 16 cases. Any per-category number is computed over one to four
    cases and should be read as illustrative, not as an estimate.
 2. **Synthetic data.** Cleaner and smaller than real pull requests.
-3. **Single labeller.** No inter-rater agreement yet.
+3. **Single labeller.** No inter-rater agreement yet; the planned measurement
+   is in section 6.
 4. **One defect per case.** Interacting defects are untested.
 5. **Diff-only context.** Real reviewers can open the repository.
 6. **Defect-type matching.** Right defect type for the wrong reason scores as a
@@ -335,7 +417,9 @@ design that asks for a well-specified probability.
 7. **No statistical claims.** Provider differences on this small, purposively
    selected suite are descriptive. Statistical significance has not been
    assessed, and these differences do not establish a general provider ranking.
-8. **Single run.** Run-to-run variance at temperature 0 is not yet measured.
+   The criterion for a ranking claim is in section 14.
+8. **Single run.** Run-to-run variance at temperature 0 is not yet measured;
+   published results will use five runs per model (section 14).
 
 ## 17. Data contamination risk
 
