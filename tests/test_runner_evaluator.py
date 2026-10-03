@@ -69,6 +69,22 @@ class SuiteRunTests(unittest.TestCase):
         with self.assertRaises(KeyError):
             run_suite(self.suite, MockProvider(), self.prompt, case_ids=["nope"])
 
+    def test_repeated_case_is_rejected(self) -> None:
+        # Running a case twice would bill a paid provider twice and count the
+        # case twice in the metrics.
+        with self.assertRaises(ValueError):
+            run_suite(
+                self.suite,
+                MockProvider(),
+                self.prompt,
+                case_ids=["laravel-xss-001", "laravel-xss-001"],
+            )
+
+    def test_non_positive_limit_is_rejected(self) -> None:
+        for limit in (0, -1):
+            with self.subTest(limit=limit), self.assertRaises(ValueError):
+                run_suite(self.suite, MockProvider(), self.prompt, limit=limit)
+
     def test_results_round_trip_through_disk(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             path = write_results(self.document, Path(tmp) / "run.json")

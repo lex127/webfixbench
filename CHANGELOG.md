@@ -47,6 +47,11 @@ Pre-release research skeleton. A working harness and a small labelled dataset.
 - Test suite (136 tests) that never contacts a paid API, plus GitHub Actions CI.
 - Mock baseline artifacts in `results/`.
 
+### Fixed
+
+- `run` rejects a repeated `--case` and a `--limit` below 1 instead of running a
+  case twice or silently dropping cases.
+
 ### Known gaps
 
 - Related-work entries have been checked against linked primary sources. The
