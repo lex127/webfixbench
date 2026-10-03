@@ -5,7 +5,7 @@ LLM-assisted code review on web-application changes.
 
 WebFixBench v0.1 reports a PHP web ecosystem baseline covering PHP, Laravel and
 WordPress. It is an early research skeleton: a working evaluation harness and a
-small, carefully labelled dataset — not a finished study. No model results are
+small, carefully labelled dataset, not a finished study. No model results are
 published yet.
 
 ## Why
