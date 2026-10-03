@@ -140,6 +140,9 @@ def run_suite(
     """Run all (or a subset of) the cases in ``suite``."""
     cases: List[Case] = list(suite.cases)
     if case_ids:
+        duplicates = sorted({c for c in case_ids if case_ids.count(c) > 1})
+        if duplicates:
+            raise ValueError(f"case ids must not contain duplicates: {', '.join(duplicates)}")
         selected = []
         for case_id in case_ids:
             try:
@@ -148,6 +151,8 @@ def run_suite(
                 raise KeyError(f"case {case_id!r} is not in suite {suite.id!r}")
         cases = selected
     if limit is not None:
+        if limit < 1:
+            raise ValueError(f"limit must be at least 1, got {limit}")
         cases = cases[:limit]
 
     return run_cases(

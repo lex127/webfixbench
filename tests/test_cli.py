@@ -76,6 +76,23 @@ class ListAndShowTests(unittest.TestCase):
 
 
 class RunEvaluateReportTests(unittest.TestCase):
+    def test_run_rejects_repeated_case_and_non_positive_limit(self) -> None:
+        bad_args = (
+            ["--case", "laravel-xss-001", "--case", "laravel-xss-001"],
+            ["--limit", "0"],
+            ["--limit", "-1"],
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            results = Path(tmp) / "run.json"
+            for extra in bad_args:
+                with self.subTest(args=extra):
+                    code, _, err = run_cli(
+                        "run", "--provider", "mock", "--out", str(results), "--quiet", *extra
+                    )
+                    self.assertEqual(code, 2)
+                    self.assertIn("error:", err)
+                    self.assertFalse(results.exists())
+
     def test_full_offline_workflow(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             results = Path(tmp) / "run.json"
