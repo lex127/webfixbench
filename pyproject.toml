@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "webfixbench"
-version = "0.1.0.dev0"
+version = "0.1.0rc1"
 description = "A reproducible benchmark for evaluating the reliability of LLM-assisted code review on web-application changes."
 readme = "README.md"
 requires-python = ">=3.9"
@@ -14,7 +14,7 @@ authors = [
 ]
 keywords = ["benchmark", "code-review", "llm", "evaluation", "php", "laravel", "wordpress"]
 classifiers = [
-  "Development Status :: 3 - Alpha",
+  "Development Status :: 4 - Beta",
   "Intended Audience :: Science/Research",
   "License :: OSI Approved :: Apache Software License",
   "Programming Language :: Python :: 3",

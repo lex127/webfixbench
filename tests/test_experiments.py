@@ -4,6 +4,7 @@ import json
 import os
 import tempfile
 import unittest
+from dataclasses import replace
 from pathlib import Path
 from unittest import mock
 
@@ -44,6 +45,19 @@ class ExperimentTests(unittest.TestCase):
         with self.assertRaisesRegex(ConfigError, "does not support"):
             self.load(config(providers=[paid], mode="smoke"))
 
+    def test_gemini_settings_and_sonnet_sampling_are_validated(self):
+        gemini = {"provider": "gemini", "model": "gemini-3.8-flash",
+                  "api_key_env": "GEMINI_API_KEY", "output_constraint": "json_schema",
+                  "reasoning_effort": "low", "model_id_stability": "stable_alias"}
+        self.load(config(providers=[gemini], mode="smoke"))
+        with self.assertRaisesRegex(ConfigError, "reasoning_effort"):
+            self.load(config(providers=[{**gemini, "reasoning_effort": "minimal"}], mode="smoke"))
+        anthropic = {"provider": "anthropic", "model": "claude-sonnet-5",
+                     "api_key_env": "ANTHROPIC_API_KEY", "output_constraint": "json_schema",
+                     "temperature": 0.0}
+        with self.assertRaisesRegex(ConfigError, "temperature"):
+            self.load(config(providers=[anthropic], mode="smoke"))
+
     def test_request_guard_is_checked(self):
         experiment = self.load(config(repeat_count=3))
         with self.assertRaisesRegex(ConfigError, "exceeding"):
@@ -53,8 +67,13 @@ class ExperimentTests(unittest.TestCase):
         paid = {"provider": "xai", "model": "m", "api_key_env": "XAI_API_KEY",
                 "output_constraint": "json_schema"}
         experiment = self.load(config(providers=[paid], case_limit=2))
-        with self.assertRaisesRegex(ConfigError, "frozen labels"):
-            preflight(experiment, root=ROOT, max_requests=10, require_keys=False)
+        from webfixbench.cases import load_suite
+        suite = load_suite("php-web-v0.1", root=ROOT)
+        suite.cases[0] = replace(suite.cases[0], label_status="pending_review",
+                                 label_source="agent_drafted", reviewed_by=[])
+        with mock.patch("webfixbench.experiment.load_suite", return_value=suite):
+            with self.assertRaisesRegex(ConfigError, "frozen labels"):
+                preflight(experiment, root=ROOT, max_requests=10, require_keys=False)
         experiment = self.load(config(providers=[paid], case_limit=4, mode="smoke"))
         with self.assertRaisesRegex(ConfigError, "limited to 3"):
             preflight(experiment, root=ROOT, max_requests=10, require_keys=False)
@@ -78,6 +97,8 @@ class ExperimentTests(unittest.TestCase):
             self.assertEqual(len(manifest["runs"]), 2)
             self.assertEqual(len(manifest["repository"]["git_sha"]), 40)
             self.assertEqual(len(manifest["case_fingerprints"]), 2)
+            self.assertEqual(len(manifest["input_fingerprints"]), 2)
+            self.assertIn("configuration", manifest)
             for entry in manifest["runs"]:
                 self.assertTrue((first / entry["results"]).is_file())
                 self.assertTrue((first / entry["evaluation"]).is_file())

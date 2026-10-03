@@ -1,6 +1,6 @@
 # Dataset — `php-web-v0.1`
 
-Sixteen labelled changes from the PHP web ecosystem, suite revision **0.1.2**:
+Sixteen labelled changes from the PHP web ecosystem, suite revision **0.1.3**:
 thirteen original synthetic fixtures and three **advisory-derived synthetic
 reconstructions** from two public Laravel advisories. All code is written for
 this benchmark; no upstream framework files are vendored.
@@ -10,10 +10,11 @@ provenance makes the selection traceable but does not establish real-world
 review performance. Inspected patches, licenses and rejection reasons are in
 [REAL_WORLD_SOURCES.md](REAL_WORLD_SOURCES.md).
 
-> **Label status.** All sixteen cases are currently `label_status:
-> "pending_review"` — drafted, and awaiting the maintainer's review pass. Under
-> the project's ground-truth rule, scores computed against unfrozen labels are
-> provisional, and the harness says so. See [ANNOTATION.md](ANNOTATION.md).
+> **Label status.** Oleksii Siniaiev explicitly reviewed and accepted the
+> fifteen cases that existed on 2026-09-20; those labels are frozen.
+> `wp-injection-001`, added later, is `pending_review`, so runs that include it
+> are marked provisional. `academic_review` remains false for every case. See
+> [ANNOTATION.md](ANNOTATION.md).
 
 ## Composition
 
@@ -106,9 +107,9 @@ validator in `src/webfixbench/schemas.py`.
     }
   ],
   "is_clean": false,
-  "label_source": "agent_drafted",
-  "label_status": "pending_review",
-  "reviewed_by": [],
+  "label_source": "human_reviewed",
+  "label_status": "frozen",
+  "reviewed_by": ["Oleksii Siniaiev"],
   "academic_review": false,
   "tags": ["policy", "broken-access-control"],
   "notes": "Labelling rationale. Not shown to the reviewer.",
@@ -156,7 +157,8 @@ findings, are untested. Multi-finding cases are a v0.2 item.
 missing capability check as its intended defect. The other eight defective
 cases were also reviewed for a second reasonable finding; none was identified.
 This is an implementation review, not the required human ground-truth approval,
-so every label remains `pending_review`.
+before the maintainer's acceptance; the fifteen labels reviewed then are now
+frozen. `wp-injection-001` was added later and was not part of that review.
 
 ## Difficulty
 
@@ -167,7 +169,7 @@ detection rates instead of left as an opinion.
 
 ## Provenance and licensing
 
-The original twelve cases use `source_type: "synthetic"` and `source_url: null`.
+The thirteen original cases use `source_type: "synthetic"` and `source_url: null`.
 The three additions use `source_type: "public_advisory"`, `advisory_id`,
 `original_project`, `reconstruction_type: "synthetic_reconstruction"` and
 `license_note`, plus exact commit/license links in `references`. These fields
@@ -201,7 +203,9 @@ the failure mode this benchmark exists to measure.
 - **Synthetic.** Tidier than real pull requests; the defect is always in the
   diff, and the diff is short. Good for controlled measurement, not evidence of
   real-world validity.
-- **Labels not yet frozen.** All sixteen are `pending_review`.
+- **Single human reviewer.** Fifteen labels were reviewed by the maintainer and
+  `wp-injection-001` still awaits review; no inter-rater agreement or per-case
+  academic review is available.
 - **Single labeller.** Labels are the maintainer's; inter-rater agreement is
   *not yet measured*.
 - **Canonical patterns.** These are textbook defects, well represented in public

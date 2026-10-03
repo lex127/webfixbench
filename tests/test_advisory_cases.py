@@ -47,15 +47,15 @@ class AdvisoryCaseTests(unittest.TestCase):
         cls.suite = load_suite("php-web-v0.1", root=ROOT)
         cls.cases = [c for c in cls.suite.cases if c.source_type == "public_advisory"]
 
-    def test_drafts_are_unapproved_reconstructions_with_traceable_sources(self):
+    def test_human_reviewed_reconstructions_have_traceable_sources(self):
         self.assertEqual(len(self.cases), 3)
         self.assertEqual(len({c.advisory_id for c in self.cases}), 2)
         self.assertEqual(sum(c.is_clean for c in self.cases), 1)
         for case in self.cases:
             with self.subTest(case=case.id):
-                self.assertEqual(case.label_status, "pending_review")
-                self.assertEqual(case.label_source, "agent_drafted")
-                self.assertEqual(case.reviewed_by, [])
+                self.assertEqual(case.label_status, "frozen")
+                self.assertEqual(case.label_source, "public_advisory_plus_human_review")
+                self.assertEqual(case.reviewed_by, ["Oleksii Siniaiev"])
                 self.assertFalse(case.academic_review)
                 self.assertEqual(case.reconstruction_type, "synthetic_reconstruction")
                 self.assertEqual(len(case.expected_findings), 0 if case.is_clean else 1)
@@ -80,7 +80,7 @@ class AdvisoryCaseTests(unittest.TestCase):
         doc = dict(original, reconstruction_type="excerpt")
         self.assertTrue(validate_case_dict(doc))
         # Having an advisory never makes an agent's label frozen ground truth.
-        self.assertTrue(validate_case_dict(dict(original, label_status="frozen")))
+        self.assertTrue(validate_case_dict(dict(original, label_source="agent_drafted")))
 
     def test_json_schema_enforces_the_same_provenance_requirements(self):
         rule = next(r for r in CASE_SCHEMA["allOf"]

@@ -154,6 +154,15 @@ class VendorProviderOfflineTests(unittest.TestCase):
         self.assertEqual(payload["input"][-1]["content"], "review this")
         self.assertEqual(payload["text"]["format"]["type"], "json_schema")
         self.assertEqual(provider.describe()["api_type"], "responses")
+        self.assertNotIn("temperature", payload)
+
+    def test_openai_accepts_none_reasoning_and_rejects_sampling_with_reasoning(self) -> None:
+        from webfixbench.providers.openai import OpenAIProvider
+        with mock.patch.dict(os.environ, {"OPENAI_API_KEY": "test-not-used"}, clear=True):
+            provider = OpenAIProvider(model="gpt-5.6-terra", reasoning_effort="none")
+            with self.assertRaises(ProviderError):
+                OpenAIProvider(model="gpt-5.6-terra", reasoning_effort="none", temperature=0.0)
+        self.assertEqual(provider._payload("review")["reasoning"], {"effort": "none"})
 
     def test_openai_chat_completions_is_explicit(self) -> None:
         from webfixbench.providers.openai import OpenAIProvider
@@ -176,6 +185,18 @@ class VendorProviderOfflineTests(unittest.TestCase):
         self.assertEqual(payload["output_config"]["format"]["type"], "json_schema")
         self.assertEqual(provider.describe()["api_type"], "messages")
         self.assertEqual(provider.describe()["output_constraint"], "json_schema")
+        self.assertNotIn("temperature", payload)
+
+    def test_sonnet_5_disabled_thinking_and_no_sampling(self) -> None:
+        from webfixbench.providers.anthropic import AnthropicProvider
+        with mock.patch.dict(os.environ, {"ANTHROPIC_API_KEY": "test-not-used"}, clear=True):
+            provider = AnthropicProvider(model="claude-sonnet-5", thinking_mode="disabled")
+            with self.assertRaises(ProviderError):
+                AnthropicProvider(model="claude-sonnet-5", temperature=0.0)
+            with self.assertRaises(ProviderError):
+                AnthropicProvider(model="claude-sonnet-5", reasoning_effort="low")
+        self.assertEqual(provider._payload("review")["thinking"], {"type": "disabled"})
+        self.assertEqual(provider.describe()["settings_sent"]["thinking"], {"type": "disabled"})
 
     def test_anthropic_rejects_fable_models(self) -> None:
         from webfixbench.providers.anthropic import AnthropicProvider

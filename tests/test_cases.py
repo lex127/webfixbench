@@ -14,6 +14,26 @@ from webfixbench.schemas import (
 
 ROOT = Path(__file__).resolve().parents[1]
 
+# Cases accepted in the maintainer's review of 2026-09-20 (suite revision 0.1.3).
+# A case added later stays pending until a later review freezes it.
+REVIEWED_2026_09_20 = {
+    "laravel-authz-001",
+    "laravel-authz-002",
+    "laravel-clean-001",
+    "laravel-ghsa-debug-xss-001",
+    "laravel-ghsa-env-001",
+    "laravel-ghsa-env-clean-001",
+    "laravel-injection-001",
+    "laravel-xss-001",
+    "php-clean-001",
+    "php-injection-001",
+    "php-secrets-001",
+    "wp-authz-001",
+    "wp-clean-001",
+    "wp-deser-001",
+    "wp-xss-001",
+}
+
 
 class SuiteLoadingTests(unittest.TestCase):
     def setUp(self) -> None:
@@ -90,6 +110,19 @@ class SuiteLoadingTests(unittest.TestCase):
         for case in self.suite.cases:
             self.assertIn(case.label_source, LABEL_SOURCES, case.id)
             self.assertIn(case.label_status, LABEL_STATUSES, case.id)
+
+    def test_v01_ground_truth_is_maintainer_frozen_without_academic_claims(self) -> None:
+        self.assertLessEqual(REVIEWED_2026_09_20, {c.id for c in self.suite.cases})
+        for case in self.suite.cases:
+            if case.id not in REVIEWED_2026_09_20:
+                self.assertFalse(case.academic_review, case.id)
+                continue
+            self.assertTrue(case.labels_frozen, case.id)
+            self.assertEqual(case.reviewed_by, ["Oleksii Siniaiev"], case.id)
+            expected_source = ("public_advisory_plus_human_review"
+                               if case.source_type == "public_advisory" else "human_reviewed")
+            self.assertEqual(case.label_source, expected_source, case.id)
+            self.assertFalse(case.academic_review, case.id)
 
     def test_no_case_claims_frozen_labels_without_a_reviewer(self) -> None:
         # The schema enforces this; the suite is checked directly so that a

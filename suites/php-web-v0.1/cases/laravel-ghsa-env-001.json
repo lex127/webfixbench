@@ -25,9 +25,9 @@
     }
   ],
   "is_clean": false,
-  "label_source": "agent_drafted",
-  "label_status": "pending_review",
-  "reviewed_by": [],
+  "label_source": "public_advisory_plus_human_review",
+  "label_status": "frozen",
+  "reviewed_by": ["Oleksii Siniaiev"],
   "academic_review": false,
   "tags": [
     "advisory-derived",

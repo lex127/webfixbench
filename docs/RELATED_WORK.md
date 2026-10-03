@@ -37,7 +37,7 @@ counts, so this document reports them separately rather than collapsing them.
 
 This comparison supports no “first”, “only”, “unique”, or “first PHP
 benchmark” claim. It also does not establish real-world validity for
-WebFixBench: the current suite is synthetic, small, and still awaiting human
+WebFixBench: the current suite is synthetic, small, and has one human
 ground-truth review.
 
 ## Verification log

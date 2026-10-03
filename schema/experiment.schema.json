@@ -25,13 +25,15 @@
       "additionalProperties": false,
       "required": ["provider", "model"],
       "properties": {
-        "provider": { "enum": ["mock", "openai", "anthropic", "xai", "deepseek"] },
+        "provider": { "enum": ["mock", "openai", "anthropic", "gemini", "xai", "deepseek"] },
         "model": { "type": "string", "minLength": 1 },
         "api_type": { "enum": ["responses", "chat.completions"] },
         "output_constraint": { "enum": ["native_json", "json_schema", "json_object", "prompt_only"] },
         "temperature": { "type": "number", "minimum": 0, "maximum": 2 },
         "reasoning_effort": { "enum": ["none", "low", "medium", "high", "xhigh", "max"] },
-        "api_key_env": { "enum": ["OPENAI_API_KEY", "ANTHROPIC_API_KEY", "XAI_API_KEY", "DEEPSEEK_API_KEY"] },
+        "thinking_mode": { "enum": ["disabled", "adaptive"] },
+        "model_id_stability": { "enum": ["pinned", "stable_alias", "mutable_alias", "unknown"] },
+        "api_key_env": { "enum": ["OPENAI_API_KEY", "ANTHROPIC_API_KEY", "GEMINI_API_KEY", "XAI_API_KEY", "DEEPSEEK_API_KEY"] },
         "mock_mode": { "enum": ["heuristic", "empty", "oracle_free", "malformed"] }
       }
     }

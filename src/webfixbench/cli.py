@@ -82,10 +82,11 @@ def build_parser() -> argparse.ArgumentParser:
     )
     run_parser.add_argument("--mock-mode", default="heuristic", choices=MOCK_MODES)
     run_parser.add_argument("--prompt", default=DEFAULT_PROMPT)
-    run_parser.add_argument("--temperature", type=float, default=0.0)
+    run_parser.add_argument("--temperature", type=float, default=None)
     run_parser.add_argument("--max-output-tokens", type=int, default=2048)
     run_parser.add_argument("--timeout", type=float, default=120.0)
     run_parser.add_argument("--reasoning-effort", default=None)
+    run_parser.add_argument("--thinking-mode", choices=("disabled", "adaptive"), default=None)
     run_parser.add_argument("--limit", type=int, default=None, help="run at most N cases")
     run_parser.add_argument("--pricing", type=Path, default=None, help="pricing table JSON")
     run_parser.add_argument("--out", type=Path, default=None, help="write the result file here")
@@ -255,6 +256,11 @@ def cmd_run(args: argparse.Namespace) -> int:
         if args.output_constraint == "json_object":
             raise ProviderError("Anthropic supports json_schema or prompt_only, not json_object")
         provider_kwargs["output_constraint"] = args.output_constraint
+        provider_kwargs["thinking_mode"] = args.thinking_mode
+        provider_kwargs["reasoning_effort"] = args.reasoning_effort
+    elif args.provider == "gemini":
+        provider_kwargs["output_constraint"] = args.output_constraint
+        provider_kwargs["reasoning_effort"] = args.reasoning_effort
     elif args.provider == "xai":
         provider_kwargs["output_constraint"] = args.output_constraint
         provider_kwargs["reasoning_effort"] = args.reasoning_effort

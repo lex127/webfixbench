@@ -39,7 +39,7 @@ class XAIProvider(BaseProvider):
                        "output_constraint": self.output_constraint})
         sent: Dict[str, Any] = {"model": self.model, "max_output_tokens": self.max_output_tokens,
                                 "store": False}
-        if self.temperature != 0.0:
+        if self.temperature is not None:
             sent["temperature"] = self.temperature
         if self.reasoning_effort is not None:
             sent["reasoning"] = {"effort": self.reasoning_effort}
@@ -56,7 +56,7 @@ class XAIProvider(BaseProvider):
             "max_output_tokens": self.max_output_tokens,
             "store": False,
         }
-        if self.temperature != 0.0:
+        if self.temperature is not None:
             payload["temperature"] = self.temperature
         if self.reasoning_effort is not None:
             payload["reasoning"] = {"effort": self.reasoning_effort}
