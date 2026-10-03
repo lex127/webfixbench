@@ -80,7 +80,7 @@ reconstructions now document two public Laravel source patterns ([REAL_WORLD_SOU
 
 ## 5. Clean controls
 
-Four of the fifteen cases contain no defect and must produce zero findings.
+Four of the sixteen cases contain no defect and must produce zero findings.
 
 Clean controls are mandatory, and the reason is mechanical: **without clean
 controls, a model can achieve high recall simply by reporting vulnerabilities
@@ -129,7 +129,7 @@ CLI and the rendered report mark results from unfrozen labels as provisional.
 The full workflow — who may draft, what the reviewer checks, how labels are
 frozen and how revisions are versioned — is in [ANNOTATION.md](ANNOTATION.md).
 
-**Status of the v0.1 suite:** all fifteen cases are currently `agent_drafted` /
+**Status of the v0.1 suite:** all sixteen cases are currently `agent_drafted` /
 `pending_review`, awaiting the maintainer's review pass. Until that pass is
 complete, any numbers the harness produces are provisional and are labelled as
 such.
@@ -324,7 +324,7 @@ design that asks for a well-specified probability.
 
 ## 16. Known limitations
 
-1. **Size.** 15 cases. Any per-category number is computed over one to three
+1. **Size.** 16 cases. Any per-category number is computed over one to three
    cases and should be read as illustrative, not as an estimate.
 2. **Synthetic data.** Cleaner and smaller than real pull requests.
 3. **Single labeller.** No inter-rater agreement yet.
@@ -361,7 +361,7 @@ directly measurable question.
 ## 19. What this benchmark cannot tell you
 
 A small synthetic benchmark does **not** establish general model security
-capability. A good score here means a reviewer handled fifteen specific,
+capability. A good score here means a reviewer handled sixteen specific,
 clearly-labelled changes. It is not evidence that the reviewer is safe to rely
 on for a codebase, and it must not be used to certify a model or a tool as
 secure. See [ETHICS.md](ETHICS.md).

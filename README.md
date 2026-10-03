@@ -29,7 +29,7 @@ success rates.
 > across defect categories and frameworks?
 
 v0.1 can only speak to the PHP web ecosystem. It makes no claim about other
-languages, and a 15-case synthetic suite cannot establish general model
+languages, and a 16-case synthetic suite cannot establish general model
 capability.
 
 ## Scope
@@ -64,13 +64,13 @@ frozen status without a human label source and a named reviewer. Runs against
 unfrozen labels are marked provisional in the CLI output, the evaluation
 document and the report.
 
-**All fifteen v0.1 cases are currently `pending_review`** — drafted and awaiting
+**All sixteen v0.1 cases are currently `pending_review`** — drafted and awaiting
 the maintainer's review pass. The rules are in
 [docs/ANNOTATION.md](docs/ANNOTATION.md).
 
 ## Why clean controls
 
-Four of the fifteen cases contain no defect at all, and the correct review of
+Four of the sixteen cases contain no defect at all, and the correct review of
 them is silence. Without clean controls, a reviewer can post a high recall
 score simply by reporting vulnerabilities on every diff — the benchmark would
 reward exactly the behaviour that makes review tooling unusable. Clean controls
@@ -79,14 +79,14 @@ code that touches authorisation, `$_POST` or SQL and is nevertheless correct.
 
 ## Current suite
 
-`php-web-v0.1` — 15 cases (suite revision 0.1.1):
+`php-web-v0.1` — 16 cases (suite revision 0.1.2):
 
 | | Laravel | WordPress | PHP | Total |
 | --- | --- | --- | --- | --- |
-| With a labelled defect | 6 | 3 | 2 | 11 |
+| With a labelled defect | 6 | 4 | 2 | 12 |
 | Clean controls | 2 | 1 | 1 | 4 |
 
-Defect categories in use: `authorization` (3), `injection` (3), `xss` (3),
+Defect categories in use: `authorization` (3), `injection` (4), `xss` (3),
 `secrets` (1), `unsafe_deserialization` (1).
 
 All cases are synthetic, written for this benchmark. That is a design choice:
@@ -163,7 +163,7 @@ Notes:
 - Fable models are excluded by project policy.
 - Keys are read from the environment only, and are never written to result
   files. `.env` is git-ignored and is not loaded automatically.
-- Start with `--limit`. A full 15-case run is 15 requests.
+- Start with `--limit`. A full 16-case run is 16 requests.
 - Cost is reported as `null` unless you pass `--pricing` with your own table
   (see [config/pricing.sample.json](config/pricing.sample.json)); the project
   ships no vendor prices, because stale prices produce wrong numbers.
@@ -175,7 +175,7 @@ boundary, result layout, current vendor documentation, and manual Actions runs.
 
 ## Dataset
 
-15 synthetic unified diffs, including three advisory-derived reconstructions,
+16 synthetic unified diffs, including three advisory-derived reconstructions,
 with explicit draft labels and four clean controls whose correct review is "no findings". Case format and the full case
 table: [docs/DATASET.md](docs/DATASET.md). How labels are written, reviewed and
 frozen: [docs/ANNOTATION.md](docs/ANNOTATION.md). Machine-readable schemas:
@@ -210,7 +210,7 @@ Two things v0.1 deliberately does **not** do:
 
 ## Limitations
 
-- 15 cases. Small: any per-category number rests on one to three cases.
+- 16 cases. Small: any per-category number rests on one to three cases.
 - Labels are drafted and awaiting human review; results from them are
   provisional until frozen.
 - Synthetic cases are cleaner than real pull requests, and say nothing about

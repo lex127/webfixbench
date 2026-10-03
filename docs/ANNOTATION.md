@@ -69,7 +69,7 @@ review sets `academic_review: true`; every other case leaves it `false`.
 
 ### Status of the v0.1 suite
 
-All fifteen cases are currently `agent_drafted` / `pending_review`. They were
+All sixteen cases are currently `agent_drafted` / `pending_review`. They were
 drafted with the workflow above and are awaiting the maintainer's review pass.
 Until that pass is done and the labels are frozen, any scores the harness
 produces are provisional — the CLI, the evaluation document and the rendered

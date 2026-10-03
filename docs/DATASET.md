@@ -1,7 +1,7 @@
 # Dataset — `php-web-v0.1`
 
-Fifteen labelled changes from the PHP web ecosystem, suite revision **0.1.1**:
-twelve original synthetic fixtures and three **advisory-derived synthetic
+Sixteen labelled changes from the PHP web ecosystem, suite revision **0.1.2**:
+thirteen original synthetic fixtures and three **advisory-derived synthetic
 reconstructions** from two public Laravel advisories. All code is written for
 this benchmark; no upstream framework files are vendored.
 
@@ -10,7 +10,7 @@ provenance makes the selection traceable but does not establish real-world
 review performance. Inspected patches, licenses and rejection reasons are in
 [REAL_WORLD_SOURCES.md](REAL_WORLD_SOURCES.md).
 
-> **Label status.** All fifteen cases are currently `label_status:
+> **Label status.** All sixteen cases are currently `label_status:
 > "pending_review"` — drafted, and awaiting the maintainer's review pass. Under
 > the project's ground-truth rule, scores computed against unfrozen labels are
 > provisional, and the harness says so. See [ANNOTATION.md](ANNOTATION.md).
@@ -19,16 +19,16 @@ review performance. Inspected patches, licenses and rejection reasons are in
 
 | | Laravel | WordPress | PHP | Total |
 | --- | --- | --- | --- | --- |
-| With a labelled defect | 6 | 3 | 2 | 11 |
+| With a labelled defect | 6 | 4 | 2 | 12 |
 | Clean controls | 2 | 1 | 1 | 4 |
-| **Total** | **8** | **4** | **3** | **15** |
+| **Total** | **8** | **5** | **3** | **16** |
 
 By category:
 
 | Category | Cases |
 | --- | --- |
 | `authorization` | 3 |
-| `injection` | 3 |
+| `injection` | 4 |
 | `xss` | 3 |
 | `secrets` | 1 |
 | `unsafe_deserialization` | 1 |
@@ -45,6 +45,7 @@ By category:
 | `laravel-clean-001` | laravel | clean_control | easy | Collapses three assignments into `fill()`/`save()`; `authorize()` untouched |
 | `wp-authz-001` | wordpress | authorization | medium | Adds a nonce-protected `wp_ajax_` subscriber-export handler with no capability check |
 | `wp-xss-001` | wordpress | xss | easy | Echoes `$_GET['wfb_q']` into a template instead of `esc_html( $query )` |
+| `wp-injection-001` | wordpress | injection | easy | Replaces `$wpdb->prepare()` in a public `wp_ajax_nopriv_` event list with an interpolated `$_GET['city']` |
 | `wp-deser-001` | wordpress | unsafe_deserialization | medium | Decodes an unsigned cookie with `unserialize()` instead of `json_decode()` |
 | `wp-clean-001` | wordpress | clean_control | medium | Adds `sanitize_text_field()` to an existing guarded AJAX handler and returns the value as JSON |
 | `php-secrets-001` | php | secrets | easy | Replaces `getenv()` with a hardcoded mailer API key literal |
@@ -200,7 +201,7 @@ the failure mode this benchmark exists to measure.
 - **Synthetic.** Tidier than real pull requests; the defect is always in the
   diff, and the diff is short. Good for controlled measurement, not evidence of
   real-world validity.
-- **Labels not yet frozen.** All fifteen are `pending_review`.
+- **Labels not yet frozen.** All sixteen are `pending_review`.
 - **Single labeller.** Labels are the maintainer's; inter-rater agreement is
   *not yet measured*.
 - **Canonical patterns.** These are textbook defects, well represented in public
