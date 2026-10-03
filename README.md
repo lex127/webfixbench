@@ -221,7 +221,7 @@ Two things v0.1 deliberately does **not** do:
   for the wrong reason.
 - Synthetic cases written in 2026 may resemble patterns in model training data;
   contamination is not controlled for.
-- No model results are published in this release — **not yet measured**.
+- No model results are published in this release: **not yet measured**.
 
 ## Related work
 
