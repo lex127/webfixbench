@@ -53,8 +53,10 @@ API], [Gemini GenerateContent API], [xAI Responses API], and [DeepSeek Chat Comp
 
 The reviewed five-provider wave is
 [`v0.1-first-wave.json`](../experiments/v0.1-first-wave.json) (75 requests
-while the sixteenth case remains pending review). Its explicit three-case
-cross-framework smoke companion plans 15 requests. The smoke cases are selected
+while the sixteenth case remains pending review). Before that, use
+[`v0.1-first-wave-canary.json`](../experiments/v0.1-first-wave-canary.json)
+for one frozen case across all five providers (5 requests), then the explicit
+three-case cross-framework smoke companion for 15 requests. The smoke cases are selected
 by id rather than by suite order so Laravel, WordPress and PHP paths are all
 exercised. See
 [BASELINE_PROTOCOL.md](BASELINE_PROTOCOL.md) for the comparability boundary.
