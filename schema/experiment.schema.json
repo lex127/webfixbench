@@ -31,7 +31,7 @@
         "output_constraint": { "enum": ["native_json", "json_schema", "json_object", "prompt_only"] },
         "temperature": { "type": "number", "minimum": 0, "maximum": 2 },
         "reasoning_effort": { "enum": ["none", "low", "medium", "high", "xhigh", "max"] },
-        "thinking_mode": { "enum": ["disabled", "adaptive"] },
+        "thinking_mode": { "enum": ["disabled", "between_tools", "adaptive"] },
         "model_id_stability": { "enum": ["pinned", "stable_alias", "mutable_alias", "unknown"] },
         "api_key_env": { "enum": ["OPENAI_API_KEY", "ANTHROPIC_API_KEY", "GEMINI_API_KEY", "XAI_API_KEY", "DEEPSEEK_API_KEY"] },
         "mock_mode": { "enum": ["heuristic", "empty", "oracle_free", "malformed"] }

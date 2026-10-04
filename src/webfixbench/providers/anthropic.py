@@ -24,7 +24,7 @@ SYSTEM_PROMPT = (
 
 
 OUTPUT_CONSTRAINTS = ("json_schema", "prompt_only")
-THINKING_MODES = ("disabled", "adaptive")
+THINKING_MODES = ("disabled", "between_tools", "adaptive")
 REASONING_EFFORTS = ("low", "medium", "high", "xhigh", "max")
 
 
@@ -57,10 +57,14 @@ class AnthropicProvider(BaseProvider):
             raise ProviderError(f"unsupported Anthropic thinking_mode {thinking_mode!r}")
         if reasoning_effort is not None and reasoning_effort not in REASONING_EFFORTS:
             raise ProviderError(f"unsupported Anthropic reasoning_effort {reasoning_effort!r}")
-        if reasoning_effort is not None and thinking_mode != "adaptive":
-            raise ProviderError("Anthropic reasoning_effort requires thinking_mode='adaptive'")
-        if model == "claude-sonnet-5" and kwargs.get("temperature") is not None:
-            raise ProviderError("claude-sonnet-5 requests must omit temperature")
+        if reasoning_effort is not None and thinking_mode not in ("adaptive", "between_tools"):
+            raise ProviderError("Anthropic reasoning_effort requires adaptive or between_tools thinking")
+        if thinking_mode == "between_tools" and reasoning_effort in ("xhigh", "max"):
+            raise ProviderError("Anthropic between_tools supports low, medium, or high effort")
+        if model == "claude-sonnet-5-5" and thinking_mode == "disabled":
+            raise ProviderError("claude-sonnet-5-5 requires between_tools or adaptive thinking")
+        if model in ("claude-sonnet-5", "claude-sonnet-5-5") and kwargs.get("temperature") is not None:
+            raise ProviderError(f"{model} requests must omit temperature")
         super().__init__(model, **kwargs)
         self.output_constraint = output_constraint
         self.thinking_mode = thinking_mode

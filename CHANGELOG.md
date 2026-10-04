@@ -5,6 +5,22 @@ All notable changes to this project are recorded here. The format follows
 [semantic versioning](https://semver.org/) with the understanding that
 pre-1.0 releases may change the case schema and the result-file format.
 
+## [Unreleased]
+
+### Changed
+
+- Hardened paid experiment execution before the first live benchmark: bounded
+  retries for transient 408/429/5xx/network failures, a non-destructive
+  `retry-failed` command, experiment-level pricing support, and an aggregate
+  `summary.md`.
+- Updated the first-wave matrix for the 2026-10-04 vendor check: Claude Sonnet
+  5.5 with `between_tools`/low effort and Grok 4.7, while preserving the
+  existing OpenAI, Gemini and DeepSeek choices.
+- Made the three-case smoke set explicit and cross-framework instead of taking
+  the first three suite cases.
+- Increased the manual experiment workflow timeout to 180 minutes and removed
+  API secrets from the dry-run step.
+
 ## [0.1.0rc1] - 2026-10-03
 
 Release candidate with a working harness and a small human-reviewed dataset.

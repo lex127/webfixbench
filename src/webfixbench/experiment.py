@@ -14,7 +14,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 from .cases import Case, Suite, load_suite
-from .config import DEFAULT_PROMPT, DEFAULT_SUITE, ConfigError, load_prompt
+from .config import DEFAULT_PROMPT, DEFAULT_SUITE, ConfigError, PricingTable, load_prompt
 from .evaluator import evaluate_document, write_evaluation
 from .providers import get_provider
 from .report import render_markdown
@@ -134,12 +134,16 @@ def _validate_provider(entry: Any) -> Dict[str, Any]:
         raise ConfigError("OpenAI temperature is not supported with explicit reasoning_effort")
     thinking_mode = entry.get("thinking_mode")
     if name == "anthropic":
-        if thinking_mode not in (None, "disabled", "adaptive"):
-            raise ConfigError("Anthropic thinking_mode must be disabled or adaptive")
-        if effort is not None and thinking_mode != "adaptive":
-            raise ConfigError("Anthropic reasoning_effort requires thinking_mode 'adaptive'")
-        if result["model"] == "claude-sonnet-5" and "temperature" in entry:
-            raise ConfigError("claude-sonnet-5 baseline must omit temperature")
+        if thinking_mode not in (None, "disabled", "between_tools", "adaptive"):
+            raise ConfigError("Anthropic thinking_mode must be disabled, between_tools, or adaptive")
+        if effort is not None and thinking_mode not in ("adaptive", "between_tools"):
+            raise ConfigError("Anthropic reasoning_effort requires adaptive or between_tools thinking")
+        if thinking_mode == "between_tools" and effort in ("xhigh", "max"):
+            raise ConfigError("Anthropic between_tools supports low, medium, or high effort")
+        if result["model"] == "claude-sonnet-5-5" and thinking_mode == "disabled":
+            raise ConfigError("claude-sonnet-5-5 requires between_tools or adaptive thinking")
+        if result["model"] in ("claude-sonnet-5", "claude-sonnet-5-5") and "temperature" in entry:
+            raise ConfigError(f"{result['model']} baseline must omit temperature")
     elif thinking_mode is not None:
         raise ConfigError(f"thinking_mode is not supported for provider {name}")
     stability = entry.get("model_id_stability", "unknown")
@@ -191,7 +195,8 @@ def preflight(experiment: Experiment, *, root: Optional[Path], max_requests: int
 
 
 def run_experiment(experiment: Experiment, *, root: Optional[Path], output_root: Path,
-                   max_requests: int) -> Path:
+                   max_requests: int, pricing: Optional[PricingTable] = None,
+                   retry_of: Optional[str] = None) -> Path:
     suite, cases, _ = preflight(experiment, root=root, max_requests=max_requests, require_keys=True)
     prompt = load_prompt(experiment.prompt_id, root=root)
     run_stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ") + "-" + uuid.uuid4().hex[:8]
@@ -201,6 +206,7 @@ def run_experiment(experiment: Experiment, *, root: Optional[Path], output_root:
     manifest: Dict[str, Any] = {
         "experiment_format_version": 1, "experiment_id": experiment.experiment_id,
         "experiment_run_id": run_stamp, "created_at": _now(), "completed_at": None,
+        "retry_of": retry_of,
         "mode": experiment.mode, "provisional": bool([c for c in cases if not c.labels_frozen]),
         "comparative_ranking_permitted": experiment.mode == "reviewed" and all(c.labels_frozen for c in cases),
         "suite": {"id": suite.id, "version": suite.version},
@@ -208,6 +214,10 @@ def run_experiment(experiment: Experiment, *, root: Optional[Path], output_root:
         "repository": git, "case_fingerprints": {c.id: _case_hash(c) for c in cases},
         "input_fingerprints": {c.id: _input_hash(prompt, c) for c in cases},
         "configuration": asdict(experiment),
+        "pricing": (
+            {"as_of": pricing.as_of, "source": pricing.source}
+            if pricing is not None and pricing.models else None
+        ),
         "repeat_count": experiment.repeat_count,
         "planned_requests": len(cases) * len(experiment.providers) * experiment.repeat_count,
         "runs": [],
@@ -226,7 +236,9 @@ def run_experiment(experiment: Experiment, *, root: Optional[Path], output_root:
             _write_json(directory / "manifest.json", manifest)
             try:
                 provider = _make_provider(entry, experiment)
-                document = run_suite(suite, provider, prompt, case_ids=[c.id for c in cases])
+                document = run_suite(
+                    suite, provider, prompt, case_ids=[c.id for c in cases], pricing=pricing
+                )
                 document["run"]["experiment"] = {"id": experiment.experiment_id,
                     "experiment_run_id": run_stamp, "repetition": repetition, "mode": experiment.mode}
                 document["run"]["repository"] = git
@@ -260,7 +272,107 @@ def run_experiment(experiment: Experiment, *, root: Optional[Path], output_root:
     else:
         manifest["status"] = "completed"
     _write_json(directory / "manifest.json", manifest)
+    (directory / "summary.md").write_text(_render_experiment_summary(directory, manifest), encoding="utf-8")
     return directory
+
+
+def retry_failed_experiment(manifest_path: Path, *, root: Optional[Path], output_root: Path,
+                            max_requests: int, pricing: Optional[PricingTable] = None) -> Path:
+    """Create a new invocation containing only provider/model runs that failed.
+
+    Invalid model responses are intentionally not retried: malformed structured
+    output is benchmark evidence, while this command is only for provider errors
+    or invocation failures recorded with status=failed.
+    """
+    manifest_path = Path(manifest_path)
+    source = json.loads(manifest_path.read_text(encoding="utf-8"))
+    failed = [run for run in source.get("runs", []) if run.get("status") == "failed"]
+    if not failed:
+        raise ConfigError(f"{manifest_path}: no failed runs to retry")
+    config = source.get("configuration")
+    if not isinstance(config, dict):
+        raise ConfigError(f"{manifest_path}: missing experiment configuration")
+
+    selected: List[Dict[str, Any]] = []
+    seen = set()
+    for run in failed:
+        key = (run.get("provider"), run.get("requested_model"))
+        if key in seen:
+            continue
+        match = next(
+            (p for p in config.get("providers", [])
+             if p.get("provider") == key[0] and p.get("model") == key[1]),
+            None,
+        )
+        if match is None:
+            raise ConfigError(f"{manifest_path}: cannot map failed run {key!r} to configuration")
+        selected.append(dict(match))
+        seen.add(key)
+
+    case_ids = list((source.get("input_fingerprints") or {}).keys())
+    if not case_ids:
+        raise ConfigError(f"{manifest_path}: missing input fingerprints/case ids")
+
+    retry = Experiment(
+        experiment_id=_safe_id(str(source.get("experiment_id", "experiment")) + "-retry", "experiment_id"),
+        suite_id=config["suite_id"],
+        prompt_id=config["prompt_id"],
+        case_ids=case_ids,
+        case_limit=None,
+        providers=selected,
+        repeat_count=1,
+        timeout=config["timeout"],
+        max_output_tokens=config["max_output_tokens"],
+        mode=config["mode"],
+    )
+    source_id = str(source.get("experiment_run_id") or manifest_path.parent.name)
+    return run_experiment(
+        retry, root=root, output_root=output_root, max_requests=max_requests,
+        pricing=pricing, retry_of=source_id,
+    )
+
+
+def _render_experiment_summary(directory: Path, manifest: Dict[str, Any]) -> str:
+    """Render one auditable cross-provider table for an experiment invocation."""
+    lines = [
+        f"# Experiment summary — {manifest['experiment_id']}",
+        "",
+        f"Status: **{manifest.get('status', 'incomplete')}**",
+        "",
+        "| Provider | Model | Rep | Status | TP | FP | FN | Precision | Recall | Clean false alarms | Invalid | Errors |",
+        "| --- | --- | ---: | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |",
+    ]
+    for run in manifest.get("runs", []):
+        evaluation_path = run.get("evaluation")
+        if not evaluation_path or not (directory / evaluation_path).is_file():
+            lines.append(
+                f"| {run['provider']} | {run['requested_model']} | {run['repetition']} | "
+                f"{run['status']} | — | — | — | — | — | — | — | — |"
+            )
+            continue
+        evaluation = json.loads((directory / evaluation_path).read_text(encoding="utf-8"))
+        metrics = evaluation["metrics"]
+        counts = metrics["counts"]
+        findings = metrics["findings"]
+        quality = metrics["quality"]
+        false_alarms = metrics["false_alarms"]
+
+        def show(value: Any) -> str:
+            return "—" if value is None else (f"{value:.3f}" if isinstance(value, float) else str(value))
+
+        lines.append(
+            f"| {run['provider']} | {run['requested_model']} | {run['repetition']} | {run['status']} | "
+            f"{findings['true_positives']} | {findings['false_positives']} | {findings['false_negatives']} | "
+            f"{show(quality['precision'])} | {show(quality['recall'])} | "
+            f"{show(false_alarms['clean_case_false_alarm_rate'])} | "
+            f"{counts['invalid_responses']} | {counts['provider_errors']} |"
+        )
+    lines.extend([
+        "",
+        "This table is descriptive. Pairwise claims remain subject to the frozen methodology and run-count requirements.",
+        "",
+    ])
+    return "\n".join(lines)
 
 
 def dry_run_summary(experiment: Experiment, suite: Suite, cases: Sequence[Case],

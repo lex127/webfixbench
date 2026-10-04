@@ -37,9 +37,30 @@ class RegistrationTests(unittest.TestCase):
 
     def test_transport_timeout_is_normalized(self):
         from webfixbench.providers._http import post_json
-        with mock.patch("urllib.request.urlopen", side_effect=socket.timeout()):
+        with mock.patch("urllib.request.urlopen", side_effect=socket.timeout()), \
+             mock.patch("time.sleep"):
             with self.assertRaisesRegex(HttpError, "timed out"):
                 post_json("https://example.invalid", {}, {}, timeout=0.1)
+
+    def test_transient_timeout_is_retried_and_attempt_count_is_recorded(self):
+        from webfixbench.providers._http import post_json
+
+        class Response:
+            headers = {}
+            def __enter__(self):
+                return self
+            def __exit__(self, *args):
+                return False
+            def read(self):
+                return b'{"ok": true}'
+
+        with mock.patch("urllib.request.urlopen", side_effect=[socket.timeout(), Response()]) as call, \
+             mock.patch("time.sleep") as sleep:
+            body, headers = post_json("https://example.invalid", {}, {}, timeout=0.1)
+        self.assertEqual(body, {"ok": True})
+        self.assertEqual(headers["x-webfixbench-attempts"], "2")
+        self.assertEqual(call.call_count, 2)
+        sleep.assert_called_once()
 
 
 class XAITests(unittest.TestCase):

@@ -20,7 +20,7 @@ from . import __version__
 from .cases import list_suites, load_suite
 from .config import DEFAULT_PROMPT, DEFAULT_SUITE, ConfigError, load_pricing, load_prompt
 from .evaluator import EvaluationError, evaluate_document, is_evaluation_document, write_evaluation
-from .experiment import dry_run_summary, load_experiment, preflight, run_experiment
+from .experiment import dry_run_summary, load_experiment, preflight, retry_failed_experiment, run_experiment
 from .matching import DEFAULT_MATCH_MODE, MATCH_MODES
 from .providers import PROVIDERS, ProviderError, get_provider
 from .providers.mock import MOCK_MODES
@@ -86,7 +86,7 @@ def build_parser() -> argparse.ArgumentParser:
     run_parser.add_argument("--max-output-tokens", type=int, default=2048)
     run_parser.add_argument("--timeout", type=float, default=120.0)
     run_parser.add_argument("--reasoning-effort", default=None)
-    run_parser.add_argument("--thinking-mode", choices=("disabled", "adaptive"), default=None)
+    run_parser.add_argument("--thinking-mode", choices=("disabled", "between_tools", "adaptive"), default=None)
     run_parser.add_argument("--limit", type=int, default=None, help="run at most N cases")
     run_parser.add_argument("--pricing", type=Path, default=None, help="pricing table JSON")
     run_parser.add_argument("--out", type=Path, default=None, help="write the result file here")
@@ -122,7 +122,17 @@ def build_parser() -> argparse.ArgumentParser:
     experiment_parser.add_argument("--dry-run", action="store_true")
     experiment_parser.add_argument("--max-requests", type=int, required=True)
     experiment_parser.add_argument("--output-root", type=Path, default=Path("results/experiments"))
+    experiment_parser.add_argument("--pricing", type=Path, default=None, help="pricing table JSON")
     experiment_parser.set_defaults(func=cmd_experiment)
+
+    retry_parser = subparsers.add_parser(
+        "retry-failed", help="retry only failed provider/model runs from an experiment manifest"
+    )
+    retry_parser.add_argument("manifest", type=Path)
+    retry_parser.add_argument("--max-requests", type=int, required=True)
+    retry_parser.add_argument("--output-root", type=Path, default=Path("results/experiments"))
+    retry_parser.add_argument("--pricing", type=Path, default=None, help="pricing table JSON")
+    retry_parser.set_defaults(func=cmd_retry_failed)
 
     return parser
 
@@ -348,6 +358,18 @@ def cmd_report(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_retry_failed(args: argparse.Namespace) -> int:
+    pricing = load_pricing(args.pricing)
+    directory = retry_failed_experiment(
+        args.manifest, root=args.root, output_root=args.output_root,
+        max_requests=args.max_requests, pricing=pricing,
+    )
+    manifest = json.loads((directory / "manifest.json").read_text(encoding="utf-8"))
+    print(f"wrote {directory}")
+    print(f"status: {manifest['status']}")
+    return 0 if manifest["status"] == "completed" else 1
+
+
 def cmd_experiment(args: argparse.Namespace) -> int:
     experiment = load_experiment(args.config)
     suite, cases, missing = preflight(
@@ -356,8 +378,9 @@ def cmd_experiment(args: argparse.Namespace) -> int:
     if args.dry_run:
         print(dry_run_summary(experiment, suite, cases, missing, args.output_root, args.max_requests))
         return 0
+    pricing = load_pricing(args.pricing)
     directory = run_experiment(experiment, root=args.root, output_root=args.output_root,
-                               max_requests=args.max_requests)
+                               max_requests=args.max_requests, pricing=pricing)
     manifest = json.loads((directory / "manifest.json").read_text(encoding="utf-8"))
     print(f"wrote {directory}")
     print(f"status: {manifest['status']}")

@@ -52,8 +52,11 @@ Request shapes follow the official [OpenAI Responses API], [Anthropic Messages
 API], [Gemini GenerateContent API], [xAI Responses API], and [DeepSeek Chat Completions API] references.
 
 The reviewed five-provider wave is
-[`v0.1-first-wave.json`](../experiments/v0.1-first-wave.json) (75 requests).
-Its explicit three-case smoke companion plans 15 requests. See
+[`v0.1-first-wave.json`](../experiments/v0.1-first-wave.json) (75 requests
+while the sixteenth case remains pending review). Its explicit three-case
+cross-framework smoke companion plans 15 requests. The smoke cases are selected
+by id rather than by suite order so Laravel, WordPress and PHP paths are all
+exercised. See
 [BASELINE_PROTOCOL.md](BASELINE_PROTOCOL.md) for the comparability boundary.
 
 Validate selection without a network request:
@@ -70,7 +73,19 @@ webfixbench experiment experiments/mock-example.json --max-requests 10
 
 Unknown fields, invalid combinations, unsafe IDs, missing cases/keys, and a
 planned count above `--max-requests` fail before the first request. The request
-guard is not a dollar budget. Cost remains `null` unless a dated, sourced
+guard is not a dollar budget. Transient 408/429/5xx and network timeout failures
+are retried with bounded backoff; malformed model output is never retried.
+
+If an invocation still records failed provider runs, retry only those runs
+without paying for successful providers again:
+
+```bash
+webfixbench retry-failed results/experiments/<experiment>/<run>/manifest.json \
+  --max-requests 20
+```
+
+The retry is written as a new invocation and links back to the source run; it
+never overwrites the original evidence. Cost remains `null` unless a dated, sourced
 pricing table supplies the relevant model prices.
 
 Paid runs require all selected labels to be frozen. While labels await human
@@ -84,8 +99,9 @@ benchmark claims because the expected answers have not received human review.
 Each invocation creates
 `results/experiments/<experiment-id>/<unique-run-id>/`. `manifest.json` records
 the suite and prompt hashes, Git state, exact case fingerprints, request count,
-mode, and links/status for every provider/model/repetition. Each run directory
-contains `results.json`, `evaluation.json`, and `report.md`. Raw text is retained
+mode, and links/status for every provider/model/repetition. Each run directory contains `results.json`, `evaluation.json`, and
+`report.md`; the invocation root also contains `summary.md`, a descriptive
+cross-provider table. Raw text is retained
 when parsing fails. The manifest is updated after each run and existing run
 directories are never overwritten.
 
