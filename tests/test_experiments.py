@@ -9,7 +9,7 @@ from pathlib import Path
 from unittest import mock
 
 from webfixbench.config import ConfigError
-from webfixbench.experiment import load_experiment, preflight, run_experiment
+from webfixbench.experiment import load_experiment, preflight, retry_failed_experiment, run_experiment
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -52,11 +52,14 @@ class ExperimentTests(unittest.TestCase):
         self.load(config(providers=[gemini], mode="smoke"))
         with self.assertRaisesRegex(ConfigError, "reasoning_effort"):
             self.load(config(providers=[{**gemini, "reasoning_effort": "minimal"}], mode="smoke"))
-        anthropic = {"provider": "anthropic", "model": "claude-sonnet-5",
+        anthropic = {"provider": "anthropic", "model": "claude-sonnet-5-5",
                      "api_key_env": "ANTHROPIC_API_KEY", "output_constraint": "json_schema",
-                     "temperature": 0.0}
+                     "thinking_mode": "between_tools", "reasoning_effort": "low"}
+        self.load(config(providers=[anthropic], mode="smoke"))
+        with self.assertRaisesRegex(ConfigError, "between_tools"):
+            self.load(config(providers=[{**anthropic, "reasoning_effort": "xhigh"}], mode="smoke"))
         with self.assertRaisesRegex(ConfigError, "temperature"):
-            self.load(config(providers=[anthropic], mode="smoke"))
+            self.load(config(providers=[{**anthropic, "temperature": 0.0}], mode="smoke"))
 
     def test_request_guard_is_checked(self):
         experiment = self.load(config(repeat_count=3))
@@ -99,6 +102,7 @@ class ExperimentTests(unittest.TestCase):
             self.assertEqual(len(manifest["case_fingerprints"]), 2)
             self.assertEqual(len(manifest["input_fingerprints"]), 2)
             self.assertIn("configuration", manifest)
+            self.assertTrue((first / "summary.md").is_file())
             for entry in manifest["runs"]:
                 self.assertTrue((first / entry["results"]).is_file())
                 self.assertTrue((first / entry["evaluation"]).is_file())
@@ -122,6 +126,27 @@ class ExperimentTests(unittest.TestCase):
             manifest = json.loads((directory / "manifest.json").read_text())
         self.assertEqual([x["status"] for x in manifest["runs"]], ["completed", "failed"])
         self.assertIsNotNone(manifest["runs"][0]["results"])
+
+    def test_retry_failed_creates_new_invocation_with_failed_provider_only(self):
+        source = {
+            "experiment_id": "source-exp",
+            "experiment_run_id": "source-run",
+            "configuration": config(case_limit=1),
+            "input_fingerprints": {"laravel-authz-001": "abc"},
+            "runs": [
+                {"provider": "mock", "requested_model": "mock-heuristic-v1", "status": "failed"}
+            ],
+        }
+        with tempfile.TemporaryDirectory() as tmp:
+            manifest_path = Path(tmp) / "manifest.json"
+            manifest_path.write_text(json.dumps(source))
+            directory = retry_failed_experiment(
+                manifest_path, root=ROOT, output_root=Path(tmp) / "out", max_requests=2
+            )
+            manifest = json.loads((directory / "manifest.json").read_text())
+        self.assertEqual(manifest["retry_of"], "source-run")
+        self.assertEqual(manifest["planned_requests"], 1)
+        self.assertEqual(manifest["status"], "completed")
 
 
 if __name__ == "__main__":
