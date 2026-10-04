@@ -198,6 +198,24 @@ class VendorProviderOfflineTests(unittest.TestCase):
         self.assertEqual(provider._payload("review")["thinking"], {"type": "disabled"})
         self.assertEqual(provider.describe()["settings_sent"]["thinking"], {"type": "disabled"})
 
+    def test_sonnet_5_5_between_tools_low_effort(self) -> None:
+        from webfixbench.providers.anthropic import AnthropicProvider
+        with mock.patch.dict(os.environ, {"ANTHROPIC_API_KEY": "test-not-used"}, clear=True):
+            provider = AnthropicProvider(
+                model="claude-sonnet-5-5", thinking_mode="between_tools",
+                reasoning_effort="low"
+            )
+            with self.assertRaises(ProviderError):
+                AnthropicProvider(model="claude-sonnet-5-5", thinking_mode="disabled")
+            with self.assertRaises(ProviderError):
+                AnthropicProvider(
+                    model="claude-sonnet-5-5", thinking_mode="between_tools",
+                    reasoning_effort="xhigh"
+                )
+        payload = provider._payload("review")
+        self.assertEqual(payload["thinking"], {"type": "between_tools"})
+        self.assertEqual(payload["output_config"]["effort"], "low")
+
     def test_anthropic_rejects_fable_models(self) -> None:
         from webfixbench.providers.anthropic import AnthropicProvider
 
