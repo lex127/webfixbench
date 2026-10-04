@@ -134,12 +134,16 @@ def _validate_provider(entry: Any) -> Dict[str, Any]:
         raise ConfigError("OpenAI temperature is not supported with explicit reasoning_effort")
     thinking_mode = entry.get("thinking_mode")
     if name == "anthropic":
-        if thinking_mode not in (None, "disabled", "adaptive"):
-            raise ConfigError("Anthropic thinking_mode must be disabled or adaptive")
-        if effort is not None and thinking_mode != "adaptive":
-            raise ConfigError("Anthropic reasoning_effort requires thinking_mode 'adaptive'")
-        if result["model"] == "claude-sonnet-5" and "temperature" in entry:
-            raise ConfigError("claude-sonnet-5 baseline must omit temperature")
+        if thinking_mode not in (None, "disabled", "between_tools", "adaptive"):
+            raise ConfigError("Anthropic thinking_mode must be disabled, between_tools, or adaptive")
+        if effort is not None and thinking_mode not in ("adaptive", "between_tools"):
+            raise ConfigError("Anthropic reasoning_effort requires adaptive or between_tools thinking")
+        if thinking_mode == "between_tools" and effort in ("xhigh", "max"):
+            raise ConfigError("Anthropic between_tools supports low, medium, or high effort")
+        if result["model"] == "claude-sonnet-5-5" and thinking_mode == "disabled":
+            raise ConfigError("claude-sonnet-5-5 requires between_tools or adaptive thinking")
+        if result["model"] in ("claude-sonnet-5", "claude-sonnet-5-5") and "temperature" in entry:
+            raise ConfigError(f"{result['model']} baseline must omit temperature")
     elif thinking_mode is not None:
         raise ConfigError(f"thinking_mode is not supported for provider {name}")
     stability = entry.get("model_id_stability", "unknown")
