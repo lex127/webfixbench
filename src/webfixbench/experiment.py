@@ -14,7 +14,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 from .cases import Case, Suite, load_suite
-from .config import DEFAULT_PROMPT, DEFAULT_SUITE, ConfigError, load_prompt
+from .config import DEFAULT_PROMPT, DEFAULT_SUITE, ConfigError, PricingTable, load_prompt
 from .evaluator import evaluate_document, write_evaluation
 from .providers import get_provider
 from .report import render_markdown
@@ -195,7 +195,7 @@ def preflight(experiment: Experiment, *, root: Optional[Path], max_requests: int
 
 
 def run_experiment(experiment: Experiment, *, root: Optional[Path], output_root: Path,
-                   max_requests: int) -> Path:
+                   max_requests: int, pricing: Optional[PricingTable] = None) -> Path:
     suite, cases, _ = preflight(experiment, root=root, max_requests=max_requests, require_keys=True)
     prompt = load_prompt(experiment.prompt_id, root=root)
     run_stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ") + "-" + uuid.uuid4().hex[:8]
@@ -212,6 +212,10 @@ def run_experiment(experiment: Experiment, *, root: Optional[Path], output_root:
         "repository": git, "case_fingerprints": {c.id: _case_hash(c) for c in cases},
         "input_fingerprints": {c.id: _input_hash(prompt, c) for c in cases},
         "configuration": asdict(experiment),
+        "pricing": (
+            {"as_of": pricing.as_of, "source": pricing.source}
+            if pricing is not None and pricing.models else None
+        ),
         "repeat_count": experiment.repeat_count,
         "planned_requests": len(cases) * len(experiment.providers) * experiment.repeat_count,
         "runs": [],
@@ -230,7 +234,9 @@ def run_experiment(experiment: Experiment, *, root: Optional[Path], output_root:
             _write_json(directory / "manifest.json", manifest)
             try:
                 provider = _make_provider(entry, experiment)
-                document = run_suite(suite, provider, prompt, case_ids=[c.id for c in cases])
+                document = run_suite(
+                    suite, provider, prompt, case_ids=[c.id for c in cases], pricing=pricing
+                )
                 document["run"]["experiment"] = {"id": experiment.experiment_id,
                     "experiment_run_id": run_stamp, "repetition": repetition, "mode": experiment.mode}
                 document["run"]["repository"] = git
@@ -264,7 +270,51 @@ def run_experiment(experiment: Experiment, *, root: Optional[Path], output_root:
     else:
         manifest["status"] = "completed"
     _write_json(directory / "manifest.json", manifest)
+    (directory / "summary.md").write_text(_render_experiment_summary(directory, manifest), encoding="utf-8")
     return directory
+
+
+def _render_experiment_summary(directory: Path, manifest: Dict[str, Any]) -> str:
+    """Render one auditable cross-provider table for an experiment invocation."""
+    lines = [
+        f"# Experiment summary — {manifest['experiment_id']}",
+        "",
+        f"Status: **{manifest.get('status', 'incomplete')}**",
+        "",
+        "| Provider | Model | Rep | Status | TP | FP | FN | Precision | Recall | Clean false alarms | Invalid | Errors |",
+        "| --- | --- | ---: | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |",
+    ]
+    for run in manifest.get("runs", []):
+        evaluation_path = run.get("evaluation")
+        if not evaluation_path or not (directory / evaluation_path).is_file():
+            lines.append(
+                f"| {run['provider']} | {run['requested_model']} | {run['repetition']} | "
+                f"{run['status']} | — | — | — | — | — | — | — | — |"
+            )
+            continue
+        evaluation = json.loads((directory / evaluation_path).read_text(encoding="utf-8"))
+        metrics = evaluation["metrics"]
+        counts = metrics["counts"]
+        findings = metrics["findings"]
+        quality = metrics["quality"]
+        false_alarms = metrics["false_alarms"]
+
+        def show(value: Any) -> str:
+            return "—" if value is None else (f"{value:.3f}" if isinstance(value, float) else str(value))
+
+        lines.append(
+            f"| {run['provider']} | {run['requested_model']} | {run['repetition']} | {run['status']} | "
+            f"{findings['true_positives']} | {findings['false_positives']} | {findings['false_negatives']} | "
+            f"{show(quality['precision'])} | {show(quality['recall'])} | "
+            f"{show(false_alarms['clean_case_false_alarm_rate'])} | "
+            f"{counts['invalid_responses']} | {counts['provider_errors']} |"
+        )
+    lines.extend([
+        "",
+        "This table is descriptive. Pairwise claims remain subject to the frozen methodology and run-count requirements.",
+        "",
+    ])
+    return "\n".join(lines)
 
 
 def dry_run_summary(experiment: Experiment, suite: Suite, cases: Sequence[Case],
