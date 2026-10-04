@@ -86,7 +86,7 @@ def build_parser() -> argparse.ArgumentParser:
     run_parser.add_argument("--max-output-tokens", type=int, default=2048)
     run_parser.add_argument("--timeout", type=float, default=120.0)
     run_parser.add_argument("--reasoning-effort", default=None)
-    run_parser.add_argument("--thinking-mode", choices=("disabled", "adaptive"), default=None)
+    run_parser.add_argument("--thinking-mode", choices=("disabled", "between_tools", "adaptive"), default=None)
     run_parser.add_argument("--limit", type=int, default=None, help="run at most N cases")
     run_parser.add_argument("--pricing", type=Path, default=None, help="pricing table JSON")
     run_parser.add_argument("--out", type=Path, default=None, help="write the result file here")
@@ -122,6 +122,7 @@ def build_parser() -> argparse.ArgumentParser:
     experiment_parser.add_argument("--dry-run", action="store_true")
     experiment_parser.add_argument("--max-requests", type=int, required=True)
     experiment_parser.add_argument("--output-root", type=Path, default=Path("results/experiments"))
+    experiment_parser.add_argument("--pricing", type=Path, default=None, help="pricing table JSON")
     experiment_parser.set_defaults(func=cmd_experiment)
 
     return parser
@@ -356,8 +357,9 @@ def cmd_experiment(args: argparse.Namespace) -> int:
     if args.dry_run:
         print(dry_run_summary(experiment, suite, cases, missing, args.output_root, args.max_requests))
         return 0
+    pricing = load_pricing(args.pricing)
     directory = run_experiment(experiment, root=args.root, output_root=args.output_root,
-                               max_requests=args.max_requests)
+                               max_requests=args.max_requests, pricing=pricing)
     manifest = json.loads((directory / "manifest.json").read_text(encoding="utf-8"))
     print(f"wrote {directory}")
     print(f"status: {manifest['status']}")
