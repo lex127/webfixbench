@@ -22,11 +22,12 @@
   "providers": [
     {
       "provider": "anthropic",
-      "model": "claude-sonnet-5",
+      "model": "claude-sonnet-5-5",
       "api_key_env": "ANTHROPIC_API_KEY",
       "output_constraint": "json_schema",
-      "thinking_mode": "disabled",
-      "model_id_stability": "pinned"
+      "thinking_mode": "between_tools",
+      "model_id_stability": "pinned",
+      "reasoning_effort": "low"
     },
     {
       "provider": "openai",
@@ -55,11 +56,11 @@
     },
     {
       "provider": "xai",
-      "model": "grok-4.6",
+      "model": "grok-4.7",
       "api_key_env": "XAI_API_KEY",
       "output_constraint": "json_schema",
       "reasoning_effort": "low",
-      "model_id_stability": "mutable_alias"
+      "model_id_stability": "pinned"
     }
   ],
   "repeat_count": 1,
