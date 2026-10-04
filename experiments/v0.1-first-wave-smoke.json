@@ -43,7 +43,7 @@
       "api_key_env": "XAI_API_KEY",
       "output_constraint": "json_schema",
       "reasoning_effort": "low",
-      "model_id_stability": "pinned"
+      "model_id_stability": "mutable_alias"
     }
   ],
   "repeat_count": 1,
