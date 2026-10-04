@@ -21,19 +21,19 @@ named controls create equivalent computation.
 
 | Provider | Model ID | API / JSON constraint | Baseline reasoning | Sampling | ID stability | Usage and limitation |
 | --- | --- | --- | --- | --- | --- | --- |
-| Anthropic | `claude-sonnet-5` | Messages / `output_config.format` | thinking `disabled` | omitted; Sonnet 5 rejects non-default sampling | pinned dateless ID | input/output/cache tokens; no manual extended thinking on Sonnet 5 |
+| Anthropic | `claude-sonnet-5-5` | Messages / `output_config.format` | thinking `between_tools`, effort `low` | omitted; Sonnet 5 rejects non-default sampling | pinned dateless ID | input/output/cache tokens; no up-front thinking; `between_tools` is the lowest Sonnet 5.5 mode |
 | OpenAI | `gpt-5.6-terra` | Responses / `text.format` | `none` | omitted | stable alias | input/output/cache/reasoning details when returned |
 | Google | `gemini-3.8-flash` | GenerateContent / `responseJsonSchema` | `low` (cannot disable) | omitted | stable alias; record `modelVersion` | prompt/candidate/cache/thought counts when returned |
 | DeepSeek | `deepseek-flash` | Chat Completions / JSON object | `none` | omitted | mutable alias for current V4.1 Flash | prompt/completion/cache details; no immutable ID documented |
-| xAI | `grok-4.6` | Responses / `text.format` | `low` (cannot disable) | omitted | mutable alias; dated IDs may exist | input/output/cache/reasoning details when returned |
+| xAI | `grok-4.7` | Responses / `text.format` | `low` (cannot disable) | omitted | mutable alias; dated IDs may exist | input/output/cache/reasoning details when returned |
 
 The checked-in configurations are
 [`v0.1-first-wave.json`](../experiments/v0.1-first-wave.json) and its enforced
 three-case smoke variant. They contain no credentials and have not been run.
 
-## Official API references checked 2026-09-20
+## Official API references checked 2026-10-04
 
-- [Anthropic models](https://platform.claude.com/docs/en/about-claude/models/overview), [thinking](https://platform.claude.com/docs/en/build-with-claude/extended-thinking), and [structured outputs](https://platform.claude.com/docs/en/build-with-claude/structured-outputs)
+- [Anthropic models](https://platform.claude.com/docs/en/about-claude/models/overview), [Sonnet 5.5 migration](https://platform.claude.com/docs/en/models/sonnet-5-5/migration-guide), and [structured outputs](https://platform.claude.com/docs/en/build-with-claude/structured-outputs)
 - [OpenAI GPT-5.6 Terra](https://developers.openai.com/api/docs/models/gpt-5.6-terra) and [Responses](https://developers.openai.com/api/reference/resources/responses/methods/create)
 - [Gemini models](https://ai.google.dev/gemini-api/docs/models), [thinking](https://ai.google.dev/gemini-api/docs/thinking), and [structured output](https://ai.google.dev/gemini-api/docs/structured-output)
 - [DeepSeek models](https://api-docs.deepseek.com/quick_start/pricing), [thinking](https://api-docs.deepseek.com/guides/thinking_mode), and [JSON output](https://api-docs.deepseek.com/guides/json_mode)
