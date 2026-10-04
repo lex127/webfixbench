@@ -1,18 +1,22 @@
 """Minimal JSON-over-HTTPS helper shared by the vendor providers.
 
 The providers speak the vendors' documented HTTP APIs through the standard
-library instead of pulling in SDKs. That keeps the benchmark installable with
-no dependencies and keeps a run from silently changing behaviour when an SDK
-is upgraded.
+library instead of pulling in SDKs. Transient transport failures are retried
+with bounded backoff; model/schema failures are never retried here.
 """
 
 from __future__ import annotations
 
 import json
 import socket
+import time
 import urllib.error
 import urllib.request
 from typing import Any, Dict, Optional, Tuple
+
+RETRYABLE_STATUSES = frozenset({408, 429, 500, 502, 503, 504})
+DEFAULT_MAX_ATTEMPTS = 3
+DEFAULT_BACKOFF_SECONDS = 1.0
 
 
 class HttpError(Exception):
@@ -64,33 +68,78 @@ def token_usage(usage: Any, *, style: str) -> Optional[Dict[str, Any]]:
     return normalized
 
 
+def _retry_after_seconds(headers: Any) -> Optional[float]:
+    """Parse the numeric Retry-After form; HTTP-date support is unnecessary here."""
+    if headers is None:
+        return None
+    value = headers.get("Retry-After") or headers.get("retry-after")
+    if value is None:
+        return None
+    try:
+        seconds = float(value)
+    except (TypeError, ValueError):
+        return None
+    return max(0.0, min(seconds, 60.0))
+
+
 def post_json(
     url: str,
     payload: Dict[str, Any],
     headers: Dict[str, str],
     *,
     timeout: float = 120.0,
+    max_attempts: int = DEFAULT_MAX_ATTEMPTS,
+    backoff_seconds: float = DEFAULT_BACKOFF_SECONDS,
 ) -> Tuple[Dict[str, Any], Dict[str, str]]:
-    """POST ``payload`` as JSON and return ``(parsed_body, response_headers)``."""
+    """POST JSON and retry only transient transport failures.
+
+    HTTP 408/429/5xx and connection/timeout failures are retried up to
+    max_attempts. Successful-but-malformed JSON is not retried because that is
+    observable provider behaviour. The returned headers include an internal
+    attempt-count header for auditability.
+    """
+    if max_attempts < 1:
+        raise ValueError("max_attempts must be at least 1")
+
     data = json.dumps(payload).encode("utf-8")
-    request = urllib.request.Request(url, data=data, method="POST")
-    request.add_header("content-type", "application/json")
-    for key, value in headers.items():
-        request.add_header(key, value)
+    last_error: Optional[HttpError] = None
 
-    try:
-        with urllib.request.urlopen(request, timeout=timeout) as response:
-            body = response.read().decode("utf-8")
-            response_headers = {k.lower(): v for k, v in response.headers.items()}
-    except urllib.error.HTTPError as exc:
-        detail = exc.read().decode("utf-8", errors="replace")
-        raise HttpError(exc.code, detail, f"HTTP {exc.code}: {detail[:500]}")
-    except urllib.error.URLError as exc:
-        raise HttpError(None, "", f"request failed: {exc.reason}")
-    except (TimeoutError, socket.timeout):
-        raise HttpError(None, "", "request timed out")
+    for attempt in range(1, max_attempts + 1):
+        request = urllib.request.Request(url, data=data, method="POST")
+        request.add_header("content-type", "application/json")
+        for key, value in headers.items():
+            request.add_header(key, value)
 
-    try:
-        return json.loads(body), response_headers
-    except json.JSONDecodeError as exc:
-        raise HttpError(200, body, f"response was not JSON: {exc}")
+        try:
+            with urllib.request.urlopen(request, timeout=timeout) as response:
+                body = response.read().decode("utf-8")
+                response_headers = {k.lower(): v for k, v in response.headers.items()}
+        except urllib.error.HTTPError as exc:
+            detail = exc.read().decode("utf-8", errors="replace")
+            error = HttpError(exc.code, detail, f"HTTP {exc.code}: {detail[:500]}")
+            retryable = exc.code in RETRYABLE_STATUSES
+            retry_after = _retry_after_seconds(exc.headers)
+        except urllib.error.URLError as exc:
+            error = HttpError(None, "", f"request failed: {exc.reason}")
+            retryable = True
+            retry_after = None
+        except (TimeoutError, socket.timeout):
+            error = HttpError(None, "", "request timed out")
+            retryable = True
+            retry_after = None
+        else:
+            try:
+                parsed = json.loads(body)
+            except json.JSONDecodeError as exc:
+                raise HttpError(200, body, f"response was not JSON: {exc}")
+            response_headers["x-webfixbench-attempts"] = str(attempt)
+            return parsed, response_headers
+
+        last_error = error
+        if not retryable or attempt >= max_attempts:
+            raise error
+        delay = retry_after if retry_after is not None else backoff_seconds * (2 ** (attempt - 1))
+        time.sleep(min(delay, 60.0))
+
+    assert last_error is not None
+    raise last_error
