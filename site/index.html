@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>WebFixBench — LLM Code Review Reliability Benchmark</title>
+  <meta name="description" content="A reproducible benchmark for evaluating how reliably LLM reviewers identify defects in web-application diffs, including false positives, malformed outputs, confidence, cost and latency.">
+  <meta name="theme-color" content="#07111f">
+  <meta property="og:title" content="WebFixBench — LLM Code Review Reliability Benchmark">
+  <meta property="og:description" content="Measure detection, false positives and structural reliability of LLM-assisted code review on controlled web-application diffs.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://webfixbench.alexsinyaev.com/">
+  <link rel="icon" href="./favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./styles.css">
+  <script defer src="./script.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header" data-header>
+    <div class="container nav-wrap">
+      <a class="brand" href="#top" aria-label="WebFixBench home"><span class="brand-mark" aria-hidden="true">W</span><span>WebFixBench</span></a>
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav" data-nav-toggle>
+        <span class="sr-only">Toggle navigation</span><span></span><span></span><span></span>
+      </button>
+      <nav class="site-nav" id="site-nav" data-nav>
+        <a href="#benchmark">Benchmark</a><a href="#methodology">Methodology</a><a href="#results">Results</a><a href="#roadmap">Roadmap</a>
+        <a class="nav-github" href="https://github.com/lex127/webfixbench" target="_blank" rel="noreferrer">GitHub ↗</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="hero" id="top">
+      <div class="hero-glow hero-glow-a" aria-hidden="true"></div><div class="hero-glow hero-glow-b" aria-hidden="true"></div>
+      <div class="container hero-grid">
+        <div class="hero-copy">
+          <div class="eyebrow"><span class="eyebrow-dot"></span> Open benchmark · v0.1 RC</div>
+          <h1>Can an LLM reviewer tell a real defect from a convincing false alarm?</h1>
+          <p class="hero-lead">WebFixBench is a reproducible benchmark for measuring the reliability of LLM-assisted code review on web-application changes — not just whether a model can produce a patch.</p>
+          <div class="hero-actions">
+            <a class="button button-primary" href="https://github.com/lex127/webfixbench" target="_blank" rel="noreferrer">View on GitHub <span aria-hidden="true">↗</span></a>
+            <a class="button button-secondary" href="#benchmark">Explore the benchmark</a>
+          </div>
+          <div class="hero-notes"><span>No LLM judge</span><span>Human-reviewed ground truth</span><span>Apache-2.0</span></div>
+        </div>
+
+        <div class="hero-panel" aria-label="Example benchmark evaluation">
+          <div class="terminal-bar"><span></span><span></span><span></span><strong>review-result.json</strong></div>
+          <div class="terminal-code" aria-hidden="true">
+            <div><span class="code-muted">{</span></div>
+            <div class="indent"><span class="code-key">"case"</span>: <span class="code-string">"laravel-authz-001"</span>,</div>
+            <div class="indent"><span class="code-key">"expected"</span>: <span class="code-string">"authorization"</span>,</div>
+            <div class="indent"><span class="code-key">"finding"</span>: <span class="code-string">"authorization"</span>,</div>
+            <div class="indent"><span class="code-key">"match"</span>: <span class="code-green">true</span>,</div>
+            <div class="indent"><span class="code-key">"confidence"</span>: <span class="code-number">0.92</span></div>
+            <div><span class="code-muted">}</span></div>
+          </div>
+          <div class="score-strip">
+            <div><span>Precision</span><strong>Measured</strong></div><div><span>Recall</span><strong>Measured</strong></div><div><span>False alarms</span><strong>Measured</strong></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="stats-section" aria-label="Current suite statistics">
+      <div class="container stats-grid">
+        <article class="stat-card"><strong>16</strong><span>cases in php-web-v0.1</span></article>
+        <article class="stat-card"><strong>12</strong><span>cases with a labelled defect</span></article>
+        <article class="stat-card"><strong>4</strong><span>clean controls</span></article>
+        <article class="stat-card"><strong>15</strong><span>frozen human-reviewed labels</span></article>
+      </div>
+    </section>
+
+    <section class="section" id="benchmark">
+      <div class="container">
+        <div class="section-heading narrow">
+          <p class="kicker">The benchmark</p><h2>Review quality is more than finding bugs.</h2>
+          <p>A reviewer that flags everything can look impressive on a dataset containing only defects. WebFixBench deliberately measures the failure modes that make review tooling hard to trust.</p>
+        </div>
+        <div class="feature-grid">
+          <article class="feature-card accent-cyan"><div class="feature-icon">01</div><h3>Detection</h3><p>True positives and false negatives are scored against explicit per-case labels.</p></article>
+          <article class="feature-card accent-violet"><div class="feature-icon">02</div><h3>False positives</h3><p>Four tempting clean controls make indiscriminate vulnerability reporting cost something.</p></article>
+          <article class="feature-card accent-green"><div class="feature-icon">03</div><h3>Structural reliability</h3><p>Malformed responses are counted explicitly and never silently treated as correct.</p></article>
+          <article class="feature-card accent-orange"><div class="feature-icon">04</div><h3>Confidence</h3><p>Per-finding and overall confidence are stored so confidence can be compared with correctness.</p></article>
+          <article class="feature-card accent-blue"><div class="feature-icon">05</div><h3>Cost & latency</h3><p>Runs capture wall-clock latency and provider-reported usage, with optional user-supplied pricing.</p></article>
+          <article class="feature-card accent-pink"><div class="feature-icon">06</div><h3>Ecosystem breakdowns</h3><p>Results can be broken down across PHP, Laravel, WordPress and the supported defect categories.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section-alt" id="suite">
+      <div class="container suite-grid">
+        <div>
+          <p class="kicker">Current suite</p><h2>PHP web ecosystem first.</h2>
+          <p class="section-copy">The engine is language-agnostic, but v0.1 makes a deliberately narrow claim. The current suite contains synthetic PHP web changes designed to isolate one defect at a time and keep the ground truth decidable.</p>
+          <a class="text-link" href="https://github.com/lex127/webfixbench/blob/main/docs/DATASET.md" target="_blank" rel="noreferrer">Read the dataset documentation ↗</a>
+        </div>
+        <div class="suite-card">
+          <div class="suite-row suite-head"><span>Ecosystem</span><span>Cases</span><span>Share</span></div>
+          <div class="suite-row"><span><i class="dot laravel"></i>Laravel</span><strong>8</strong><div class="bar"><i style="--size:50%"></i></div></div>
+          <div class="suite-row"><span><i class="dot wordpress"></i>WordPress</span><strong>5</strong><div class="bar"><i style="--size:31.25%"></i></div></div>
+          <div class="suite-row"><span><i class="dot php"></i>PHP</span><strong>3</strong><div class="bar"><i style="--size:18.75%"></i></div></div>
+          <div class="suite-divider"></div>
+          <div class="chips">
+            <span>authorization · 3</span><span>injection · 4</span><span>xss · 3</span><span>secrets · 1</span><span>unsafe deserialization · 1</span><span>clean control · 4</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="methodology">
+      <div class="container methodology-grid">
+        <div class="methodology-copy">
+          <p class="kicker">Methodology</p><h2>Ground truth is frozen before evaluation.</h2>
+          <p>Cases are authored or accepted by a human maintainer. Model output is never used as the answer key. Matching is deterministic, versioned and reproducible.</p>
+          <div class="method-list">
+            <div><span>1</span><p><strong>Fixed input.</strong> A unified diff plus explicit context defines exactly what the reviewer may assume.</p></div>
+            <div><span>2</span><p><strong>Human label.</strong> Expected findings are reviewed before model evaluation.</p></div>
+            <div><span>3</span><p><strong>Deterministic scoring.</strong> Findings match by normalized defect type, optionally also by file — no LLM judge.</p></div>
+            <div><span>4</span><p><strong>Raw runs preserved.</strong> Paid model outputs can be rescored later without making another API call.</p></div>
+          </div>
+          <a class="text-link" href="https://github.com/lex127/webfixbench/blob/main/docs/METHODOLOGY.md" target="_blank" rel="noreferrer">Read the full methodology ↗</a>
+        </div>
+        <aside class="quote-card"><span class="quote-label">Governing rule</span><blockquote>“Ground truth is frozen before any model is evaluated.”</blockquote><p>One label, one supplied context, one reproducible scoring path.</p></aside>
+      </div>
+    </section>
+
+    <section class="section results-section" id="results">
+      <div class="container">
+        <div class="results-card">
+          <div class="results-copy">
+            <p class="kicker">Results</p><h2>No real-model leaderboard yet.</h2>
+            <p>WebFixBench v0.1 is currently a release candidate with a working evaluation harness and a small labelled dataset. Real-model results have not been published, so the correct result is still <strong>not yet measured</strong>.</p>
+            <p class="results-note">A committed mock-provider report exists only to exercise the pipeline; it is not a model benchmark result.</p>
+          </div>
+          <div class="empty-chart" aria-label="Placeholder for future published benchmark results">
+            <div class="chart-header"><span>Published model results</span><span>Coming later</span></div>
+            <div class="chart-grid" aria-hidden="true"><i></i><i></i><i></i><i></i></div><div class="chart-empty">No published measurements</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="reproduce">
+      <div class="container reproduce-grid">
+        <div><p class="kicker">Reproduce it</p><h2>Run the whole pipeline locally.</h2><p class="section-copy">Python 3.9+, no runtime dependencies for the core package. Paid providers are opt-in and require an explicit model ID.</p></div>
+        <div class="code-card">
+          <div class="code-card-bar"><span>terminal</span><button type="button" data-copy-code>Copy</button></div>
+          <pre><code data-code>git clone https://github.com/lex127/webfixbench.git
+cd webfixbench
+pip install -e .
+
+webfixbench run --provider mock --out results/my-run.json
+webfixbench evaluate results/my-run.json
+webfixbench report results/my-run.json --out results/my-run.md</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section-alt" id="roadmap">
+      <div class="container">
+        <div class="section-heading narrow"><p class="kicker">Roadmap</p><h2>Small by design. Broader only when the labels can support it.</h2></div>
+        <div class="roadmap-grid">
+          <article class="roadmap-card current"><span class="roadmap-status">Now · v0.1</span><h3>Make the baseline publishable</h3><p>Freeze the remaining case, complete academic review, validate live provider adapters and add a second reader.</p></article>
+          <article class="roadmap-card"><span class="roadmap-status">Next · v0.2</span><h3>Increase evidential value</h3><p>Grow the PHP suite, add carefully sourced real-world cases, multi-finding cases, harder controls and inter-rater agreement.</p></article>
+          <article class="roadmap-card"><span class="roadmap-status">Later</span><h3>Expand context and ecosystems</h3><p>Confidence calibration, context-level experiments, JavaScript/TypeScript and Python web suites.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="limitations">
+      <div class="container limitations-grid">
+        <div><p class="kicker">Limitations</p><h2>What v0.1 does not prove.</h2></div>
+        <div class="limitations-list">
+          <p><strong>16 cases are small.</strong> Per-category numbers rest on only one to four cases.</p>
+          <p><strong>The cases are synthetic.</strong> They isolate textbook patterns; they do not establish real-world review performance.</p>
+          <p><strong>One maintainer reviewed the frozen labels.</strong> Inter-rater agreement is not yet measured.</p>
+          <p><strong>This is not certification.</strong> A good score does not mean a model or tool is safe enough to replace human review.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section contributors-section" id="contributors">
+      <div class="container">
+        <div class="section-heading narrow"><p class="kicker">People</p><h2>Built for reproducible evaluation.</h2></div>
+        <div class="people-grid">
+          <article class="person-card"><div class="person-avatar">OS</div><div><h3>Oleksii Siniaiev</h3><p>Technical Lead & Maintainer</p><a href="https://alexsinyaev.com/" target="_blank" rel="noreferrer">alexsinyaev.com ↗</a></div></article>
+          <article class="person-card"><div class="person-avatar secondary">VC</div><div><h3>Valeriia Chumak</h3><p>Academic Collaborator · Evaluation Design & Research Framing</p><a href="https://nure.ua/staff/valerija-sergiivna-chumak" target="_blank" rel="noreferrer">KhNURE profile ↗</a></div></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="cta-section">
+      <div class="container cta-card">
+        <div><p class="kicker">Open source</p><h2>Inspect the cases. Re-run the scoring. Challenge the labels.</h2></div>
+        <div class="cta-actions"><a class="button button-primary" href="https://github.com/lex127/webfixbench" target="_blank" rel="noreferrer">Open repository ↗</a><a class="button button-secondary" href="https://github.com/lex127/webfixbench/blob/main/CONTRIBUTING.md" target="_blank" rel="noreferrer">Contribute</a></div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-grid">
+      <div><a class="brand footer-brand" href="#top"><span class="brand-mark">W</span><span>WebFixBench</span></a><p>LLM code review reliability, measured reproducibly.</p></div>
+      <div class="footer-links"><a href="https://github.com/lex127/webfixbench" target="_blank" rel="noreferrer">GitHub</a><a href="https://github.com/lex127/webfixbench/blob/main/docs/METHODOLOGY.md" target="_blank" rel="noreferrer">Methodology</a><a href="https://github.com/lex127/webfixbench/blob/main/LICENSE" target="_blank" rel="noreferrer">Apache-2.0</a></div>
+      <p class="copyright">© <span data-year></span> WebFixBench</p>
+    </div>
+  </footer>
+</body>
+</html>
