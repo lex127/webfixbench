@@ -15,6 +15,7 @@ It is **not a separate incorporated company or legal entity**.
 - Operates the project as part of his activity as a registered sole proprietor
   in Spain
 - Website: <https://alexsinyaev.com/>
+- LinkedIn: <https://www.linkedin.com/in/alexsiniaiev/>
 
 ### Valeriia Chumak
 
@@ -24,7 +25,8 @@ It is **not a separate incorporated company or legal entity**.
   (KhNURE)
 - Contributes academic perspective on evaluation design, methodology and
   research framing
-- Profile: <https://nure.ua/staff/valerija-sergiivna-chumak>
+- KhNURE profile: <https://nure.ua/en/staff/valeriia-chumak>
+- LinkedIn: <https://www.linkedin.com/in/valeriia-%D1%81humak-853bb21b6/>
 
 Valeriia's KhNURE affiliation identifies her academic position. It does not
 mean that KhNURE owns, operates, sponsors or endorses WebFixBench unless a
