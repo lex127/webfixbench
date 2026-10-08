@@ -269,12 +269,12 @@ and explicit model confidence.
 
 **Oleksii Siniaiev** — Founder, Technical Lead and Maintainer  
 Registered sole proprietor in Spain  
-<https://alexsinyaev.com/>
+[Website](https://alexsinyaev.com/) · [LinkedIn](https://www.linkedin.com/in/alexsiniaiev/)
 
 **Valeriia Chumak** — Academic Collaborator, Evaluation Design and Research Framing  
 Senior Lecturer, Department of Media Engineering and Information Radioelectronic
 Systems, Kharkiv National University of Radio Electronics (KhNURE)  
-<https://nure.ua/staff/valerija-sergiivna-chumak>
+[KhNURE profile](https://nure.ua/en/staff/valeriia-chumak) · [LinkedIn](https://www.linkedin.com/in/valeriia-%D1%81humak-853bb21b6/)
 
 WebFixBench is an independent project; KhNURE is Valeriia Chumak's academic
 affiliation and is not represented as the owner or operator of WebFixBench.
