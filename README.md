@@ -9,6 +9,20 @@ harness and a small dataset whose labels are human-reviewed, apart from one
 newer case that still awaits review; it is not a completed empirical study. No
 real-model results are published yet.
 
+## Project identity
+
+WebFixBench is an independent open-source research and developer-tooling project,
+not a separate incorporated company. The project is led and maintained by
+Oleksii Siniaiev, a registered sole proprietor in Spain, with academic research
+collaboration from Valeriia Chumak at Kharkiv National University of Radio
+Electronics (KhNURE).
+
+For applications, partnerships and research correspondence, use **WebFixBench**
+as the project/product name. Where a form specifically asks for a legal entity,
+company registration or incorporation details, WebFixBench should not be
+represented as a separate corporation. See [docs/PROJECT.md](docs/PROJECT.md)
+for the project roles, affiliations and recommended attribution.
+
 ## Why
 
 LLM reviewers are already embedded in pull-request workflows. Most public
@@ -251,15 +265,19 @@ and explicit model confidence.
 
 [docs/ROADMAP.md](docs/ROADMAP.md).
 
-## Contributors
+## Team
 
-**Oleksii Siniaiev** — Technical Lead and Maintainer
+**Oleksii Siniaiev** — Founder, Technical Lead and Maintainer  
+Registered sole proprietor in Spain  
 <https://alexsinyaev.com/>
 
-**Valeriia Chumak** — Academic Collaborator, Evaluation Design and Research Framing
+**Valeriia Chumak** — Academic Collaborator, Evaluation Design and Research Framing  
 Senior Lecturer, Department of Media Engineering and Information Radioelectronic
-Systems, Kharkiv National University of Radio Electronics
+Systems, Kharkiv National University of Radio Electronics (KhNURE)  
 <https://nure.ua/staff/valerija-sergiivna-chumak>
+
+WebFixBench is an independent project; KhNURE is Valeriia Chumak's academic
+affiliation and is not represented as the owner or operator of WebFixBench.
 
 Contributions are welcome: [CONTRIBUTING.md](CONTRIBUTING.md).
 
