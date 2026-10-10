@@ -56,6 +56,12 @@ def evaluate_document(
     if not isinstance(responses, list) or not responses:
         raise EvaluationError("result file contains no responses")
 
+    ids = [r.get("case_id") for r in responses if isinstance(r, dict)]
+    if len(ids) != len(responses) or any(not isinstance(i, str) for i in ids):
+        raise EvaluationError("result file contains invalid response identities")
+    if len(set(ids)) != len(ids):
+        raise EvaluationError("duplicate case responses; conditions must have separate result documents")
+
     matches: List[CaseMatch] = []
     predictions: Dict[str, List[PredictedFinding]] = {}
     case_meta: Dict[str, Dict[str, Any]] = {}
@@ -74,6 +80,14 @@ def evaluate_document(
             raise EvaluationError(
                 f"result file references case {case_id!r}, which is not in suite {suite.id!r}"
             )
+
+        fingerprints = document.get("run", {}).get("case_fingerprints")
+        if fingerprints is not None:
+            import hashlib
+            canonical = json.dumps(case.to_dict(), sort_keys=True, separators=(",", ":"))
+            actual = hashlib.sha256(canonical.encode()).hexdigest()
+            if not isinstance(fingerprints, dict) or fingerprints.get(case.id) != actual:
+                raise EvaluationError(f"case fingerprint mismatch for {case.id}; original labels/inputs required")
 
         valid = bool(response.get("valid"))
         predicted = _predictions(response.get("parsed")) if valid else []

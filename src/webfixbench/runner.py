@@ -63,15 +63,55 @@ def run_cases(
     pricing: Optional[PricingTable] = None,
     store_raw: bool = True,
     progress: Optional[Callable[[int, int, Case], None]] = None,
+    checkpoint: Optional[Callable[[Dict[str, Any]], None]] = None,
+    resume_document: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     """Review every case and return a result document.
 
     Provider and parsing failures are recorded per case; the run continues.
     """
     pricing = pricing or PricingTable.empty()
-    results: List[CaseResult] = []
+    document: Dict[str, Any] = {
+        "webfixbench_version": __version__,
+        "results_format_version": RESULTS_FORMAT_VERSION,
+        "run": {
+            "run_id": uuid.uuid4().hex[:12],
+            "created_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+            "suite": {
+                "id": suite.id if suite else None,
+                "version": suite.version if suite else None,
+                "case_count": len(suite) if suite else None,
+            },
+            "cases_run": [c.id for c in cases],
+            "prompt": {"id": prompt.id, "sha256": prompt.sha256},
+            "provider": provider.describe(),
+            "pricing": (
+                {"as_of": pricing.as_of, "source": pricing.source} if pricing.models else None
+            ),
+        },
+        "responses": [],
+    }
+    if resume_document is not None:
+        document = resume_document
+        if document.get("results_format_version") != RESULTS_FORMAT_VERSION:
+            raise ValueError("unsupported checkpoint result version")
+        responses = document.get("responses")
+        if not isinstance(responses, list):
+            raise ValueError("checkpoint responses must be an array")
+        prefix = [r.get("case_id") if isinstance(r, dict) else None for r in responses]
+        if prefix != [c.id for c in cases][:len(prefix)] or len(prefix) > len(cases):
+            raise ValueError("checkpoint responses must be an ordered prefix of selected cases")
+        if document.get("run", {}).get("cases_run") != [c.id for c in cases]:
+            raise ValueError("checkpoint case selection changed")
+    else:
+        responses = document["responses"]
+    saved_count = len(responses)
+    if checkpoint:
+        checkpoint(document)
 
     for index, case in enumerate(cases, start=1):
+        if index <= saved_count:
+            continue
         if progress:
             progress(index, len(cases), case)
 
@@ -101,28 +141,10 @@ def run_cases(
         elif result.error is None:
             result.error = "provider returned no text"
 
-        results.append(result)
+        responses.append(result.to_dict())
+        if checkpoint:
+            checkpoint(document)
 
-    document: Dict[str, Any] = {
-        "webfixbench_version": __version__,
-        "results_format_version": RESULTS_FORMAT_VERSION,
-        "run": {
-            "run_id": uuid.uuid4().hex[:12],
-            "created_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
-            "suite": {
-                "id": suite.id if suite else None,
-                "version": suite.version if suite else None,
-                "case_count": len(suite) if suite else None,
-            },
-            "cases_run": [c.id for c in cases],
-            "prompt": {"id": prompt.id, "sha256": prompt.sha256},
-            "provider": provider.describe(),
-            "pricing": (
-                {"as_of": pricing.as_of, "source": pricing.source} if pricing.models else None
-            ),
-        },
-        "responses": [r.to_dict() for r in results],
-    }
     return document
 
 
@@ -136,6 +158,8 @@ def run_suite(
     pricing: Optional[PricingTable] = None,
     store_raw: bool = True,
     progress: Optional[Callable[[int, int, Case], None]] = None,
+    checkpoint: Optional[Callable[[Dict[str, Any]], None]] = None,
+    resume_document: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     """Run all (or a subset of) the cases in ``suite``."""
     cases: List[Case] = list(suite.cases)
@@ -163,6 +187,8 @@ def run_suite(
         pricing=pricing,
         store_raw=store_raw,
         progress=progress,
+        checkpoint=checkpoint,
+        resume_document=resume_document,
     )
 
 

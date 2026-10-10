@@ -1,0 +1,69 @@
+{
+  "experiment_id": "mock-skill-protocol",
+  "suite_id": "php-web-v0.1",
+  "prompt_id": "review_v3",
+  "case_ids": [
+    "laravel-authz-001",
+    "laravel-authz-002",
+    "laravel-clean-001"
+  ],
+  "providers": [
+    {
+      "provider": "mock",
+      "model": "mock-heuristic-v1",
+      "mock_mode": "heuristic"
+    }
+  ],
+  "conditions": [
+    {
+      "condition_id": "baseline",
+      "kind": "baseline"
+    },
+    {
+      "condition_id": "generic",
+      "kind": "generic_checklist",
+      "path": "experiments/skills/generic-checklist-v1.txt",
+      "sha256": "02ed87c442dfa92e3d37ebe5e5fd4ec3a8fa8c8452191542dec28873eab2323b"
+    },
+    {
+      "condition_id": "skill",
+      "kind": "single_skill",
+      "path": "experiments/skills/review-demo-v1.txt",
+      "sha256": "32f3b2c5af4f3dcdc0e3678b566899d4bb107450f17adc902c78532fe69b0752"
+    },
+    {
+      "condition_id": "bundle",
+      "kind": "bundle",
+      "skills": [
+        {
+          "path": "experiments/skills/boundary-v1/SKILL.md",
+          "sha256": "c40575b7255420c3c8dbc648a8e2908dfc72958e9b294374b380ad6dff7494af",
+          "resources": [
+            {
+              "path": "experiments/skills/boundary-v1/references/checklist.md",
+              "sha256": "3adc9fcb454b531dbf83e231925291dc9074735e6c79bfbd74eebb6b76a20476"
+            }
+          ],
+          "tree_sha256": "e8f3a36a706e4c2babe973c2126db350771152bc1664eb1daed4ac54e207162f"
+        },
+        {
+          "path": "experiments/skills/review-demo-v1.txt",
+          "sha256": "32f3b2c5af4f3dcdc0e3678b566899d4bb107450f17adc902c78532fe69b0752"
+        }
+      ]
+    }
+  ],
+  "repeat_count": 2,
+  "mode": "reviewed",
+  "schedule_seed": 731,
+  "incident_ids": {
+    "laravel-authz-001": "demo-laravel-authz-001",
+    "laravel-authz-002": "demo-laravel-authz-002",
+    "laravel-clean-001": "demo-laravel-clean-001"
+  },
+  "cluster_ids": {
+    "laravel-authz-001": "demo-laravel-authz-001",
+    "laravel-authz-002": "demo-laravel-authz-002",
+    "laravel-clean-001": "demo-laravel-clean-001"
+  }
+}

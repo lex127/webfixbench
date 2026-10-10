@@ -77,9 +77,13 @@ class Prompt:
     id: str
     text: str
     sha256: str
+    instructions: str = ""
 
     def render(self, *, case_description: str, diff: str, context: Optional[str] = None) -> str:
-        return (
+        # Skill text is literal: never run template substitution over it.
+        prefix = ("<review-instructions>\n" + self.instructions +
+                  "\n</review-instructions>\n\n") if self.instructions else ""
+        return prefix + (
             self.text.replace("{{CASE_DESCRIPTION}}", case_description)
             .replace("{{CONTEXT}}", context or "(no additional context supplied)")
             .replace("{{DIFF}}", diff)

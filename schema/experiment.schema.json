@@ -1,40 +1,324 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/lex127/webfixbench/schema/experiment.schema.json",
-  "title": "WebFixBench experiment configuration v1",
+  "title": "WebFixBench experiment configuration (legacy and text conditions)",
   "type": "object",
   "additionalProperties": false,
-  "required": ["experiment_id", "providers"],
+  "required": [
+    "experiment_id",
+    "providers"
+  ],
   "properties": {
-    "experiment_id": { "$ref": "#/$defs/safeId" },
-    "suite_id": { "$ref": "#/$defs/safeId" },
-    "prompt_id": { "$ref": "#/$defs/safeId" },
-    "case_ids": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "$ref": "#/$defs/safeId" } },
-    "case_limit": { "type": "integer", "minimum": 1 },
-    "providers": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/provider" } },
-    "repeat_count": { "type": "integer", "minimum": 1, "maximum": 100, "default": 1 },
-    "timeout": { "type": "number", "exclusiveMinimum": 0, "maximum": 3600 },
-    "max_output_tokens": { "type": "integer", "minimum": 1, "maximum": 1000000 },
-    "mode": { "enum": ["reviewed", "smoke"], "default": "reviewed" }
+    "experiment_id": {
+      "$ref": "#/$defs/safeId"
+    },
+    "suite_id": {
+      "$ref": "#/$defs/safeId"
+    },
+    "prompt_id": {
+      "$ref": "#/$defs/safeId"
+    },
+    "case_ids": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/safeId"
+      }
+    },
+    "case_limit": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "providers": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/provider"
+      }
+    },
+    "repeat_count": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100,
+      "default": 1
+    },
+    "timeout": {
+      "type": "number",
+      "exclusiveMinimum": 0,
+      "maximum": 3600
+    },
+    "max_output_tokens": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1000000
+    },
+    "mode": {
+      "enum": [
+        "reviewed",
+        "smoke"
+      ],
+      "default": "reviewed"
+    },
+    "conditions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/condition"
+      }
+    },
+    "schedule_seed": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 1000000
+    },
+    "incident_ids": {
+      "type": "object",
+      "minProperties": 1,
+      "propertyNames": {
+        "$ref": "#/$defs/safeId"
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/safeId"
+      }
+    },
+    "cluster_ids": {
+      "type": "object",
+      "minProperties": 1,
+      "propertyNames": {
+        "$ref": "#/$defs/safeId"
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/safeId"
+      }
+    }
   },
-  "not": { "required": ["case_ids", "case_limit"] },
+  "not": {
+    "required": [
+      "case_ids",
+      "case_limit"
+    ]
+  },
   "$defs": {
-    "safeId": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,79}$" },
+    "safeId": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,79}$"
+    },
+    "condition": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "condition_id",
+            "kind"
+          ],
+          "properties": {
+            "condition_id": {
+              "$ref": "#/$defs/safeId"
+            },
+            "kind": {
+              "const": "baseline"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "condition_id",
+            "kind",
+            "path",
+            "sha256"
+          ],
+          "properties": {
+            "condition_id": {
+              "$ref": "#/$defs/safeId"
+            },
+            "kind": {
+              "enum": [
+                "single_skill",
+                "generic_checklist"
+              ]
+            },
+            "path": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$)).+$"
+            },
+            "sha256": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "tree_sha256": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "resources": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/resourceFile"
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "condition_id",
+            "kind",
+            "skills"
+          ],
+          "properties": {
+            "condition_id": {
+              "$ref": "#/$defs/safeId"
+            },
+            "kind": {
+              "const": "bundle"
+            },
+            "skills": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "$ref": "#/$defs/skillFile"
+              }
+            }
+          }
+        }
+      ]
+    },
     "provider": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["provider", "model"],
+      "required": [
+        "provider",
+        "model"
+      ],
       "properties": {
-        "provider": { "enum": ["mock", "openai", "anthropic", "gemini", "xai", "deepseek"] },
-        "model": { "type": "string", "minLength": 1 },
-        "api_type": { "enum": ["responses", "chat.completions"] },
-        "output_constraint": { "enum": ["native_json", "json_schema", "json_object", "prompt_only"] },
-        "temperature": { "type": "number", "minimum": 0, "maximum": 2 },
-        "reasoning_effort": { "enum": ["none", "low", "medium", "high", "xhigh", "max"] },
-        "thinking_mode": { "enum": ["disabled", "between_tools", "adaptive"] },
-        "model_id_stability": { "enum": ["pinned", "stable_alias", "mutable_alias", "unknown"] },
-        "api_key_env": { "enum": ["OPENAI_API_KEY", "ANTHROPIC_API_KEY", "GEMINI_API_KEY", "XAI_API_KEY", "DEEPSEEK_API_KEY"] },
-        "mock_mode": { "enum": ["heuristic", "empty", "oracle_free", "malformed"] }
+        "provider": {
+          "enum": [
+            "mock",
+            "openai",
+            "anthropic",
+            "gemini",
+            "xai",
+            "deepseek"
+          ]
+        },
+        "model": {
+          "type": "string",
+          "minLength": 1
+        },
+        "api_type": {
+          "enum": [
+            "responses",
+            "chat.completions"
+          ]
+        },
+        "output_constraint": {
+          "enum": [
+            "native_json",
+            "json_schema",
+            "json_object",
+            "prompt_only"
+          ]
+        },
+        "temperature": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 2
+        },
+        "reasoning_effort": {
+          "enum": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ]
+        },
+        "thinking_mode": {
+          "enum": [
+            "disabled",
+            "between_tools",
+            "adaptive"
+          ]
+        },
+        "model_id_stability": {
+          "enum": [
+            "pinned",
+            "stable_alias",
+            "mutable_alias",
+            "unknown"
+          ]
+        },
+        "api_key_env": {
+          "enum": [
+            "OPENAI_API_KEY",
+            "ANTHROPIC_API_KEY",
+            "GEMINI_API_KEY",
+            "XAI_API_KEY",
+            "DEEPSEEK_API_KEY"
+          ]
+        },
+        "mock_mode": {
+          "enum": [
+            "heuristic",
+            "empty",
+            "oracle_free",
+            "malformed"
+          ]
+        }
+      }
+    },
+    "resourceFile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "sha256"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$)).+$"
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      }
+    },
+    "skillFile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "sha256"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$)).+$"
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "tree_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "resources": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/resourceFile"
+          }
+        }
       }
     }
   }
