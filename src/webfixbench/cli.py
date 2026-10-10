@@ -120,6 +120,7 @@ def build_parser() -> argparse.ArgumentParser:
     experiment_parser = subparsers.add_parser("experiment", help="run a validated JSON experiment")
     experiment_parser.add_argument("config", type=Path)
     experiment_parser.add_argument("--dry-run", action="store_true")
+    experiment_parser.add_argument("--resume-dir", type=Path, default=None, help="explicit invocation directory to recover without retrying saved responses")
     experiment_parser.add_argument("--max-requests", type=int, required=True)
     experiment_parser.add_argument("--output-root", type=Path, default=Path("results/experiments"))
     experiment_parser.add_argument("--pricing", type=Path, default=None, help="pricing table JSON")
@@ -372,15 +373,17 @@ def cmd_retry_failed(args: argparse.Namespace) -> int:
 
 def cmd_experiment(args: argparse.Namespace) -> int:
     experiment = load_experiment(args.config)
+    if args.dry_run and args.resume_dir is not None:
+        raise ConfigError("--dry-run cannot be combined with --resume-dir; dry-run plans a fresh invocation")
     suite, cases, missing = preflight(
-        experiment, root=args.root, max_requests=args.max_requests, require_keys=not args.dry_run
+        experiment, root=args.root, max_requests=args.max_requests, require_keys=False
     )
     if args.dry_run:
         print(dry_run_summary(experiment, suite, cases, missing, args.output_root, args.max_requests))
         return 0
     pricing = load_pricing(args.pricing)
     directory = run_experiment(experiment, root=args.root, output_root=args.output_root,
-                               max_requests=args.max_requests, pricing=pricing)
+                               max_requests=args.max_requests, pricing=pricing, resume_dir=args.resume_dir)
     manifest = json.loads((directory / "manifest.json").read_text(encoding="utf-8"))
     print(f"wrote {directory}")
     print(f"status: {manifest['status']}")

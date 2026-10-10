@@ -112,6 +112,119 @@ constraint, and relevant model settings match. Raw output, exact inputs, and
 settings are needed to audit malformed responses and distinguish model changes
 from benchmark changes.
 
+## Skill-condition API protocol
+
+The optional `conditions` array compares instructions through the existing API
+runner. See [`mock-skill-conditions.json`](../experiments/mock-skill-conditions.json):
+
+```bash
+PYTHONPATH=src python3 -m webfixbench.cli experiment \
+  experiments/mock-skill-conditions.json --dry-run --max-requests 12
+PYTHONPATH=src python3 -m webfixbench.cli experiment \
+  experiments/mock-skill-conditions.json --max-requests 12
+```
+
+Each condition needs a unique `condition_id` and `kind`. `baseline` has no other
+fields. `single_skill` and `generic_checklist` require a repository-relative
+`path` and the lowercase SHA-256 of the **exact UTF-8 file bytes**. Paths resolve
+relative to the benchmark data root, not the config file. Traversal and symlinks
+outside that root are rejected. Digest mismatches fail even in dry-run, before
+provider construction or requests. Text is pinned in memory before execution;
+resources, Markdown links, commands and template placeholders inside it are
+never loaded or executed. Review supplied instruction files for answer leakage:
+the materializer is not a semantic ground-truth or secret scanner.
+
+Baseline sends the original rendered prompt byte-for-byte. Other conditions
+prepend their literal text in a `review-instructions` block. Providers remain
+stateless API calls; no native agent or global profile is involved. This measures
+forced instruction delivery, not skill selection or autonomous tool use.
+
+The guard counts cases × provider configurations × conditions × repetitions.
+With `schedule_seed`, execution shuffles condition order within provider blocks
+and reverses it in the next repetition, balancing relative order across each pair.
+The exact block schedule is recorded. Cases retain their selected order. Without
+a seed, legacy fixed order is preserved. This is run-block counterbalancing, not
+case-level randomization or isolation from provider-side caching. Every condition/repetition has a
+separate result/evaluation directory, retaining raw output and `inputs.json`
+with the exact delivered prompts. Input hashes are condition-specific. The
+manifest snapshots instruction text and pins the original case fingerprints.
+Condition-aware manifests use experiment format 2; legacy manifests remain
+format 1. Result format 2 and evaluation format 1 remain compatible because each
+result document still contains one response per distinct case.
+
+Re-score a stored `results.json` using `evaluate` without calling a model.
+The evaluator verifies recorded case fingerprints (including labels) before
+scoring: changed ground truth fails rather than silently changing the answer.
+Duplicate case responses are rejected. Keep the original suite available; it is
+not archived inside the invocation. Legacy result documents without fingerprints
+remain re-scoreable and are not represented as pinned replay.
+
+`retry-failed` is an explicit new invocation: only saved provider-error responses
+are selected, not successful or malformed responses. Exact provider settings,
+condition, selected cases and original repetition are retained. The aggregate
+retry manifest links separate recoverable attempts; original artifacts are never
+overwritten. Selective retries are not valid comparative samples. A partial run
+must be resumed before retrying its errors. Legacy pre-checkpoint manifests use
+the older failed-run retry behavior. No automatic API retry is added.
+
+### Resources, bundles and skill trees
+
+`bundle` conditions require an ordered `skills` array. Each item uses `path` and
+`sha256`; single skills and bundle items can additionally list `resources`
+(ordered pinned UTF-8 files). Explicit resources are delivered literally after
+the main text; Markdown links are never followed implicitly. Scripts are not
+executed. An optional `tree_sha256` pins the full parent-directory inventory,
+including undelivered/binary files, and rejects symlinks anywhere in that tree.
+Explicit delivered resources must stay in the pinned tree. Keep configs outside
+the tree to avoid self-referential hashes. Each snapshot records exact delivered
+text/bytes, resource ordering, tree inventory and composite identity.
+
+Compute the tree hash with `webfixbench.conditions.fingerprint_skill_tree` using
+the skill directory and explicit benchmark root. See
+[`mock-skill-protocol.json`](../experiments/mock-skill-protocol.json) for the full
+offline example (24 requests). The demo grouping maps are assumptions for testing
+statistics, not a human certification of independent defects.
+
+### Recovery
+
+Every run saves an empty result checkpoint before the first review and atomically
+replaces it after every returned response, including errors and malformed output.
+`experiment CONFIG --resume-dir INVOCATION --max-requests N` validates config,
+HEAD, harness source, suite/prompt, labels, pricing, condition/input hashes and
+ordered response prefixes before providers are constructed. Completed runs make
+zero requests. Saved errors/malformed output are preserved without retry. The
+request cap still covers the original plan; missing requests are a suffix of it.
+`--dry-run` plans a new invocation and cannot be combined with resume.
+
+An exclusive `.active` file prevents simultaneous execution/resume. Normal errors
+and interrupts release it; after SIGKILL inspect its recorded PID before manually
+removing a stale lock. Charged in-flight calls may be interrupted before returning
+and checkpointing: resume is **not exactly-once billing**; check vendor usage.
+Only invocations made by the recoverable runner can be resumed. Aggregate retry
+roots are audit indexes; resume individual attempt invocations, not the index.
+
+### Comparison and interpretation
+
+`comparison.json` and the appended summary show operational coverage, errors
+separately from malformed output, missing episodes, clean alarms, per-incident
+detection, latency, reported tokens and known/unknown cost coverage. Unknown cost
+is `n/a`, never zero. Partial known costs are subtotals, not full experiment spend.
+Mock/smoke/provisional runs and selective retries explicitly prohibit rankings.
+
+`incident_ids` and `cluster_ids`, when supplied, must cover exactly selected cases.
+Variants/repetitions average inside incident first. Paired detection deltas compare
+conditions only within the same provider configuration. A seeded 2000-resample
+percentile bootstrap resamples whole dependency clusters; absent explicit grouping
+or fewer than two defective clusters disables its interval. Few clusters still
+make intervals unreliable; no power/multiplicity or mechanism-review claim is
+made. Invalid/error/missing episodes score zero in operational detection; valid-only
+sensitivity and clean alarms show their different denominators alongside coverage.
+
+Fixtures are illustrative, not validated production skills or token-matched
+controls. Mock output proves mechanics, not real model benefit. Native agents,
+repository/test-gap/plan/routing tracks and human-reviewed corpus expansion remain
+separate milestones; this API protocol does not pretend to implement them.
+
 ## GitHub Actions
 
 In repository **Settings → Secrets and variables → Actions**, add only the

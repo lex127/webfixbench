@@ -1,0 +1,1 @@
+Trace changed values through their callers and consumers. For each suspected defect, identify a reachable input, the violated requirement, and the exact changed statement. Check boundary values and existing guards. Report only defects supported by the supplied diff and context; do not invent missing repository facts. Preserve the requested JSON response format.
